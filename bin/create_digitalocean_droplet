@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+IMAGE_NAME="mittab-${$1}"
+
+docker-machine create \
+  -d digitalocean \
+  --digitalocean-access-token=$DIGITALOCEAN_TOKEN \
+  $IMAGE_NAME
+
+eval "$(docker-machine env production)"
+
+docker-compose build --build-arg password=$2 web
+docker-compose build nginx
+docker-compose up -d
