@@ -1,0 +1,40 @@
+web:
+  build: 
+    dockerfile_path: Dockerfile.web
+  expose:
+    - "8000"
+  links:
+    - postgres:postgres
+  volumes:
+    - /usr/src/app
+  env_file: .env
+  command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
+  cached: true
+
+nginx:
+  build:
+    dockerfile_path: Dockerfile.nginx
+  ports:
+    - "80:80"
+  volumes:
+    - /www/static
+  volumes_from:
+    - web
+  links:
+    - web:web
+  cached: true
+
+data:
+  image: postgres:latest
+  volumes:
+    - /var/lib/postgresql
+  command: "true"
+  cached: true
+
+postgres:
+  image: postgres:latest
+  volumes_from:
+    - data
+  ports:
+    - "5432:5432"
+  cached: true

@@ -1,3 +1,5 @@
+[ ![Codeship Status for BenMusch/mittab-deploy](https://app.codeship.com/projects/a04919f0-41c5-0135-d736-06284f5b6d31/status?branch=master)](https://app.codeship.com/projects/230129)
+
 This is an application to handle automatic deployments of the
 [mit-tab](https://github.com/jolynch/mit-tab/) application
 
@@ -25,6 +27,6 @@ docker-compose build
 
 ## Environment Variables
 
-Most env vars are defined in `.env.sample`. My API keys are not in there for
-obvious reasons. Copy that file to `.env` to get it to load the variables in the
-application
+Most env vars are defined in `.env`. My API keys are not in there for
+obvious reasons, so code that hits APIs will not function until I figure out how
+to mock it
