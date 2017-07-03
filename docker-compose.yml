@@ -6,7 +6,6 @@ web:
     - "8000"
   links:
     - postgres:postgres
-    - redis
   volumes:
     - /usr/src/app
   env_file: .env
@@ -24,11 +23,6 @@ nginx:
     - web
   links:
     - web:web
-
-redis:
-  image: redis:latest
-  ports:
-    - "6379:6379"
 
 data:
   image: postgres:latest
