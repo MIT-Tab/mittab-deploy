@@ -3,5 +3,6 @@
 set -e
 
 ./bin/wait_for_db
+cp .env.sample .env
 python create_db.py
 echo "Hello, world!"
