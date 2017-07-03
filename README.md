@@ -1,3 +1,5 @@
+[ ![Codeship Status for BenMusch/mittab-deploy](https://app.codeship.com/projects/a04919f0-41c5-0135-d736-06284f5b6d31/status?branch=master)](https://app.codeship.com/projects/230129)
+
 This is an application to handle automatic deployments of the
 [mit-tab](https://github.com/jolynch/mit-tab/) application
 
