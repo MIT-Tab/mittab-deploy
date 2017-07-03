@@ -27,6 +27,6 @@ docker-compose build
 
 ## Environment Variables
 
-Most env vars are defined in `.env.sample`. My API keys are not in there for
-obvious reasons. Copy that file to `.env` to get it to load the variables in the
-application
+Most env vars are defined in `.env`. My API keys are not in there for
+obvious reasons, so code that hits APIs will not function until I figure out how
+to mock it
