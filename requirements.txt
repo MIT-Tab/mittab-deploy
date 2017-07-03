@@ -1,6 +1,7 @@
-python-dotenv==0.6.4
+celery==4.0
 Flask==0.12.2
 Flask-SQLAlchemy==2.1
 Jinja2==2.9
 gunicorn==19.7.1
 psycopg2==2.7
+python-dotenv==0.6.4
