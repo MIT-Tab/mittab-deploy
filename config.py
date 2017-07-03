@@ -11,3 +11,7 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(
         DB_USER, DB_PASS, DB_SERVICE, DB_PORT, DB_NAME
     )
+    CELERY_RESULT_BACKEND = 'postgresql+pyscopg2://{0}:{1}@{2}:{3}/{4}'.format(
+        DB_USER, DB_PASS, DB_SERVICE, DB_PORT, DB_NAME
+    )
+    CELERY_BROKER_URL = CELERY_RESULT_BACKEND
