@@ -3,4 +3,4 @@ FROM python:3.4-onbuild
 # necessary for the ./bin/wait_for_db script
 RUN apt-get update && apt-get install -y postgresql
 
-COPY .env.sample ./.env
+COPY ./.env.sample ./.env
