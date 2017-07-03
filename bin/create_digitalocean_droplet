@@ -2,15 +2,27 @@
 
 set -e
 
-IMAGE_NAME="mittab-${$1}"
+IMAGE_NAME=mittab-$1
+
+if [ -d "mit-tab"  ]; then
+  echo "mit-tab already dowloaded, no need to clone"
+else
+  git clone $GITHUB_CLONE_URL
+fi
+
+cd mit-tab
 
 docker-machine create \
   -d digitalocean \
   --digitalocean-access-token=$DIGITALOCEAN_TOKEN \
   $IMAGE_NAME
 
-eval "$(docker-machine env production)"
+eval "$(docker-machine env $IMAGE_NAME)"
 
 docker-compose build --build-arg password=$2 web
 docker-compose build nginx
 docker-compose up -d
+
+cd ..
+
+rm -rf mit-tab
