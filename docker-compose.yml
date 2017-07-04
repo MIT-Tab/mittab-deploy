@@ -6,6 +6,7 @@ web:
     - "8000"
   links:
     - postgres:postgres
+    - redis:redis
   volumes:
     - ./:/usr/src/app
   env_file: .env
@@ -23,6 +24,23 @@ nginx:
     - web
   links:
     - web:web
+
+celery:
+  restart: always
+  build: .
+  dockerfile: Dockerfile.web
+  env_file: .env
+  command: celery worker -l debug -A app.tasks.celery
+  volumes:
+    - ./:/usr/src/app
+  links:
+    - redis:redis
+
+redis:
+  image: redis:3.2
+  command: redis-server
+  ports:
+    - '6379:6379'
 
 data:
   image: postgres:latest

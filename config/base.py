@@ -11,3 +11,8 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(
         DB_USER, DB_PASS, DB_SERVICE, DB_PORT, DB_NAME
     )
+    CELERY_RESULT_BACKEND = 'redis://{0}:{1}'.format(
+        os.environ['REDIS_PORT_6379_TCP_ADDR'],
+        os.environ['REDIS_PORT_6379_TCP_PORT']
+    )
+    CELERY_BROKER_URL = CELERY_RESULT_BACKEND
