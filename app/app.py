@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask import request, render_template
 from flask_sqlalchemy import SQLAlchemy
-from config import BaseConfig
+from config.base import BaseConfig
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
 
-from models import *
+from app.models import *
 
 
 @app.route("/")

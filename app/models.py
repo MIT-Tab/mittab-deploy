@@ -1,5 +1,5 @@
 import datetime
-from app import db
+from app.app import db
 
 
 class Tournament(db.Model):
