@@ -19,5 +19,4 @@ celery = make_celery(app)
 
 @celery.task()
 def hello_world():
-    print("Hello, world! From celery")
     return 1

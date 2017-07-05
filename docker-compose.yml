@@ -26,15 +26,15 @@ nginx:
     - web:web
 
 celery:
-  restart: always
   build: .
   dockerfile: Dockerfile.web
-  env_file: .env
-  command: celery worker -l debug -A app.tasks.celery
+  links:
+    - postgres:postgres
+    - redis:redis
   volumes:
     - ./:/usr/src/app
-  links:
-    - redis:redis
+  env_file: .env
+  command: celery -A app.tasks.celery worker --loglevel=info
 
 redis:
   image: redis:3.2
