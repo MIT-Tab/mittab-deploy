@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Create a Tournament</h1>
+
+  <form action="/tournaments" method="post" name="tournament">
+    {{ form.hidden_tag() }}
+
+    {{ form.name }}
+    <input type="submit" value="Create"/>
+  </form>
+{% endblock %}

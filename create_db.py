@@ -1,3 +1,3 @@
-from app.app import db
+from deployer.app import db
 
 db.create_all()

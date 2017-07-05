@@ -9,7 +9,7 @@ web:
   volumes:
     - /usr/src/app
   env_file: .env
-  command: /usr/local/bin/gunicorn -w 2 -b :8000 app:app
+  command: /usr/local/bin/gunicorn -w 2 -b :8000 deployer.app:app
   cached: true
 
 nginx:

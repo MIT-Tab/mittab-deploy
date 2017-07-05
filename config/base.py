@@ -1,6 +1,7 @@
 import os
 
 class BaseConfig(object):
+    WEB_CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
     DEBUG = os.environ['DEBUG']
     DB_NAME = os.environ['DB_NAME']

@@ -2,6 +2,7 @@ celery==4.0
 redis>=2.10.5
 Flask==0.12.2
 Flask-SQLAlchemy==2.1
+Flask-WTF==0.14
 Jinja2==2.9
 gunicorn==19.7.1
 psycopg2==2.7
