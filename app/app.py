@@ -1,19 +1,17 @@
 from os.path import join, dirname
 
-from dotenv import load_dotenv
 from flask import Flask
 from flask import request, render_template
 from flask_sqlalchemy import SQLAlchemy
-from config.base import BaseConfig
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+from config.base import BaseConfig
 
 app = Flask(__name__)
 app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
 
 from app.models import *
+from app.tasks import *
 
 
 @app.route("/")
