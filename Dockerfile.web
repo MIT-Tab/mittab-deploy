@@ -4,3 +4,16 @@ WORKDIR /usr/src/app
 
 # necessary for the ./bin/wait_for_db script
 RUN apt-get update && apt-get install -y postgresql
+
+# docker-ception in order to deploy using docker-machine
+RUN apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+RUN apt-get install docker-ce
+RUN pip install docker-compose
+RUN curl -L https://github.com/docker/machine/releases/download/v0.12.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
+    chmod +x /tmp/docker-machine && \
+    sudo cp /tmp/docker-machine /usr/local/bin/docker-machine

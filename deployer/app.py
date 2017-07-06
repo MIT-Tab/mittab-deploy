@@ -1,6 +1,6 @@
 from os.path import join, dirname
 
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 
 from config.base import BaseConfig
@@ -28,7 +28,12 @@ def hello():
 
 @app.route('/tournaments', methods=['POST'])
 def create_tournament():
-    print("GOT A RESPONSE")
+    form = TournamentForm()
+    if form.validate_on_submit():
+        create_droplet.delay(form.name.data)
+        return 'Started!'
+    else:
+        return redirect('/tournaments/new')
 
 
 if __name__ == '__main__':

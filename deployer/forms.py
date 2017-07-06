@@ -1,6 +1,6 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.validators import DataRequired
 
-class TournamentForm(Form):
+class TournamentForm(FlaskForm):
     name = StringField('name', validators=[DataRequired()])

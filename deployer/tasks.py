@@ -1,3 +1,5 @@
+import os
+
 from celery import Celery
 
 from deployer.app import app
@@ -18,5 +20,6 @@ def make_celery(app):
 celery = make_celery(app)
 
 @celery.task()
-def hello_world():
-    return 1
+def create_droplet(name, password='password'):
+    name = 'mittab-' + name
+    os.system('./bin/create_digital_ocean_droplet {0} {1}')

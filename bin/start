@@ -3,4 +3,5 @@
 set -e
 
 docker-compose up -d
-docker-compose run web python create_db.py
+docker-compose run --rm web ./bin/wait_for_db
+docker-compose run --rm web python create_db.py
