@@ -1,4 +1,4 @@
-import os
+import subprocess
 
 from celery import Celery
 
@@ -22,4 +22,6 @@ celery = make_celery(app)
 @celery.task()
 def create_droplet(name, password='password'):
     name = 'mittab-' + name
-    os.system('./bin/create_digital_ocean_droplet {0} {1}')
+    result = subprocess.check_output(['./bin/create_digitalocean_droplet', name, password])
+    print(result)
+    return result

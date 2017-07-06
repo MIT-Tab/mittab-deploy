@@ -34,7 +34,7 @@ celery:
   volumes:
     - ./:/usr/src/app
   env_file: .env
-  command: celery -A deployer.tasks.celery worker --loglevel=info
+  command: celery -A deployer.tasks.celery worker --loglevel=debug
 
 redis:
   image: redis:3.2
