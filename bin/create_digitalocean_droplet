@@ -20,10 +20,14 @@ docker-machine create \
 
 eval $(docker-machine env --shell sh $IMAGE_NAME)
 
+echo 'BUILD WEB...'
+
 docker-compose build --build-arg password=$2 web
+
+echo 'BUILD NGINX...'
+
 docker-compose build nginx
+
+echo 'DC UP...'
+
 docker-compose up -d
-
-cd ..
-
-rm -rf mit-tab
