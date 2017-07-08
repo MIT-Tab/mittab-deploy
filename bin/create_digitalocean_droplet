@@ -15,14 +15,19 @@ cd mit-tab
 docker-machine create \
   -d digitalocean \
   --digitalocean-access-token=$DIGITALOCEAN_TOKEN \
+  --engine-install-url=https://releases.rancher.com/install-docker/17.05.sh \
   $IMAGE_NAME
 
-eval "$(docker-machine env $IMAGE_NAME)"
+eval $(docker-machine env --shell sh $IMAGE_NAME)
+
+echo 'BUILD WEB...'
 
 docker-compose build --build-arg password=$2 web
+
+echo 'BUILD NGINX...'
+
 docker-compose build nginx
+
+echo 'DC UP...'
+
 docker-compose up -d
-
-cd ..
-
-rm -rf mit-tab

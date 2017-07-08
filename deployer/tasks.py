@@ -1,6 +1,8 @@
+import os
+
 from celery import Celery
 
-from app.app import app
+from deployer.app import app
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
@@ -18,5 +20,6 @@ def make_celery(app):
 celery = make_celery(app)
 
 @celery.task()
-def hello_world():
-    return 1
+def create_droplet(name, password):
+    command = './bin/create_digitalocean_droplet {0} {1}'.format(name.lower(), password)
+    os.system(command)

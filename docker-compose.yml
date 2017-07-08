@@ -9,8 +9,23 @@ web:
     - redis:redis
   volumes:
     - ./:/usr/src/app
-  env_file: .env
-  command: /usr/local/bin/gunicorn -w 2 -b :8000 app.app:app
+  env_file:
+    - .env
+    - .env.secret
+  command: /usr/local/bin/gunicorn -w 2 -b :8000 deployer.app:app
+
+celery:
+  build: .
+  dockerfile: Dockerfile.web
+  links:
+    - postgres:postgres
+    - redis:redis
+  volumes:
+    - ./:/usr/src/app
+  env_file:
+    - .env
+    - .env.secret
+  command: celery -A deployer.tasks.celery worker --loglevel=debug
 
 nginx:
   restart: always
@@ -24,17 +39,6 @@ nginx:
     - web
   links:
     - web:web
-
-celery:
-  build: .
-  dockerfile: Dockerfile.web
-  links:
-    - postgres:postgres
-    - redis:redis
-  volumes:
-    - ./:/usr/src/app
-  env_file: .env
-  command: celery -A app.tasks.celery worker --loglevel=info
 
 redis:
   image: redis:3.2
