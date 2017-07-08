@@ -1,5 +1,3 @@
-from os.path import join, dirname
-
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 
@@ -19,21 +17,15 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/tournaments/new', methods=['GET'])
-def hello():
-    return render_template('new.html',
-                           title='Create a Tournament',
-                           form=TournamentForm())
-
-
-@app.route('/tournaments', methods=['POST'])
-def create_tournament():
+@app.route('/tournaments/new', methods=['GET', 'POST'])
+def tournament():
     form = TournamentForm()
     if form.validate_on_submit():
         create_droplet.delay(form.name.data)
         return 'Started!'
-    else:
-        return redirect('/tournaments/new')
+    return render_template('new.html',
+                           title='Create a Tournament',
+                           form=form)
 
 
 if __name__ == '__main__':
