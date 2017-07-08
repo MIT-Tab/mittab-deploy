@@ -24,7 +24,7 @@ celery = make_celery(app)
 @celery.task()
 def create_tournament(name, password):
     name = name.lower()
-    namespaced_name = 'mittab' + name
+    namespaced_name = 'mittab-' + name
     command = './bin/create_digitalocean_droplet {0} {1}'.format(namespaced_name, password)
     os.system(command)
     droplet = get_droplet(namespaced_name)
