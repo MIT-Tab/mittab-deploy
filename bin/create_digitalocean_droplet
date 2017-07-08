@@ -2,7 +2,7 @@
 
 set -e
 
-IMAGE_NAME=mittab-$1
+IMAGE_NAME=$1
 
 if [ -d "mit-tab"  ]; then
   echo "mit-tab already dowloaded, no need to clone"
