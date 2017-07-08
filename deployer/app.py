@@ -28,6 +28,10 @@ def tournament():
                            title='Create a Tournament',
                            form=form)
 
+@app.route('/update')
+def update():
+    os.system('./bin/update')
+
 
 if __name__ == '__main__':
     app.run()

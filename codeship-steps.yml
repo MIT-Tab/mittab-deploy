@@ -1,2 +1,5 @@
 - service: web
   command: ./bin/ci
+- service: web
+  command: ./bin/deploy
+  tag: master

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+git pull origin master
+docker-compose build
+docker-compose restart web celery
+docker-compose run web python create_db.py
