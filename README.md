@@ -42,5 +42,5 @@ to mock it
 
 # Deployment
 
-Deployments are coordinated through the "releases" feature on github. Every
-release will send a hook to the application that updates it.
+Deployments are configured via GitHub webooks. Every commit to master re-deploys
+the application

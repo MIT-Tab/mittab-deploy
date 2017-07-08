@@ -30,9 +30,14 @@ def tournament():
                            title='Create a Tournament',
                            form=form)
 
-@app.route('/release', methods=['POST'])
-def release():
-    os.system('./bin/update')
+@app.route('/update', methods=['POST'])
+def update():
+    data = request.get_json()
+    if data['ref'] == 'refs/heads/master':
+        os.system('./bin/update')
+        return ('', 201)
+    else:
+        return ('', 204)
 
 
 if __name__ == '__main__':
