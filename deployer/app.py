@@ -21,7 +21,7 @@ def index():
 def tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        create_droplet.delay(form.name.data)
+        create_droplet.delay(form.name.data, form.password.data)
         return 'Started!'
     return render_template('new.html',
                            title='Create a Tournament',
