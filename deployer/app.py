@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 
@@ -27,6 +29,10 @@ def tournament():
     return render_template('new.html',
                            title='Create a Tournament',
                            form=form)
+
+@app.route('/release', methods=['POST'])
+def release():
+    os.system('./bin/update')
 
 
 if __name__ == '__main__':
