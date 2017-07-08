@@ -21,8 +21,9 @@ def index():
 def tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        create_droplet.delay(form.name.data, form.password.data)
-        return 'Started!'
+        create_tournament.delay(form.name.data, form.password.data)
+        return 'Started! In 5-10 minutes, your tournament will be available at {0}.nu-tab.com'.format(form.name.data.lower())
+
     return render_template('new.html',
                            title='Create a Tournament',
                            form=form)

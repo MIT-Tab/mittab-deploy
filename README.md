@@ -3,13 +3,22 @@
 This is an application to handle automatic deployments of the
 [mit-tab](https://github.com/jolynch/mit-tab/) application
 
-# What this application does (or... will do once I finish it)
+# What this application does
 
 - Deploys an instance of mit-tab to a Digital Oceal droplet (using Digital
   Ocean's remote Docker hosts)
 - Creates a DNS record at {tournament}.nu-tab.com that maps to that droplet's IP
   address using the DNSimple API
-- Manages the deletion of droplets of old tournaments once they are completed
+
+
+# TODO:
+- Integrate payment system to cover infrastructure costs
+- Send an email with instructions for setting up the tournament
+- Error handling
+- Manage the deletion of droplets of old tournaments once they are completed
+- Improved user interface to poll for progress on the tournament creation
+- Automate staging deploys with PRs to mit-tab
+- Get SSH set up on created tournaments so I can troubleshoot
 
 
 # Installation and Running
