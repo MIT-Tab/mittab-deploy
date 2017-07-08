@@ -39,3 +39,8 @@ docker-compose build
 Most env vars are defined in `.env`. My API keys are not in there for
 obvious reasons, so code that hits APIs will not function until I figure out how
 to mock it
+
+# Deployment
+
+Deployments are coordinated through the "releases" feature on github. Every
+release will send a hook to the application that updates it.
