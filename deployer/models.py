@@ -1,10 +1,11 @@
 import datetime
+
 from deployer import db
 
 
-class Tournament(db.Model):
+class Droplet(db.Model):
 
-    __tablename__ = 'tournaments'
+    __tablename__ = 'droplets'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)

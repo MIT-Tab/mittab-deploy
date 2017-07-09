@@ -13,6 +13,7 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = 'postgresql://{0}:{1}@{2}:{3}/{4}'.format(
         DB_USER, DB_PASS, DB_SERVICE, DB_PORT, DB_NAME
     )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # configure celery to work with redis
     CELERY_RESULT_BACKEND = 'redis://{0}:{1}'.format(
