@@ -1,5 +1,5 @@
 #!/bin/bash
 
 git pull origin master
-docker-compose up --build celery web
+docker-compose up -d --build celery web
 docker-compose run web python create_db.py
