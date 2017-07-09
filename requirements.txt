@@ -7,4 +7,3 @@ Jinja2==2.9
 gunicorn==19.7.1
 psycopg2==2.7
 python-digitalocean==1.10
-requests==2.18
