@@ -39,3 +39,8 @@ docker-compose build
 Most env vars are defined in `.env`. My API keys are not in there for
 obvious reasons, so code that hits APIs will not function until I figure out how
 to mock it
+
+# Deployment
+
+Deployments are configured via GitHub webooks. Every commit to master re-deploys
+the application
