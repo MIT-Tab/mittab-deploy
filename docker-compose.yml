@@ -12,7 +12,10 @@ web:
   env_file:
     - .env
     - .env.secret
-  command: /usr/local/bin/gunicorn -w 2 -b :8000 deployer.app:app
+  environment:
+    - PYTHONPATH=/usr/src/app
+    - FLASK_APP=/usr/src/app/deployer/__init__.py
+  command: /usr/local/bin/gunicorn -w 2 -b :8000 deployer:app
 
 celery:
   build: .
@@ -25,6 +28,9 @@ celery:
   env_file:
     - .env
     - .env.secret
+  environment:
+    - PYTHONPATH=/usr/src/app
+    - FLASK_APP=/usr/src/app/deployer/__init__.py
   command: celery -A deployer.tasks.celery worker --loglevel=debug
 
 nginx:

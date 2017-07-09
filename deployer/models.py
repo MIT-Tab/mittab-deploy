@@ -1,5 +1,5 @@
 import datetime
-from deployer.app import db
+from deployer import db
 
 
 class Tournament(db.Model):
