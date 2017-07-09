@@ -30,7 +30,7 @@ To run:
 
 ```
 docker-compose build
-./bin/start
+docker-compose up -d
 ```
 
 ## Environment Variables
