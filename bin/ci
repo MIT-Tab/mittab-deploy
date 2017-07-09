@@ -3,5 +3,4 @@
 set -e
 
 ./bin/wait_for_db
-python create_db.py
 echo "Hello, world!"
