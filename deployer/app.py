@@ -2,12 +2,15 @@ import os
 
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
+from flask.ext.hookserver import Hooks
 
 from config.base import BaseConfig
 
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
+
+hooks = Hooks(app, url='/payload')
 
 from deployer.models import *
 from deployer.tasks import *
@@ -30,15 +33,16 @@ def tournament():
                            title='Create a Tournament',
                            form=form)
 
-@app.route('/update', methods=['POST'])
-def update():
-    data = request.get_json()
-    if data['ref'] == 'refs/heads/master':
+@hooks.hook('push')
+def update(payload, delivery):
+    """
+    Called via github for all push events. This is used to automate deployments.
+    """
+    if payload['ref'] == 'refs/heads/master':
         os.system('./bin/update')
         return ('', 201)
     else:
         return ('', 204)
-
 
 if __name__ == '__main__':
     app.run()
