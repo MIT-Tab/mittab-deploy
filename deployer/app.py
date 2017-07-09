@@ -39,7 +39,7 @@ def update(payload, delivery):
     Called via github for all push events. This is used to automate deployments.
     """
     if payload['ref'] == 'refs/heads/master':
-        os.system('./bin/update')
+        update_repo.delay()
         return ('', 201)
     else:
         return ('', 204)
