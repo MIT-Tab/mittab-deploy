@@ -4,7 +4,7 @@ from time import time
 
 from celery import Celery
 
-from deployer.app import app
+from deployer import app
 from deployer.clients.digital_ocean import get_droplet, create_domain_record
 from deployer.clients.email import send_confirmation_email, send_tournament_notification
 

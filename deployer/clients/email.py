@@ -1,7 +1,7 @@
 from flask import render_template
 from flask_mail import Message
 
-from deployer.app import mail
+from deployer import mail
 
 def _send_email(subject, recipient, text_body, html_body):
     msg = Message(subject, sender='benmuschol@gmail.com', recipients=[recipient])
