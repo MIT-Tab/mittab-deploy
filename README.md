@@ -42,5 +42,5 @@ to mock it
 
 # Deployment
 
-Deployments are configured via GitHub webooks. Every commit to master re-deploys
-the application
+On each commit to master, the server pulls the code. However, the docker
+containers need to be manually restarted (TODO?)
