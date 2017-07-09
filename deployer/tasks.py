@@ -6,6 +6,7 @@ from celery import Celery
 
 from deployer.app import app
 from deployer.clients.digital_ocean import get_droplet, create_domain_record
+from deployer.clients.email import send_confirmation_email, send_tournament_notification
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
@@ -23,7 +24,7 @@ def make_celery(app):
 celery = make_celery(app)
 
 @celery.task()
-def create_tournament(name, password):
+def create_tournament(name, password, email):
     name = name.lower()
     namespaced_name = 'mittab-{0}-{1}'.format(name, int(time()))
 
@@ -36,6 +37,9 @@ def create_tournament(name, password):
 
     droplet = get_droplet(namespaced_name)
     create_domain_record(name, droplet.ip_address)
+
+    send_confirmation_email(email, name, password)
+    send_tournament_notification(name)
 
 @celery.task()
 def update_repo():

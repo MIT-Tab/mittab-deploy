@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_hookserver import Hooks
+from flask_mail import Mail
 
 from config.base import BaseConfig
 
@@ -11,6 +12,7 @@ app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
 
 hooks = Hooks(app, url='/payload')
+mail = Mail(app)
 
 from deployer.models import *
 from deployer.tasks import *
@@ -26,7 +28,7 @@ def index():
 def tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        create_tournament.delay(form.name.data, form.password.data)
+        create_tournament.delay(form.name.data, form.password.data, form.email.data)
         return 'Started! In 5-10 minutes, your tournament will be available at {0}.nu-tab.com'.format(form.name.data.lower())
 
     return render_template('new.html',
