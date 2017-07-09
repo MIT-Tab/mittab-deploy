@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask.ext.hookserver import Hooks
+from flask_hookserver import Hooks
 
 from config.base import BaseConfig
 
