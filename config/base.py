@@ -25,3 +25,12 @@ class BaseConfig(object):
     GITHUB_WEBHOOKS_KEY = os.environ['GITHUB_SECRET']
     VALIDATE_IP = False
     VALIDATE_SIGNATURE = True
+
+    # for Flask-Mail
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAILPORT = 465
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ADMINS = ['benmuschol@gmail.com']

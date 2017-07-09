@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_hookserver import Hooks
+from flask_mail import Mail
 
 from config.base import BaseConfig
 
@@ -11,6 +12,7 @@ app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
 
 hooks = Hooks(app, url='/payload')
+mail = Mail(app)
 
 from deployer.models import *
 from deployer.tasks import *
