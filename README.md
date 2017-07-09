@@ -8,7 +8,7 @@ This is an application to handle automatic deployments of the
 - Deploys an instance of mit-tab to a Digital Oceal droplet (using Digital
   Ocean's remote Docker hosts)
 - Creates a DNS record at {tournament}.nu-tab.com that maps to that droplet's IP
-  address using the DNSimple API
+  address using the Digital Ocean DNS services
 
 
 # TODO:
