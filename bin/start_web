@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./bin/wait_for_db
+flask db upgrade
+/usr/local/bin/gunicorn -w 2 -b :8000 deployer:app

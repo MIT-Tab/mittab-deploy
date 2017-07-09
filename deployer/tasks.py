@@ -4,7 +4,7 @@ from time import time
 
 from celery import Celery
 
-from deployer import app
+from deployer import app, db
 from deployer.clients.digital_ocean import get_droplet, create_domain_record
 from deployer.clients.email import send_confirmation_email, send_tournament_notification
 from deployer.models import Tournament
@@ -27,6 +27,8 @@ celery = make_celery(app)
 @celery.task()
 def create_tournament(name, password, email):
     tournament = Tournament(name)
+    db.session.add(tournament)
+    db.session.commit()
 
     # uses a script rather than the DO api because we need Docker Machine to
     # spin up the server properly

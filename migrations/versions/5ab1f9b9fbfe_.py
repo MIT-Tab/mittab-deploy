@@ -19,7 +19,7 @@ def upgrade():
     op.create_table('droplets',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('dropet_name', sa.String(), nullable=True),
+    sa.Column('droplet_name', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )

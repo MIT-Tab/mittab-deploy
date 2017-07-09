@@ -10,7 +10,7 @@ class Droplet(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    dropet_name = db.Column(db.String, nullable=True)
+    droplet_name = db.Column(db.String, nullable=True)
     status = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
 
