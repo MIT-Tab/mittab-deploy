@@ -3,7 +3,7 @@ import os
 class BaseConfig(object):
     WEB_CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
-    DEBUG = os.environ['DEBUG']
+    DEBUG = os.environ['DEBUG'] == 'True'
 
     DB_NAME = os.environ['DB_NAME']
     DB_USER = os.environ['DB_USER']
@@ -27,10 +27,11 @@ class BaseConfig(object):
     VALIDATE_SIGNATURE = True
 
     # for Flask-Mail
-    MAIL_SERVER = 'smtp.googlemail.com'
-    MAILPORT = 465
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
+    MAIL_DEBUG = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['benmuschol@gmail.com']
