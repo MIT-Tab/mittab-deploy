@@ -19,7 +19,7 @@ def send_confirmation_email(recipient, tournament_name, password):
     subject = 'Your MIT-Tab Tournament Has Been Created!'
     return _send_email(subject, recipient, txt, html)
 
-def send_tournament_noticiation(tournament_name):
+def send_tournament_notification(tournament_name):
     """
     Notify myself when tournaments are created so I'm not clueless
     """
