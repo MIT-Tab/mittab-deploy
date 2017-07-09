@@ -9,10 +9,10 @@ from config.base import BaseConfig
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 from deployer.models import *
 
+migrate = Migrate(app, db)
 hooks = Hooks(app, url='/payload')
 mail = Mail(app)
 
