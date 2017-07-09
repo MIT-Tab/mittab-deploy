@@ -1,0 +1,22 @@
+Hello,
+
+This email is a confirmation that your tournament has been created.
+
+URL: http://{{tournament_name}}.nu-tab.com
+Username: tab
+Password: {{ password }}
+
+Please note that this password cannot be changed.
+
+Your server will stay alive for 4 weeks from now before it's deleted. If you need more
+time, you can reply to this email to let me know. There are no back-ups once the
+server is deleted! You will lose the results of the tournament.
+
+Pro tip: You can you can import the teams, rooms, and judges in bulk with an
+Excel file following these instructions https://github.com/jolynch/mit-tab#batch-data-import
+
+Questions? Just respond to this email and I'll get back to you. My phone number
+is 813-469-0382 if anything urgent comes up.
+
+Best,
+Ben

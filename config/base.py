@@ -31,7 +31,7 @@ class BaseConfig(object):
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
-    MAIL_DEBUG = True
+    MAIL_DEBUG = DEBUG
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['benmuschol@gmail.com']
