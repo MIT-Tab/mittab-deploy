@@ -1,4 +1,6 @@
+import shutil
 import os
+from time import time
 
 from celery import Celery
 
@@ -23,12 +25,14 @@ celery = make_celery(app)
 @celery.task()
 def create_tournament(name, password):
     name = name.lower()
-    namespaced_name = 'mittab-' + name
+    namespaced_name = 'mittab-{0}-{1}'.format(name, int(time()))
 
     # uses a script rather than the DO api because we need Docker Machine to
     # spin up the server properly
     command = './bin/create_digitalocean_droplet {0} {1}'.format(namespaced_name, password)
     os.system(command)
+
+    shutil.rmtree('mit-tab')
 
     droplet = get_droplet(namespaced_name)
     create_domain_record(name, droplet.ip_address)
