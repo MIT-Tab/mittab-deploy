@@ -33,5 +33,5 @@ class Tournament(Droplet):
 
     def __init__(self, name):
         name = name.lower()
-        droplet_name = 'mittab-{0}-{1}'.format(self.name, int(time()))
+        droplet_name = 'mittab-{0}-{1}'.format(name, int(time()))
         super(Tournament, self).__init__(name, droplet_name)
