@@ -32,3 +32,8 @@ def create_tournament(name, password):
 
     droplet = get_droplet(namespaced_name)
     create_domain_record(name, droplet.ip_address)
+
+@celery.task()
+def update_repo():
+    os.system('./bin/update')
+
