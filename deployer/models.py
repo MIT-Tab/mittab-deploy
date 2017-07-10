@@ -40,13 +40,6 @@ class Droplet(db.Model):
         db.session.add(self)
         return db.session.commit()
 
-    def as_json(self):
-        return {
-            'name': self.name,
-            'status': self.status,
-            'deployed': self.deployed
-        }
-
 
 class Tournament(Droplet):
 
