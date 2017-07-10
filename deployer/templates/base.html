@@ -13,19 +13,19 @@
 
   <body>
     <div class="container">
-      <div class="col-md-6 col-offset-3">
-        <div class="container" id="content">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="row" id="content">
           {% block content %}{% endblock %}
         </div>
 
-        <center>
+        <div class="row">
           <hr>
-          <footer class="container">
+          <center>
             <span>Questions or issues?
               <a href="mailto:benmuschol@gmail.com">Email Ben</a>
             </span>
-          </footer>
-        </center>
+          </center>
+        </div>
       </div>
     </div>
   </body>
