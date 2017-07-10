@@ -1,6 +1,6 @@
 import os
 
-from flask import render_template, redirect
+from flask import render_template, redirect, jsonify
 
 from deployer import hooks
 from deployer.models import *
@@ -14,15 +14,28 @@ def index():
 
 
 @app.route('/tournaments/new', methods=['GET', 'POST'])
-def tournament():
+def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        create_tournament.delay(form.name.data, form.password.data, form.email.data)
-        return 'Started! In 5-10 minutes, your tournament will be available at {0}.nu-tab.com'.format(form.name.data.lower())
+        tournament = Tournament(form.name.data)
+        db.session.add(tournament)
+        db.session.commit()
+
+        tournament.set_status('initializing')
+        deploy_tournament.delay(tournament.id, form.password.data, form.email.data)
+        return redirect('/tournaments/%s' % tournament.name)
 
     return render_template('new.html',
                            title='Create a Tournament',
                            form=form)
+
+@app.route('/tournaments/<name>', methods=['GET'])
+def show_tournament(name):
+    tournament = Tournament.query.filter_by(name=name).first()
+    if not tournament:
+        return ('', 404)
+    return render_template('show.html', tournament=tournament)
+
 
 @hooks.hook('push')
 def update(payload, delivery):

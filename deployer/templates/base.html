@@ -7,21 +7,26 @@
     <title>MIT-Tab Deployer</title>
     {% endif %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.min.js"></script>
   </head>
 
   <body>
     <div class="container">
-      <div class="container" id="content">
-        {% block content %}{% endblock %}
-      </div>
+      <div class="col-md-6 col-offset-3">
+        <div class="container" id="content">
+          {% block content %}{% endblock %}
+        </div>
 
-      <center>
-        <footer class="container">
-          <span>Questions or issues?
-            <a href="mailto:benmuschol@gmail.com">Email Ben</a>
-          </span>
-        </footer>
-      </center>
+        <center>
+          <hr>
+          <footer class="container">
+            <span>Questions or issues?
+              <a href="mailto:benmuschol@gmail.com">Email Ben</a>
+            </span>
+          </footer>
+        </center>
+      </div>
     </div>
   </body>
 </html>

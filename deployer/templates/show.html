@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="tournament">
+  <h3>[[ tournament.name ]]</h3>
+  <div v-if="tournament.deployed">
+    <span>Deployed!</span>
+  </div>
+  <div v-else>
+    <span>Loading...</span>
+    <span>Status: [[ tournament.status ]]</span>
+  </div>
+</div>
+
+<script type="text/javascript">
+var app = new Vue({
+  el: '#tournament',
+  data: {
+    tournament: {
+      name: '{{ tournament.name }}',
+      status: '{{ tournament.status }}',
+      deployed: '{{ tournament.deployed }}' == 'True'
+    }
+  },
+  // Use [[  ]] to wrap vue to prevent conflicts with Jinja
+  delimiters: ['[[',']]']
+})
+</script>
+{% endblock %}

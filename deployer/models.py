@@ -12,6 +12,7 @@ class Droplet(db.Model):
     name = db.Column(db.String, nullable=False)
     droplet_name = db.Column(db.String, nullable=True)
     status = db.Column(db.String, nullable=True)
+    deployed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, name, droplet_name):
@@ -27,6 +28,24 @@ class Droplet(db.Model):
 
     def create_domain(self):
         return create_domain_record(self.name, self.droplet().ip_address)
+
+    def set_status(self, status):
+        self.status = status
+        db.session.add(self)
+        return db.session.commit()
+
+    def set_deployed(self):
+        self.status = 'deployed'
+        self.deployed = True
+        db.session.add(self)
+        return db.session.commit()
+
+    def as_json(self):
+        return {
+            'name': self.name,
+            'status': self.status,
+            'deployed': self.deployed
+        }
 
 
 class Tournament(Droplet):
