@@ -1,6 +1,6 @@
 import os
 
-from flask import render_template, redirect, jsonify
+from flask import render_template, redirect, jsonify, request
 
 from deployer import hooks
 from deployer.models import *
@@ -29,12 +29,23 @@ def new_tournament():
                            title='Create a Tournament',
                            form=form)
 
+
 @app.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):
     tournament = Tournament.query.filter_by(name=name).first()
     if not tournament:
         return ('', 404)
+
     return render_template('show.html', tournament=tournament)
+
+
+@app.route('/tournaments/<name>/status', methods=['GET'])
+def tournament_status(name):
+    tournament = Tournament.query.filter_by(name=name).first()
+    if not tournament:
+        return ('', 404)
+
+    return jsonify({'deployed': tournament.deployed, 'status': tournament.status})
 
 
 @hooks.hook('push')

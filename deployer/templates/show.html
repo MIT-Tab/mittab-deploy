@@ -23,7 +23,26 @@ var app = new Vue({
     }
   },
   // Use [[  ]] to wrap vue to prevent conflicts with Jinja
-  delimiters: ['[[',']]']
+  delimiters: ['[[',']]'],
+  methods: {
+    updateTournament: function() {
+      axios.get(window.location + '/status')
+        .then(function(response) {
+          data = response.data
+          this.tournament.status = data.status
+          this.tournament.deployed = data.deployed
+
+          console.log(this.tournament)
+          if (this.tournament.deployed) {
+            clearInterval(this.interval)
+          }
+        }.bind(this))
+    }
+  },
+
+  mounted: function() {
+    this.interval = setInterval(this.updateTournament, 10000)
+  }
 })
 </script>
 {% endblock %}
