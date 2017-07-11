@@ -2,14 +2,22 @@
 
 {% block content %}
 <div id="tournament">
-  <h3>[[ tournament.name ]]</h3>
-  <div v-if="tournament.deployed">
-    <span>Deployed!</span>
-  </div>
-  <div v-else>
-    <span>Loading...</span>
-    <span>Status: [[ tournament.status ]]</span>
-  </div>
+  <center>
+    <h2>[[ tournament.name ]]</h3>
+    <div v-if="tournament.deployed">
+      <span class="lead">Deployed!</span>
+      <small>
+        Visit your tournament <a href="">here</a> and check your email for more information
+      </small>
+    </div>
+    <div v-else>
+      <span class="lead">[[ tournament.status || 'Waiting for response' ]][[ '.'.repeat(dots) ]]</span>
+      <br/>
+      <small>
+        If this process takes longer than 10-15 minutes, email Ben at the link below
+      </small>
+    </div>
+  </center>
 </div>
 
 <script type="text/javascript">
@@ -20,7 +28,8 @@ var app = new Vue({
       name: '{{ tournament.name }}',
       status: '{{ tournament.status }}',
       deployed: '{{ tournament.deployed }}' == 'True'
-    }
+    },
+    dots: 3
   },
   // Use [[  ]] to wrap vue to prevent conflicts with Jinja
   delimiters: ['[[',']]'],
@@ -34,14 +43,22 @@ var app = new Vue({
 
           console.log(this.tournament)
           if (this.tournament.deployed) {
-            clearInterval(this.interval)
+            clearInterval(this.intervals.tournament)
+            clearInterval(this.intervals.dots)
           }
         }.bind(this))
+    },
+
+    updateDots: function() {
+      this.dots = ((this.dots + 1) % 4)
     }
   },
 
   mounted: function() {
-    this.interval = setInterval(this.updateTournament, 10000)
+    this.interval = {
+      tournament: setInterval(this.updateTournament, 10000),
+      dots: setInterval(this.updateDots, 1000)
+    }
   }
 })
 </script>
