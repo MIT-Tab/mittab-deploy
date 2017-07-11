@@ -23,7 +23,7 @@ def send_tournament_notification(tournament_name):
     """
     Notify myself when tournaments are created so I'm not clueless
     """
-    txt = 'Tournament: %s' % tournament_name
-    html = '<p>Tournament: %s</p>' % tournament_name
+    txt = 'Tournament: {}'.format(tournament_name)
+    html = '<p>Tournament: {}</p>'.format(tournament_name)
     subject = 'A tournament has been created'
     return _send_email(subject, 'muschol.b@husky.neu.edu', txt, html)

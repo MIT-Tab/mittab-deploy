@@ -21,7 +21,7 @@ def new_tournament():
         db.session.add(tournament)
         db.session.commit()
 
-        tournament.set_status('initializing')
+        tournament.set_status('Initializing')
         deploy_tournament.delay(tournament.id, form.password.data, form.email.data)
         return redirect('/tournaments/%s' % tournament.name)
 
