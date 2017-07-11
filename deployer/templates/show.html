@@ -6,8 +6,9 @@
     <h2>[[ tournament.name ]]</h3>
     <div v-if="tournament.deployed">
       <span class="lead">Deployed!</span>
+      <br/>
       <small>
-        Visit your tournament <a href="">here</a> and check your email for more information
+        Visit your tournament <a href="http://{{tournament.name}}.nu-tab.com">here</a> and check your email for more information
       </small>
     </div>
     <div v-else>
