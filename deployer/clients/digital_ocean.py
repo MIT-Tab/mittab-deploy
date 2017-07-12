@@ -6,12 +6,12 @@ token = os.environ['DIGITALOCEAN_TOKEN']
 
 class NoDropletError(Exception):
     def __init__(self, name, *args):
-        message = "No droplet found with name '%s'" % name
+        message = "No droplet found with name '{}'".format(name)
         super(NoDropletError, self).__init__(message, args)
 
 class NoRecordError(Exception):
     def __init__(self, name, *args):
-        message = "No domain record found with name '%s'" % name
+        message = "No domain record found with name '{}'".format(name)
         super(NoRecordError, self).__init__(message, args)
 
 # Droplet interactions
