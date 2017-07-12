@@ -1,57 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="col-md-6 col-md-offset-3">
-    <center>
-      <h1>Create a Tournament</h1>
-    </center>
+  <center>
+    <h1>Create a Tournament</h1>
+  </center>
 
-    <form action="/tournaments/new" method="post" name="tournament">
-      {{ form.hidden_tag() }}
+  <form action="/tournaments/new" method="post" name="tournament">
+    {{ form.hidden_tag() }}
 
-      <div class="form-group">
-        {{ form.name.label }}
-        <span class="help-block">
-          This will be the subdomain for the tournament (e.g.
-          example.nu-tab.com). Cannot include spaces or special characters.
-        </span>
-        {% for error in form.name.errors %}
-          <span class="text-danger">[{{error}}]</span>
-        {% endfor %}<br>
-        {{ form.name(class='form-control') }}
-      </div>
+    <div class="form-group">
+      {{ form.name.label }}
+      <span class="help-block">
+        This will be the subdomain for the tournament (e.g.
+        example.nu-tab.com). Cannot include spaces or special characters.
+      </span>
+      {% for error in form.name.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.name(class='form-control') }}
+    </div>
 
-      <div class="form-group">
-        {{ form.email.label }}
-        <span class="help-block">
-          You will receive an email with info about running the tournament.
-        </span>
-        {% for error in form.email.errors %}
-          <span class="text-danger">[{{error}}]</span>
-        {% endfor %}<br>
-        {{ form.email(class='form-control') }}
-      </div>
+    <div class="form-group">
+      {{ form.email.label }}
+      <span class="help-block">
+        You will receive an email with info about running the tournament.
+      </span>
+      {% for error in form.email.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.email(class='form-control') }}
+    </div>
 
-      <div class="form-group">
-        {{ form.password.label }}
-        <span class="help-block">
-          You should choose a password you're comfortable sharing with tab staff
-          members. Avoid something you use for other web sites.
-        </span>
-        {% for error in form.password.errors %}
-          <span class="text-danger">[{{error}}]</span>
-        {% endfor %}<br>
-        {{ form.password(class='form-control') }}
-      </div>
+    <div class="form-group">
+      {{ form.password.label }}
+      <span class="help-block">
+        You should choose a password you're comfortable sharing with tab staff
+        members. Avoid something you use for other web sites.
+      </span>
+      {% for error in form.password.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.password(class='form-control') }}
+    </div>
 
-      <div class="form-group">
-        {{ form.confirm.label }}
-        {% for error in form.confirm.errors %}
-          <span class="text-danger">[{{error}}]</span>
-        {% endfor %}<br>
-        {{ form.confirm(class='form-control') }}
-      </div>
-      <input type="submit" value="Create" class="btn btn-default"/>
-    </form>
-  </div>
+    <div class="form-group">
+      {{ form.confirm.label }}
+      {% for error in form.confirm.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.confirm(class='form-control') }}
+    </div>
+    <input type="submit" value="Create" class="btn btn-default"/>
+  </form>
 {% endblock %}

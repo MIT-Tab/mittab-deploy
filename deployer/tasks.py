@@ -25,22 +25,23 @@ def make_celery(app):
 celery = make_celery(app)
 
 @celery.task()
-def create_tournament(name, password, email):
-    tournament = Tournament(name)
-    db.session.add(tournament)
-    db.session.commit()
+def deploy_tournament(tournament_id, password, email):
+    tournament = Tournament.query.get(tournament_id)
 
     # uses a script rather than the DO api because we need Docker Machine to
     # spin up the server properly
+    tournament.set_status('Building (this will take around 5 minutes)')
     command = './bin/create_digitalocean_droplet {0} {1}'.format(tournament.droplet_name, password)
     os.system(command)
 
+    tournament.set_status('Creating domain name')
     shutil.rmtree('mit-tab')
-
     tournament.create_domain()
 
+    tournament.set_status('Sending confirmation email')
     send_confirmation_email(email, tournament.name, password)
     send_tournament_notification(tournament.name)
+    tournament.set_deployed()
 
 @celery.task()
 def update_repo():
