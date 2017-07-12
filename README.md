@@ -15,7 +15,6 @@ This is an application to handle automatic deployments of the
 - Integrate payment system to cover infrastructure costs
 - Error handling
 - Manage the deletion of droplets/dns records of old tournaments once they are completed
-- Improved user interface to poll for progress on the tournament creation
 - Automate staging deploys with PRs to mit-tab
 - Get SSH set up on created tournaments so I can troubleshoot
 
