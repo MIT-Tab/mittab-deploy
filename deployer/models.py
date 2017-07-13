@@ -29,6 +29,9 @@ class Droplet(db.Model):
     def create_domain(self):
         return create_domain_record(self.name, self.droplet().ip_address)
 
+    def domain_record(self):
+        return get_domain_record(self.name)
+
     def set_status(self, status):
         self.status = status
         db.session.add(self)
@@ -38,6 +41,13 @@ class Droplet(db.Model):
         self.status = 'deployed'
         self.deployed = True
         db.session.add(self)
+        return db.session.commit()
+
+    def destroy(self):
+        self.domain_record().destroy()
+        self.droplet().destroy()
+
+        db.session.delete(self)
         return db.session.commit()
 
 
