@@ -10,10 +10,10 @@ def _post(path, **data):
     response = requests.post(url, auth=auth, json=data)
     return response.json()
 
-def create_deployment(user, repo, ref):
-    path = 'repos/{0}/{1}/deployments'.format(user, repo)
+def create_deployment(repo_path, ref):
+    path = 'repos/{0}/deployments'.format(repo_path)
     return _post(path, ref=ref, auto_merge=False, required_contexts=[])
 
-def create_deployment_status(user, repo, deploy_id, state, deploy_url=''):
-    path = 'repos/{0}/{1}/deployments/{2}/statuses'.format(user, repo, deploy_id)
+def create_deployment_status(repo_path, deploy_id, state, deploy_url=''):
+    path = 'repos/{0}/deployments/{1}/statuses'.format(repo_path, deploy_id)
     return _post(path, state=state, environment_url=deploy_url)

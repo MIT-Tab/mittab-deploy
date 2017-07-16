@@ -50,6 +50,12 @@ class Droplet(db.Model):
         db.session.delete(self)
         return db.session.commit()
 
+class GithubDeploy(Droplet):
+
+    def __init__(self, commit_id):
+        name = 'staging-{}'.format(commit_id)
+        super(GithubDeploy, self).__init__(name, name)
+
 
 class Tournament(Droplet):
 
