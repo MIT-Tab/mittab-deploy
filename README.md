@@ -12,9 +12,9 @@ This is an application to handle automatic deployments of the
 
 
 # TODO:
-- Integrate payment system to cover infrastructure costs
+- Integrate payment system to cover infrastructure costs (if APDA board can't cover costs)
 - Error handling
-- Manage the deletion of droplets/dns records of old tournaments once they are completed
+- Automate tournament deletion
 - Automate staging deploys with PRs to mit-tab
 - Get SSH set up on created tournaments so I can troubleshoot
 
