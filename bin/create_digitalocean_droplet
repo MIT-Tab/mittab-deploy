@@ -11,6 +11,7 @@ else
 fi
 
 cd mit-tab
+git checkout origin $3
 
 docker-machine create \
   -d digitalocean \
