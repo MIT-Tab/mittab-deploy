@@ -63,7 +63,7 @@ class GithubDeploy(Droplet):
 
     def create_github_deploy(self):
         deployment = github.create_deployment(self.repo_path, self.name)
-        self.deploy_id = deployment['id']
+        self.deploy_id = int(deployment['id'])
         return self.set_status('pending')
 
     def reset(self):
