@@ -12,7 +12,7 @@ def _post(path, **data):
 
 def create_deployment(repo_path, ref):
     path = 'repos/{0}/deployments'.format(repo_path)
-    return _post(path, ref=ref, auto_merge=False, required_contexts=[])
+    return _post(path, ref=ref, auto_merge=False, required_contexts=[], environment='staging')
 
 def create_deployment_status(repo_path, deploy_id, state, deploy_url=''):
     path = 'repos/{0}/deployments/{1}/statuses'.format(repo_path, deploy_id)

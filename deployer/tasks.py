@@ -43,7 +43,8 @@ def deploy_ref(repo_path, ref):
     if droplets_with_ref.count() > 0:
         deployment = droplets_with_ref.first()
         deployment.reset()
-    else:
+
+    if not deployment.deploy_id:
         deployment.create_github_deploy()
 
     _deploy_droplet(deployment, 'password')
@@ -53,10 +54,11 @@ def deploy_ref(repo_path, ref):
 def update_repo():
     os.system('./bin/update')
 
-def _deploy_droplet(droplet, password):
+def _deploy_droplet(droplet, password, ref='master'):
     # uses a script rather than the DO api because we need Docker Machine to
     # spin up the server properly
-    command = './bin/create_digitalocean_droplet {0} {1}'.format(droplet.droplet_name, password)
+    command = './bin/create_digitalocean_droplet {0} {1} {2}'.format(
+            droplet.droplet_name(), password, ref)
     os.system(command)
     shutil.rmtree('mit-tab')
-    deploy.create_domain()
+    droplet.create_domain()

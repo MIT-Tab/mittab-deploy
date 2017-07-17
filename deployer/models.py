@@ -23,7 +23,7 @@ class Droplet(db.Model):
         self.created_at = datetime.datetime.now()
 
     def url(self):
-        return 'http://{0}.nu-tab.com'.format(self.name)
+        return 'http://{0}.nu-tab.com'.format(self.domain_name())
 
     def droplet(self):
         return digital_ocean.get_droplet(self.droplet_name())
@@ -81,7 +81,7 @@ class GithubDeploy(Droplet):
         return self.set_status('pending')
 
     def set_status(self, status):
-        if self.deploy_id:
+        if status == 'success':
             github.create_deployment_status(self.repo_path, self.deploy_id, status, self.url())
 
         return super(GithubDeploy, self).set_status(status)
