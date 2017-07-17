@@ -28,7 +28,7 @@ def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
     tournament.set_status('Building (this will take around 5 minutes)')
-    _run_deploy_command(tournament, password)
+    _deploy_droplet(tournament, password)
 
     tournament.set_status('Sending confirmation email')
     email.send_confirmation_email(email, tournament.name, password)
@@ -37,16 +37,16 @@ def deploy_tournament(tournament_id, password, email):
 
 @celery.task()
 def deploy_ref(repo_path, ref):
-    droplets_with_ref = Droplet.query.filter_by(repo_path=repo_path, name=ref).all()
+    deployment = GithubDeploy(repo_path, ref)
+    droplets_with_ref = GithubDeploy.query.filter_by(repo_path=repo_path, name=deployment.name)
 
     if droplets_with_ref.count() > 0:
         deployment = droplets_with_ref.first()
         deployment.reset()
     else:
-        deployment = GithubDeploy(ref)
         deployment.create_github_deploy()
 
-    _run_deploy_command(deployment, 'password')
+    _deploy_droplet(deployment, 'password')
     deployment.set_deployed()
 
 @celery.task()
