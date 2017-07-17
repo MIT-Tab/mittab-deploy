@@ -2,7 +2,7 @@ from time import time
 import datetime
 
 from deployer import db
-from deployer.clients.digital_ocean import *
+from deployer.clients import digital_ocean, github
 
 class Droplet(db.Model):
 
@@ -15,6 +15,10 @@ class Droplet(db.Model):
     deployed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)
 
+    # Github-specific fields
+    deploy_id = db.Column(db.Integer, nullable=True)
+    repo_path = db.Column(db.String, nullable=True)
+
     def __init__(self, name, droplet_name):
         self.name = name.lower()
         self.droplet_name = droplet_name
@@ -24,13 +28,13 @@ class Droplet(db.Model):
         return 'http://{0}.nu-tab.com'.format(self.name)
 
     def droplet(self):
-        return get_droplet(self.droplet_name)
+        return digital_ocean.get_droplet(self.droplet_name)
 
     def create_domain(self):
-        return create_domain_record(self.name, self.droplet().ip_address)
+        return digital_ocean.create_domain_record(self.name, self.droplet().ip_address)
 
     def domain_record(self):
-        return get_domain_record(self.name)
+        return digital_ocean.get_domain_record(self.name)
 
     def set_status(self, status):
         self.status = status
@@ -38,7 +42,7 @@ class Droplet(db.Model):
         return db.session.commit()
 
     def set_deployed(self):
-        self.status = 'deployed'
+        self.status = 'success'
         self.deployed = True
         db.session.add(self)
         return db.session.commit()
@@ -52,9 +56,24 @@ class Droplet(db.Model):
 
 class GithubDeploy(Droplet):
 
-    def __init__(self, commit_id):
-        name = 'staging-{}'.format(commit_id)
+    def __init__(self, repo_path, ref):
+        name = 'staging-{}'.format(ref)
+        self.repo_path = repo_path
         super(GithubDeploy, self).__init__(name, name)
+
+    def create_github_deploy(self):
+        deployment = github.create_deployment(self.repo_path, self.name)
+        self.deploy_id = deployment['id']
+        return self.set_status('pending')
+
+    def reset(self):
+        self.domain_record().destroy()
+        self.droplet.destroy()
+        return self.set_status('pending')
+
+    def set_status(self, status):
+        github.create_deployment_status(self.repo_path, self.deploy_id, status, self.url())
+        return super(GithubDeploy, self).set_status(status)
 
 
 class Tournament(Droplet):

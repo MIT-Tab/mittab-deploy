@@ -27,14 +27,8 @@ celery = make_celery(app)
 def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
-    # uses a script rather than the DO api because we need Docker Machine to
-    # spin up the server properly
     tournament.set_status('Building (this will take around 5 minutes)')
     _run_deploy_command(tournament, password)
-
-    tournament.set_status('Creating domain name')
-    shutil.rmtree('mit-tab')
-    tournament.create_domain()
 
     tournament.set_status('Sending confirmation email')
     email.send_confirmation_email(email, tournament.name, password)
@@ -43,25 +37,26 @@ def deploy_tournament(tournament_id, password, email):
 
 @celery.task()
 def deploy_ref(repo_path, ref):
-    deploy = GithubDeploy(ref)
+    droplets_with_ref = Droplet.query.filter_by(repo_path=repo_path, name=ref).all()
 
-    dup_droplets = Droplet.query.filter_by(name=deploy.name).all()
-    for dup in dup_droplets():
-        dup.destroy()
+    if droplets_with_ref.count() > 0:
+        deployment = droplets_with_ref.first()
+        deployment.reset()
+    else:
+        deployment = GithubDeploy(ref)
+        deployment.create_github_deploy()
 
-    db.session.add(deploy)
-    db.session.commit()
-
-    gh_deploy_data = create_deployment()
-    _run_deploy_command(deploy, 'password')
-    deploy.create_domain()
-    deploy.set_deployed()
-    create_deployment_status(repo_path, gh_deploy_data['id'], 'success', deploy.url())
+    _run_deploy_command(deployment, 'password')
+    deployment.set_deployed()
 
 @celery.task()
 def update_repo():
     os.system('./bin/update')
 
-def _run_deploy_command(droplet, password):
+def _deploy_droplet(droplet, password):
+    # uses a script rather than the DO api because we need Docker Machine to
+    # spin up the server properly
     command = './bin/create_digitalocean_droplet {0} {1}'.format(droplet.droplet_name, password)
     os.system(command)
+    shutil.rmtree('mit-tab')
+    deploy.create_domain()
