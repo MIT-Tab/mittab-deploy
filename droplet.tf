@@ -1,4 +1,4 @@
-resource "digitalocean_droplet" "mittab-${var.tournament_name}" {
+resource "digitalocean_droplet" "mittab" {
   image = "docker"
   name = "mittab-${var.tournament_name}"
   region = "nyc3"
@@ -31,4 +31,11 @@ resource "digitalocean_droplet" "mittab-${var.tournament_name}" {
       "docker-compose run --rm web python manage.py collectstatic --noinput"
     ]
   }
+}
+
+resource "digitalocean_record" "record" {
+  domain = "nu-tab.com"
+  type = "A"
+  name = "${var.tournament_name}"
+  value = "${digitalocean_droplet.mittab.ipv4_address}"
 }
