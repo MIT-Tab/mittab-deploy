@@ -10,6 +10,6 @@ RUN apt-get dist-upgrade -y
 RUN apt-get install apt-transport-https ca-certificates unzip -y
 
 # install terraform
-RUN curl -o ./terraform.zip "https://releases.hashicorp.com/terraform/0.9.6/terraform_0.9.6_linux_amd64.zip"
+RUN curl -o ./terraform.zip "https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip"
 RUN unzip ./terraform.zip -d /usr/bin
 RUN rm ./terraform.zip
