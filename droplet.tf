@@ -1,4 +1,4 @@
-resource "digitalocean_droplet" "mittab" {
+resource "digitalocean_droplet" "mittab-${var.tournament_name}" {
   image = "docker"
   name = "mittab-${var.tournament_name}"
   region = "nyc3"
