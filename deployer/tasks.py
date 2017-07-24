@@ -47,14 +47,15 @@ def deploy_tournament(tournament_id, password, email):
             else:
                 time.sleep(5)
 
-        time.sleep(5)
+        time.sleep(60)
         if not tournament.is_ready():
             raise ServerNotReadyError()
 
         tournament.set_status('Installing mit-tab on server')
         command = './bin/setup_droplet {} {}'.format(tournament.droplet().ip_address, password)
         return_code = os.system(command)
-        raise SetupFailedError()
+        if return_code != 0:
+            raise SetupFailedError()
 
         tournament.set_status('Creating domain name')
         tournament.create_domain()
