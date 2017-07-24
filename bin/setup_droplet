@@ -1,0 +1,15 @@
+#!/bin/bash
+
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
+  apt-get install -y --fix-missing python-pip;
+  pip install docker-compose;
+  cd /usr/src;
+  git clone $GITHUB_CLONE_URL;
+  cd mit-tab;
+  docker-compose up -d;
+  docker-compose run -d --rm web python manage.py migrate;
+  docker-compose run -d --rm web python manage.py collectstatic --noinput;
+  docker-compose run -d --rm web python manage.py initialize_tourney --tab-password $2 backups .;
+  docker-compose restart web;
+  docker-compose restart nginx
+EOL

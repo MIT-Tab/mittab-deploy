@@ -26,8 +26,15 @@ class Droplet(db.Model):
     def droplet(self):
         return get_droplet(self.droplet_name)
 
+    def create_droplet(self):
+        return create_droplet(self.droplet_name)
+
     def create_domain(self):
         return create_domain_record(self.name, self.droplet().ip_address)
+
+    def is_ready(self):
+        self.droplet().load()
+        return self.droplet().status == 'active'
 
     def domain_record(self):
         return get_domain_record(self.name)

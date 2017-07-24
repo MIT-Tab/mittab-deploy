@@ -1,8 +1,10 @@
 import os
+from time import time
 
 import digitalocean
 
 token = os.environ['DIGITALOCEAN_TOKEN']
+manager = digitalocean.Manager(token=token)
 
 class NoDropletError(Exception):
     def __init__(self, name, *args):
@@ -16,8 +18,28 @@ class NoRecordError(Exception):
 
 # Droplet interactions
 
+def create_droplet(droplet_name):
+    user_ssh_key = open('/root/.ssh/id_rsa.pub').read()
+    keys = manager.get_all_sshkeys()
+
+    if user_ssh_key.strip() not in [ key.public_key for key in keys ]:
+        key = digitalocean.SSHKey(token=token,
+                                name='deployer-{}'.format(int(time())),
+                                public_key=user_ssh_key)
+        key.create()
+        keys = manager.get_all_sshkeys()
+
+    droplet = digitalocean.Droplet(token=token,
+                                   name=droplet_name,
+                                   region='nyc3',
+                                   image='docker',
+                                   size_slug='512mb',
+                                   ssh_keys=keys)
+    droplet.create()
+    return droplet
+
+
 def get_droplet(droplet_name):
-    manager = digitalocean.Manager(token=token)
     droplets = manager.get_all_droplets()
     for droplet in droplets:
         if droplet.name == droplet_name:
