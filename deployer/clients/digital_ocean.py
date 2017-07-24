@@ -21,8 +21,6 @@ class NoRecordError(Exception):
 def create_droplet(droplet_name):
     user_ssh_key = open('/root/.ssh/id_rsa.pub').read()
     keys = manager.get_all_sshkeys()
-    print(user_ssh_key)
-    print([ key.public_key for key in keys ])
 
     if user_ssh_key.strip() not in [ key.public_key for key in keys ]:
         key = digitalocean.SSHKey(token=token,
