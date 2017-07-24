@@ -16,6 +16,7 @@ docker-machine create \
   -d digitalocean \
   --digitalocean-access-token=$DIGITALOCEAN_TOKEN \
   --engine-install-url=https://releases.rancher.com/install-docker/17.05.sh \
+  --digitalocean-ssh-key-fingerprint=$SSH_FINGERPRINT \
   $IMAGE_NAME
 
 eval $(docker-machine env --shell sh $IMAGE_NAME)

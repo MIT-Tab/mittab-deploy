@@ -1,6 +1,6 @@
 import shutil
 import os
-from time import time
+import time
 
 from celery import Celery
 
@@ -8,6 +8,12 @@ from deployer import app, db
 from deployer.clients.digital_ocean import get_droplet, create_domain_record
 from deployer.clients.email import send_confirmation_email, send_tournament_notification
 from deployer.models import Tournament
+
+class ServerNotReadyError(Exception):
+    pass
+
+class SetupFailedError(Exception):
+    pass
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
@@ -30,18 +36,36 @@ def deploy_tournament(tournament_id, password, email):
 
     # uses a script rather than the DO api because we need Docker Machine to
     # spin up the server properly
-    tournament.set_status('Building (this will take around 5 minutes)')
-    command = './bin/create_digitalocean_droplet {0} {1}'.format(tournament.droplet_name, password)
-    os.system(command)
+    try:
+        tournament.set_status('Creating server')
+        tournament.create_droplet()
 
-    tournament.set_status('Creating domain name')
-    shutil.rmtree('mit-tab')
-    tournament.create_domain()
+        seconds_elapsed = 0
+        while seconds_elapsed < 120:
+            if tournament.is_ready():
+                break
+            else:
+                time.sleep(5)
 
-    tournament.set_status('Sending confirmation email')
-    send_confirmation_email(email, tournament.name, password)
-    send_tournament_notification(tournament.name)
-    tournament.set_deployed()
+        time.sleep(5)
+        if not tournament.is_ready():
+            raise ServerNotReadyError()
+
+        tournament.set_status('Installing mit-tab on server')
+        command = './bin/setup_droplet {} {}'.format(tournament.droplet().ip_address, password)
+        return_code = os.system(command)
+        raise SetupFailedError()
+
+        tournament.set_status('Creating domain name')
+        tournament.create_domain()
+
+        tournament.set_status('Sending confirmation email')
+        send_confirmation_email(email, tournament.name, password)
+        send_tournament_notification(tournament.name)
+        tournament.set_deployed()
+    except Exception as e:
+        tournament.set_status('An error occurred')
+        raise e
 
 @celery.task()
 def update_repo():
