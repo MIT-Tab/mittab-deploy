@@ -42,7 +42,7 @@ def deploy_tournament(tournament_id, password, email):
 def deploy_pull_request(clone_url, branch_name):
     pass
 
-def deploy_droplet(droplet)
+def deploy_droplet(droplet):
     try:
         droplet.set_status('Creating server')
         droplet.create_droplet()
