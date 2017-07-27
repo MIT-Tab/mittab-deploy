@@ -52,7 +52,12 @@ def deploy_tournament(tournament_id, password, email):
             raise ServerNotReadyError()
 
         tournament.set_status('Installing mit-tab on server')
-        command = './bin/setup_droplet {} {}'.format(tournament.droplet().ip_address, password)
+        command = './bin/setup_droplet {} {} {} {}'.format(
+                tournament.droplet().ip_address,
+                'https://github.com/jolynch/mit-tab.git',
+                'master',
+                password
+        )
         return_code = os.system(command)
         if return_code != 0:
             raise SetupFailedError()
