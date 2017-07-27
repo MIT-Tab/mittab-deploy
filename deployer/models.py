@@ -14,6 +14,8 @@ class Droplet(db.Model):
     status = db.Column(db.String, nullable=True)
     deployed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)
+    clone_url = db.Column(db.String, nullable=True)
+    branch = db.Column(db.String, nullable=True)
 
     def __init__(self, name, droplet_name):
         self.name = name.lower()
@@ -63,4 +65,6 @@ class Tournament(Droplet):
     def __init__(self, name):
         name = name.lower()
         droplet_name = 'mittab-{0}-{1}'.format(name, int(time()))
+        self.clone_url = 'https://github.com/jolynch/mit-tab.git'
+        self.branch = 'master'
         super(Tournament, self).__init__(name, droplet_name)
