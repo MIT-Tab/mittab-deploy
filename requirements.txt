@@ -10,4 +10,4 @@ gunicorn==19.7.1
 psycopg2==2.7
 python-digitalocean==1.10
 redis>=2.10.5
-requests==2.18
+raven==6.1.0
