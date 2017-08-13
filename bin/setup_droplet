@@ -8,7 +8,7 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   cd mit-tab;
   docker-compose up -d;
   docker-compose run --rm web ./bin/setup
-  docker-compose run --rm web python manage.py initialize_tourney --tab-password $3 backups .;
+  docker-compose run --rm web python manage.py initialize_tourney --tab-password $4 backups .;
   docker-compose restart web;
   docker-compose restart nginx
 EOL

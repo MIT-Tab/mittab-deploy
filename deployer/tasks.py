@@ -35,7 +35,7 @@ def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password)
-    send_confirmation_email(email, tournament.name, password)
+    send_confirmation_email(email, tournament, password)
     send_tournament_notification(tournament.name)
 
 @celery.task()
