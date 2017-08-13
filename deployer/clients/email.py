@@ -9,12 +9,14 @@ def _send_email(subject, recipient, text_body, html_body):
     msg.html = html_body
     return mail.send(msg)
 
-def send_confirmation_email(recipient, tournament_name, password):
+def send_confirmation_email(recipient, tournament, password):
     txt = render_template('mail/confirmation.txt',
-                          tournament_name=tournament_name,
+                          tournament_name=tournament.name,
+                          ip_address=tournament.ip_address(),
                           password=password)
     html = render_template('mail/confirmation.html',
                            tournament_name=tournament_name,
+                           ip_address=tournament.ip_address(),
                            password=password)
     subject = 'Your MIT-Tab Tournament Has Been Created!'
     return _send_email(subject, recipient, txt, html)

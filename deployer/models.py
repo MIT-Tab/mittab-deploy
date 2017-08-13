@@ -33,7 +33,10 @@ class Droplet(db.Model):
         return create_droplet(self.droplet_name)
 
     def create_domain(self):
-        return create_domain_record(self.name, self.droplet().ip_address)
+        return create_domain_record(self.name, self.ip_address())
+
+    def ip_address(self):
+        return self.droplet().ip_address
 
     def is_ready(self):
         self.droplet().load()
