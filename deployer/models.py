@@ -1,6 +1,7 @@
 from time import time
 import datetime
 
+from config.repo_options import options
 from deployer import db
 from deployer.clients.digital_ocean import *
 
@@ -62,9 +63,9 @@ class Droplet(db.Model):
 
 class Tournament(Droplet):
 
-    def __init__(self, name):
+    def __init__(self, name, repo_option_key):
         name = name.lower()
         droplet_name = 'mittab-{0}-{1}'.format(name, int(time()))
-        self.clone_url = 'https://github.com/jolynch/mit-tab.git'
-        self.branch = 'master'
+        self.clone_url = options[repo_option_key]['clone_url']
+        self.branch = options[repo_option_key]['branch']
         super(Tournament, self).__init__(name, droplet_name)

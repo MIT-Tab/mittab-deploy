@@ -17,7 +17,7 @@ def index():
 def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        tournament = Tournament(form.name.data)
+        tournament = Tournament(form.name.data, form.repo_options.data)
         db.session.add(tournament)
         db.session.commit()
 

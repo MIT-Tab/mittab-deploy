@@ -34,7 +34,7 @@ celery = make_celery(app)
 def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
-    deploy_droplet(tournament)
+    deploy_droplet(tournament, password)
     send_confirmation_email(email, tournament.name, password)
     send_tournament_notification(tournament.name)
 
@@ -42,7 +42,7 @@ def deploy_tournament(tournament_id, password, email):
 def deploy_pull_request(clone_url, branch_name):
     pass
 
-def deploy_droplet(droplet):
+def deploy_droplet(droplet, password):
     try:
         droplet.set_status('Creating server')
         droplet.create_droplet()
