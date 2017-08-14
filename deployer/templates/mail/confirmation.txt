@@ -6,7 +6,12 @@ URL: http://{{tournament_name}}.nu-tab.com
 Username: tab
 Password: {{ password }}
 
-Please note that this password cannot be changed.
+Respond to this email if you would like me to change the password.
+
+Note: It could take an hour or two for the domain name to be configured. To
+confirm that the server is working, try accesing it via its ip address:
+http://{{ ip_address }}. If that does not work, respond to this email to let me
+know.
 
 Your server will stay alive for 4 weeks from now before it's deleted. If you need more
 time, you can reply to this email to let me know. There are no back-ups once the

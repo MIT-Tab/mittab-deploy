@@ -52,7 +52,7 @@ def create_domain_record(name, ip, domain='nu-tab.com'):
     record_type = 'A'
     domain = digitalocean.Domain(token=token, name=domain)
 
-    return domain.create_new_domain_record(type='A', name=name, data=ip)
+    return domain.create_new_domain_record(type='A', name=name, data=ip, ttl=3600)
 
 def get_domain_record(name, domain='nu-tab.com'):
     domain = digitalocean.Domain.get_object(token, domain)
