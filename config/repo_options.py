@@ -8,5 +8,10 @@ options = {
         "clone_url": "https://github.com/benmusch/mit-tab.git",
         "branch": "django-upgrade",
         "name": "Django Upgrade [UNSTABLE - DO NOT USE]"
+    },
+    "error-monitoring": {
+        "clone_url": "https://github.com/benmusch/mit-tab.git",
+        "branch": "error-monitoring",
+        "name": "Error Monitoring"
     }
 }
