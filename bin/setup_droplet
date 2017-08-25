@@ -7,7 +7,7 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   git clone -b $3 $2;
   cd mit-tab;
   touch .env;
-  echo 'SENTRY_DSN=$SENTRY_DSN' >> .env;
+  echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env.secret;
   docker-compose up -d;
   docker-compose run -d --rm web ./bin/setup;
   docker-compose run -d --rm web python manage.py initialize_tourney --tab-password $4 backups .;
