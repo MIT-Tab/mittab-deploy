@@ -28,8 +28,8 @@ class Droplet(db.Model):
     def droplet(self):
         return get_droplet(self.droplet_name)
 
-    def create_droplet(self):
-        return create_droplet(self.droplet_name)
+    def create_droplet(self, size):
+        return create_droplet(self.droplet_name, size)
 
     def create_domain(self):
         return create_domain_record(self.name, self.ip_address())

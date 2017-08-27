@@ -34,7 +34,7 @@ celery = make_celery(app)
 def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
-    deploy_droplet(tournament, password)
+    deploy_droplet(tournament, password, '2gb')
     send_confirmation_email(email, tournament, password)
     send_tournament_notification(tournament.name)
 
@@ -44,7 +44,7 @@ def deploy_test(name, clone_url, branch):
     db.session.add(tournament)
     db.session.commit()
 
-    deploy_tournament(tournament.id, 'password', 'benmuschol@gmail.com')
+    deploy_droplet(tournament, 'password', '512mb')
     command = './bin/setup_test {}'.format(tournament.ip_address())
     os.system(command)
 
@@ -52,10 +52,10 @@ def deploy_test(name, clone_url, branch):
 def deploy_pull_request(clone_url, branch_name):
     pass
 
-def deploy_droplet(droplet, password):
+def deploy_droplet(droplet, password, size):
     try:
         droplet.set_status('Creating server')
-        droplet.create_droplet()
+        droplet.create_droplet(size)
 
         seconds_elapsed = 0
         while seconds_elapsed < 120:
