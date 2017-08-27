@@ -45,6 +45,8 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_tournament(tournament.id, 'password', 'benmuschol@gmail.com')
+    command = './bin/setup_test {}'.format(tournament.ip_address())
+    os.system(command)
 
 @celery.task()
 def deploy_pull_request(clone_url, branch_name):
