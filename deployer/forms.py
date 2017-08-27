@@ -31,4 +31,4 @@ class TournamentForm(FlaskForm):
     repo_options = SelectField('MIT-Tab Version',
                                choices=[ (key, options[key]['name']) for key in options.keys() ],
                                default='default')
-    add_test = BooleanField('Include Test Tournament')
+    add_test = BooleanField('Include Test Tournament?')
