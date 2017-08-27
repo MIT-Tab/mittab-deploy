@@ -2,6 +2,7 @@ import os
 
 from flask import render_template, redirect, jsonify, request
 
+from config.repo_options import options
 from deployer import hooks
 from deployer.models import *
 from deployer.tasks import *
@@ -17,7 +18,8 @@ def index():
 def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        tournament = Tournament(form.name.data, form.repo_options.data)
+        repo_data = options[form.repo_options.data]
+        tournament = Tournament(form.name.data, repo_data['clone_url'], repo_data['branch'])
         db.session.add(tournament)
         db.session.commit()
 

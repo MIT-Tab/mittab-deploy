@@ -39,6 +39,14 @@ def deploy_tournament(tournament_id, password, email):
     send_tournament_notification(tournament.name)
 
 @celery.task()
+def deploy_test(name, clone_url, branch):
+    tournament = Tournament('{}-test'.format(name), clone_url, branch)
+    db.session.add(tournament)
+    db.session.commit()
+
+    deploy_tournament(tournament.id, 'password', 'benmuschol@gmail.com')
+
+@celery.task()
 def deploy_pull_request(clone_url, branch_name):
     pass
 
