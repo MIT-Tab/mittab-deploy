@@ -52,6 +52,20 @@
     </div>
 
     <div class="form-group">
+      {{ form.add_test.label }}
+      <span class="help-block">
+        This will spin up a smaller tournament at
+        [tournament_name]-test.nu-tab.com pre-loaded with test data. If you've
+        never run a tournament with mit-tab, this is a good way to learn the
+        software. Note: The login for the tab user will always be 'password'
+      </span>
+      {% for error in form.add_test.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.add_test(class='form-control') }}
+    </div>
+
+    <div class="form-group">
       {{ form.repo_options.label }}
       {% for error in form.repo_options.errors %}
         <span class="text-danger">[{{error}}]</span>

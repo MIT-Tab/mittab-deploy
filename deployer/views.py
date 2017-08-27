@@ -25,6 +25,10 @@ def new_tournament():
 
         tournament.set_status('Initializing')
         deploy_tournament.delay(tournament.id, form.password.data, form.email.data)
+
+        if form.add_test.data:
+            deploy_test.delay(tournament.name, tournament.clone_url, tournament.branch)
+
         return redirect('/tournaments/%s' % tournament.name)
 
     return render_template('new.html',
