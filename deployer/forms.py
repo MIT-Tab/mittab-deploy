@@ -1,7 +1,7 @@
 import re
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField
+from wtforms import StringField, PasswordField, SelectField, BooleanField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from deployer.models import Droplet
@@ -31,3 +31,4 @@ class TournamentForm(FlaskForm):
     repo_options = SelectField('MIT-Tab Version',
                                choices=[ (key, options[key]['name']) for key in options.keys() ],
                                default='default')
+    add_test = BooleanField('Include Test Tournament?')

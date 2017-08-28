@@ -1,7 +1,6 @@
 from time import time
 import datetime
 
-from config.repo_options import options
 from deployer import db
 from deployer.clients.digital_ocean import *
 
@@ -29,8 +28,8 @@ class Droplet(db.Model):
     def droplet(self):
         return get_droplet(self.droplet_name)
 
-    def create_droplet(self):
-        return create_droplet(self.droplet_name)
+    def create_droplet(self, size):
+        return create_droplet(self.droplet_name, size)
 
     def create_domain(self):
         return create_domain_record(self.name, self.ip_address())
@@ -63,12 +62,11 @@ class Droplet(db.Model):
         db.session.delete(self)
         return db.session.commit()
 
-
 class Tournament(Droplet):
 
-    def __init__(self, name, repo_option_key):
+    def __init__(self, name, clone_url, branch):
         name = name.lower()
         droplet_name = 'mittab-{0}-{1}'.format(name, int(time()))
-        self.clone_url = options[repo_option_key]['clone_url']
-        self.branch = options[repo_option_key]['branch']
+        self.clone_url = clone_url
+        self.branch = branch
         super(Tournament, self).__init__(name, droplet_name)

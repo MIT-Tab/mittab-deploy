@@ -18,7 +18,7 @@ class NoRecordError(Exception):
 
 # Droplet interactions
 
-def create_droplet(droplet_name):
+def create_droplet(droplet_name, size):
     user_ssh_key = open('/root/.ssh/id_rsa.pub').read()
     keys = manager.get_all_sshkeys()
 
@@ -33,7 +33,7 @@ def create_droplet(droplet_name):
                                    name=droplet_name,
                                    region='nyc3',
                                    image='docker',
-                                   size_slug='512mb',
+                                   size_slug=size,
                                    ssh_keys=keys)
     droplet.create()
     return droplet
