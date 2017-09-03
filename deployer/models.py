@@ -45,18 +45,15 @@ class Droplet(db.Model):
         self.droplet.load()
         return self.droplet.status == 'active'
 
-    @property
     def domain_record(self):
         return get_domain_record(self.name)
 
-    @status.setter
-    def status(self, status):
+    def set_status(self, status):
         self.status = status
         db.session.add(self)
         return db.session.commit()
 
-    @deployed.setter
-    def deployed(self):
+    def set_deployed(self):
         self.deployed = True
         self.status = 'Deployed'
         db.session.add(self)

@@ -65,7 +65,7 @@ def deploy_pull_request(clone_url, branch_name):
 
 def deploy_droplet(droplet, password, size):
     try:
-        droplet.status = 'Creating server'
+        droplet.set_status('Creating server')
         droplet.create_droplet(size)
 
         seconds_elapsed = 0
@@ -91,12 +91,11 @@ def deploy_droplet(droplet, password, size):
         if return_code != 0:
             raise SetupFailedError()
 
-        droplet.status = 'Creating domain name'
+        droplet.set_status('Creating domain name')
         droplet.create_domain()
-
-        droplet.deployed = True
+        droplet.set_deployed()
     except Exception as e:
-        droplet.status = 'An error occurred'
+        droplet.set_status('An error occurred')
         raise e
 
 
