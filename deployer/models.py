@@ -45,6 +45,7 @@ class Droplet(db.Model):
         self.droplet.load()
         return self.droplet.status == 'active'
 
+    @property
     def domain_record(self):
         return get_domain_record(self.name)
 
@@ -60,11 +61,16 @@ class Droplet(db.Model):
         return db.session.commit()
 
     def destroy(self):
-        self.domain_record().destroy()
-        self.droplet().destroy()
+        self.domain_record.destroy()
+        self.droplet.destroy()
 
         db.session.delete(self)
         return db.session.commit()
+
+    def __repr__(self):
+        return "<Droplet name={} ip={} status={}>".format(self.name,
+                                                          self.ip_address,
+                                                          self.status)
 
 
 class Tournament(Droplet):

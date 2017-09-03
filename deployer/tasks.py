@@ -80,7 +80,7 @@ def deploy_droplet(droplet, password, size):
         if not droplet.is_ready():
             raise ServerNotReadyError()
 
-        droplet.status = 'Installing mit-tab on server'
+        droplet.set_status('Installing mit-tab on server')
         command = './bin/setup_droplet {} {} {} {}'.format(
                 droplet.ip_address,
                 droplet.clone_url,
