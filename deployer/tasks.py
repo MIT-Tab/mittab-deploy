@@ -61,8 +61,8 @@ def deploy_droplet(droplet, password, size):
         while seconds_elapsed < 120:
             if droplet.is_ready():
                 break
-            else:
-                time.sleep(5)
+            seconds_elapsed += 5
+            time.sleep(5)
 
         time.sleep(60)
 
@@ -85,7 +85,7 @@ def deploy_droplet(droplet, password, size):
 
         droplet.deployed = True
     except Exception as e:
-        droplet.status 'An error occurred'
+        droplet.status = 'An error occurred'
         raise e
 
 @celery.task()
