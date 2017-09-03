@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_hookserver import Hooks
@@ -10,7 +12,7 @@ from config.base import BaseConfig
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
 db = SQLAlchemy(app)
-sentry = Sentry(app, dsn='https://d902814c71b2463a8c4ac7eef7c30481:8a09649a0cf844df9c77f2fcbb09a1f2@sentry.io/196701')
+sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 from deployer.models import *
 

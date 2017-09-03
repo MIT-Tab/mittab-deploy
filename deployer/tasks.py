@@ -5,38 +5,47 @@ import time
 from celery import Celery
 
 from deployer import app, db
-from deployer.clients.digital_ocean import get_droplet, create_domain_record
-from deployer.clients.email import send_confirmation_email, send_tournament_notification
+from deployer.clients import email
 from deployer.models import Tournament
+
 
 class ServerNotReadyError(Exception):
     pass
 
+
 class SetupFailedError(Exception):
     pass
 
+
 def make_celery(app):
-    celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
+    celery = Celery(app.import_name,
+                    backend=app.config['CELERY_RESULT_BACKEND'],
                     broker=app.config['CELERY_BROKER_URL'])
+
     celery.conf.update(app.config)
     TaskBase = celery.Task
+
     class ContextTask(TaskBase):
         abstract = True
+
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
+
     celery.Task = ContextTask
     return celery
 
 celery = make_celery(app)
 
+
 @celery.task()
-def deploy_tournament(tournament_id, password, email):
+def deploy_tournament(tournament_id, password, email_address):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, '2gb')
-    send_confirmation_email(email, tournament, password)
-    send_tournament_notification(tournament.name)
+    email.send_confirmation(email_address, tournament, password)
+    email.send_notification(tournament.name)
+
 
 @celery.task()
 def deploy_test(name, clone_url, branch):
@@ -45,12 +54,14 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', '512mb')
-    command = './bin/setup_test {}'.format(tournament.ip_address())
+    command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
+
 
 @celery.task()
 def deploy_pull_request(clone_url, branch_name):
     pass
+
 
 def deploy_droplet(droplet, password, size):
     try:
@@ -61,16 +72,17 @@ def deploy_droplet(droplet, password, size):
         while seconds_elapsed < 120:
             if droplet.is_ready():
                 break
-            else:
-                time.sleep(5)
+            seconds_elapsed += 5
+            time.sleep(5)
 
         time.sleep(60)
+
         if not droplet.is_ready():
             raise ServerNotReadyError()
 
         droplet.set_status('Installing mit-tab on server')
         command = './bin/setup_droplet {} {} {} {}'.format(
-                droplet.droplet().ip_address,
+                droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
                 password
@@ -81,13 +93,12 @@ def deploy_droplet(droplet, password, size):
 
         droplet.set_status('Creating domain name')
         droplet.create_domain()
-
         droplet.set_deployed()
     except Exception as e:
         droplet.set_status('An error occurred')
         raise e
 
+
 @celery.task()
 def update_repo():
     os.system('./bin/update')
-

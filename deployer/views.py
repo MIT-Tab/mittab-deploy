@@ -19,15 +19,22 @@ def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
         repo_data = options[form.repo_options.data]
-        tournament = Tournament(form.name.data, repo_data['clone_url'], repo_data['branch'])
+        tournament = Tournament(form.name.data,
+                                repo_data['clone_url'],
+                                repo_data['branch'])
+
         db.session.add(tournament)
         db.session.commit()
 
         tournament.set_status('Initializing')
-        deploy_tournament.delay(tournament.id, form.password.data, form.email.data)
+        deploy_tournament.delay(tournament.id,
+                                form.password.data,
+                                form.email.data)
 
         if form.add_test.data:
-            deploy_test.delay(tournament.name, tournament.clone_url, tournament.branch)
+            deploy_test.delay(tournament.name,
+                              tournament.clone_url,
+                              tournament.branch)
 
         return redirect('/tournaments/%s' % tournament.name)
 
@@ -51,13 +58,14 @@ def tournament_status(name):
     if not tournament:
         return ('', 404)
 
-    return jsonify({'deployed': tournament.deployed, 'status': tournament.status})
+    return jsonify(deployed=tournament.deployed, status=tournament.status)
 
 
 @hooks.hook('push')
 def update(payload, delivery):
     """
-    Called via github for all push events. This is used to automate deployments.
+    Called via github for all push events.
+    This is used to automate (some of) the deployments.
     """
     if payload['ref'] == 'refs/heads/master':
         update_repo.delay()
