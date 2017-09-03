@@ -5,15 +5,17 @@ import time
 from celery import Celery
 
 from deployer import app, db
-from deployer.clients.digital_ocean import get_droplet, create_domain_record
-from deployer.clients.email import send_confirmation_email, send_tournament_notification
+from deployer.clients import email
 from deployer.models import Tournament
+
 
 class ServerNotReadyError(Exception):
     pass
 
+
 class SetupFailedError(Exception):
     pass
+
 
 def make_celery(app):
     celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'],
@@ -30,13 +32,15 @@ def make_celery(app):
 
 celery = make_celery(app)
 
+
 @celery.task()
 def deploy_tournament(tournament_id, password, email):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, '2gb')
-    send_confirmation_email(email, tournament, password)
-    send_tournament_notification(tournament.name)
+    email.send_confirmation(email, tournament, password)
+    email.send_notification(tournament.name)
+
 
 @celery.task()
 def deploy_test(name, clone_url, branch):
@@ -48,9 +52,11 @@ def deploy_test(name, clone_url, branch):
     command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
 
+
 @celery.task()
 def deploy_pull_request(clone_url, branch_name):
     pass
+
 
 def deploy_droplet(droplet, password, size):
     try:
@@ -87,6 +93,7 @@ def deploy_droplet(droplet, password, size):
     except Exception as e:
         droplet.status = 'An error occurred'
         raise e
+
 
 @celery.task()
 def update_repo():

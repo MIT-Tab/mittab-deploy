@@ -69,6 +69,7 @@ class Droplet(db.Model):
         db.session.delete(self)
         return db.session.commit()
 
+
 class Tournament(Droplet):
 
     def __init__(self, name, clone_url, branch):

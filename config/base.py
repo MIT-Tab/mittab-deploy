@@ -1,5 +1,6 @@
 import os
 
+
 class BaseConfig(object):
     WEB_CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
