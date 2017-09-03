@@ -64,7 +64,8 @@ def tournament_status(name):
 @hooks.hook('push')
 def update(payload, delivery):
     """
-    Called via github for all push events. This is used to automate deployments.
+    Called via github for all push events.
+    This is used to automate (some of) the deployments.
     """
     if payload['ref'] == 'refs/heads/master':
         update_repo.delay()
