@@ -3,8 +3,8 @@ from time import time
 
 import digitalocean
 
-token = os.environ['DIGITALOCEAN_TOKEN']
-manager = digitalocean.Manager(token=token)
+__token = os.environ['DIGITALOCEAN_TOKEN']
+__manager = digitalocean.Manager(token=__token)
 
 class NoDropletError(Exception):
     def __init__(self, name, *args):
@@ -20,16 +20,19 @@ class NoRecordError(Exception):
 
 def create_droplet(droplet_name, size):
     user_ssh_key = open('/root/.ssh/id_rsa.pub').read()
-    keys = manager.get_all_sshkeys()
+    keys = __manager.get_all_sshkeys()
 
     if user_ssh_key.strip() not in [ key.public_key for key in keys ]:
-        key = digitalocean.SSHKey(token=token,
-                                name='deployer-{}'.format(int(time())),
-                                public_key=user_ssh_key)
-        key.create()
-        keys = manager.get_all_sshkeys()
+        key = digitalocean.SSHKey(
+                token=__token,
+                name='deployer-{}'.format(int(time())),
+                public_key=user_ssh_key
+                )
 
-    droplet = digitalocean.Droplet(token=token,
+        key.create()
+        keys = __manager.get_all_sshkeys()
+
+    droplet = digitalocean.Droplet(token=__token,
                                    name=droplet_name,
                                    region='nyc3',
                                    image='docker',
@@ -40,7 +43,7 @@ def create_droplet(droplet_name, size):
 
 
 def get_droplet(droplet_name):
-    droplets = manager.get_all_droplets()
+    droplets = __manager.get_all_droplets()
     for droplet in droplets:
         if droplet.name == droplet_name:
             return droplet
@@ -50,13 +53,13 @@ def get_droplet(droplet_name):
 
 def create_domain_record(name, ip, domain='nu-tab.com'):
     record_type = 'A'
-    domain = digitalocean.Domain(token=token, name=domain)
+    domain = digitalocean.Domain(token=__token, name=domain)
 
     return domain.create_new_domain_record(type='A', name=name, data=ip, ttl=3600)
 
 def get_domain_record(name, domain='nu-tab.com'):
-    domain = digitalocean.Domain.get_object(token, domain)
-    records = domain.get_records(params={ 'name': name })
+    domain = digitalocean.Domain.get_object(__token, domain)
+    records = domain.get_records(params={'name': name})
     for record in records:
         if record.name == name:
             return record

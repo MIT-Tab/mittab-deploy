@@ -45,7 +45,7 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', '512mb')
-    command = './bin/setup_test {}'.format(tournament.ip_address())
+    command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
 
 @celery.task()
@@ -54,7 +54,7 @@ def deploy_pull_request(clone_url, branch_name):
 
 def deploy_droplet(droplet, password, size):
     try:
-        droplet.set_status('Creating server')
+        droplet.status = 'Creating server'
         droplet.create_droplet(size)
 
         seconds_elapsed = 0
@@ -65,12 +65,13 @@ def deploy_droplet(droplet, password, size):
                 time.sleep(5)
 
         time.sleep(60)
+
         if not droplet.is_ready():
             raise ServerNotReadyError()
 
-        droplet.set_status('Installing mit-tab on server')
+        droplet.status = 'Installing mit-tab on server'
         command = './bin/setup_droplet {} {} {} {}'.format(
-                droplet.droplet().ip_address,
+                droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
                 password
@@ -79,15 +80,14 @@ def deploy_droplet(droplet, password, size):
         if return_code != 0:
             raise SetupFailedError()
 
-        droplet.set_status('Creating domain name')
+        droplet.status = 'Creating domain name'
         droplet.create_domain()
 
-        droplet.set_deployed()
+        droplet.deployed = True
     except Exception as e:
-        droplet.set_status('An error occurred')
+        droplet.status 'An error occurred'
         raise e
 
 @celery.task()
 def update_repo():
     os.system('./bin/update')
-

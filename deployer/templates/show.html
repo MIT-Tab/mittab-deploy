@@ -8,7 +8,7 @@
       <span class="lead">Deployed!</span>
       <br/>
       <small>
-        Visit your tournament <a href="http://{{tournament.name}}.nu-tab.com">here</a> and check your email for more information
+        Visit your tournament <a href="{{tournament.url}}">here</a> and check your email for more information
       </small>
       <small>
         Note: It might take a few hours for the domain name to work.
@@ -46,7 +46,6 @@ var app = new Vue({
           this.tournament.status = data.status
           this.tournament.deployed = data.deployed
 
-          console.log(this.tournament)
           if (this.tournament.deployed) {
             clearInterval(this.intervals.tournament)
             clearInterval(this.intervals.dots)

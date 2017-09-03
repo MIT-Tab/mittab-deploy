@@ -23,7 +23,7 @@ def new_tournament():
         db.session.add(tournament)
         db.session.commit()
 
-        tournament.set_status('Initializing')
+        tournament.status = 'Initializing'
         deploy_tournament.delay(tournament.id, form.password.data, form.email.data)
 
         if form.add_test.data:

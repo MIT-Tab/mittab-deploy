@@ -4,6 +4,7 @@ import datetime
 from deployer import db
 from deployer.clients.digital_ocean import *
 
+
 class Droplet(db.Model):
 
     __tablename__ = 'droplets'
@@ -22,9 +23,11 @@ class Droplet(db.Model):
         self.droplet_name = droplet_name
         self.created_at = datetime.datetime.now()
 
+    @property
     def url(self):
         return 'http://{0}.nu-tab.com'.format(self.name)
 
+    @property
     def droplet(self):
         return get_droplet(self.droplet_name)
 
@@ -32,26 +35,30 @@ class Droplet(db.Model):
         return create_droplet(self.droplet_name, size)
 
     def create_domain(self):
-        return create_domain_record(self.name, self.ip_address())
+        return create_domain_record(self.name, self.ip_address)
 
+    @property
     def ip_address(self):
-        return self.droplet().ip_address
+        return self.droplet.ip_address
 
     def is_ready(self):
-        self.droplet().load()
-        return self.droplet().status == 'active'
+        self.droplet.load()
+        return self.droplet.status == 'active'
 
+    @property
     def domain_record(self):
         return get_domain_record(self.name)
 
-    def set_status(self, status):
+    @status.setter
+    def status(self, status):
         self.status = status
         db.session.add(self)
         return db.session.commit()
 
-    def set_deployed(self):
-        self.status = 'deployed'
+    @deployed.setter
+    def deployed(self):
         self.deployed = True
+        self.status = 'Deployed'
         db.session.add(self)
         return db.session.commit()
 

@@ -21,14 +21,21 @@ def validate_unique_name(form, field):
 # Form definition
 
 class TournamentForm(FlaskForm):
-    name = StringField('Tournament Name', [DataRequired(), validate_name, validate_unique_name])
+    name = StringField(
+            'Tournament Name',
+            [DataRequired(), validate_name, validate_unique_name]
+            )
     email = StringField('Email Address', [Email()])
-    password = PasswordField('Password', [
-        DataRequired(),
-        EqualTo('confirm', message='Passwords must match')
-    ])
+    password = PasswordField(
+            'Password',
+            [
+                DataRequired(),
+                EqualTo('confirm', message='Passwords must match')
+            ])
     confirm = PasswordField('Confirm Password')
-    repo_options = SelectField('MIT-Tab Version',
-                               choices=[ (key, options[key]['name']) for key in options.keys() ],
-                               default='default')
+    repo_options = SelectField(
+            'MIT-Tab Version',
+            choices=[ (key, options[key]['name']) for key in options.keys() ],
+            default='default'
+            )
     add_test = BooleanField('Include Test Tournament?')
