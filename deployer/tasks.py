@@ -39,11 +39,11 @@ celery = make_celery(app)
 
 
 @celery.task()
-def deploy_tournament(tournament_id, password, email):
+def deploy_tournament(tournament_id, password, email_address):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, '2gb')
-    email.send_confirmation(email, tournament, password)
+    email.send_confirmation(email_address, tournament, password)
     email.send_notification(tournament.name)
 
 
