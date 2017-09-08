@@ -85,7 +85,8 @@ def deploy_droplet(droplet, password, size):
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
-                password
+                password,
+                droplet.droplet_name
         )
         return_code = os.system(command)
         if return_code != 0:
