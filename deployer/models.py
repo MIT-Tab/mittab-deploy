@@ -29,7 +29,10 @@ class Droplet(db.Model):
 
     @property
     def droplet(self):
-        return get_droplet(self.droplet_name)
+        try:
+            return get_droplet(self.droplet_name)
+        except NoDropletError:
+            return None
 
     def create_droplet(self, size):
         return create_droplet(self.droplet_name, size)
@@ -39,15 +42,21 @@ class Droplet(db.Model):
 
     @property
     def ip_address(self):
-        return self.droplet.ip_address
+        return self.droplet and self.droplet.ip_address
 
     def is_ready(self):
+        if not self.droplet:
+            return False
+
         self.droplet.load()
         return self.droplet.status == 'active'
 
     @property
     def domain_record(self):
-        return get_domain_record(self.name)
+        try:
+            return get_domain_record(self.name)
+        except NoRecordError:
+            return None
 
     def set_status(self, status):
         self.status = status
@@ -61,8 +70,8 @@ class Droplet(db.Model):
         return db.session.commit()
 
     def destroy(self):
-        self.domain_record.destroy()
-        self.droplet.destroy()
+        self.domain_record and self.domain_record.destroy()
+        self.droplet and self.droplet.destroy()
 
         db.session.delete(self)
         return db.session.commit()
