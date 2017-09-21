@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   cd /usr/src/mit-tab;
   docker-compose run -d --rm web python manage.py loaddata testing_db
