@@ -3,7 +3,6 @@
 import sys
 from deployer.models import Droplet
 
-import pdb; pdb.set_trace()
 droplet = Droplet.query.filter_by(name=sys.argv[1]).first()
 test_droplet = Droplet.query.filter_by(name=sys.argv[1]+"-test").first()
 
