@@ -4,9 +4,9 @@ options = {
         "branch": "master",
         "name": "Default"
     },
-    "django-upgrade": {
-        "clone_url": "https://github.com/benmusch/mit-tab.git",
-        "branch": "django-upgrade",
-        "name": "Django Upgrade [UNSTABLE - DO NOT USE]"
+    "e-ballots": {
+        "clone_url": "https://github.com/jolynch/mit-tab.git",
+        "branch": "e-ballots",
+        "name": "E-Ballots (Contact Ben if using)"
     }
 }
