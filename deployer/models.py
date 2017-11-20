@@ -86,7 +86,7 @@ class Tournament(Droplet):
 
     def __init__(self, name, clone_url, branch):
         name = name.lower()
-        droplet_name = 'mittab-{0}-{1}'.format(name, int(time()))
+        droplet_name = '{0}-{1}'.format(name, int(time()))
         self.clone_url = clone_url
         self.branch = branch
         super(Tournament, self).__init__(name, droplet_name)
