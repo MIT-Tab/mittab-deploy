@@ -85,11 +85,13 @@ def get_domain_record(name, domain='nu-tab.com'):
 ####################
 
 __session = boto3.session.Session()
-__client = __session.client('s3',
+__client = __session.client(
+        's3',
         region_name='nyc3',
         endpoint_url='https://nyc3.digitaloceanspaces.com',
         aws_access_key_id=os.environ['DIGITALOCEAN_ACCESS_KEY'],
-        aws_secret_access_key=__token)
+        aws_secret_access_key=__token
+)
 
 def upload_file(filename, bucket_name, key_name):
     __client.upload_file(filename, bucket_name, key_name)
