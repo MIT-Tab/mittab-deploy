@@ -1,6 +1,0 @@
-#! /usr/local/bin/python
-
-import sys
-from deployer.tasks import deploy_test
-
-deploy_test(sys.argv[1], 'https://github.com/jolynch/mit-tab.git', sys.argv[2])
