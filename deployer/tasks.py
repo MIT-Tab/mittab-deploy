@@ -6,7 +6,7 @@ from celery import Celery
 
 from deployer import app, db
 from deployer.clients import email
-from deployer.clients.digital_ocean import upload_file
+# from deployer.clients.digital_ocean import upload_file
 from deployer.models import Tournament
 
 
