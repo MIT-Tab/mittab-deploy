@@ -43,7 +43,7 @@ celery = make_celery(app)
 def deploy_tournament(tournament_id, password, email_address):
     tournament = Tournament.query.get(tournament_id)
 
-    deploy_droplet(tournament, password, '2gb')
+    deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
     email.send_confirmation(email_address, tournament, password)
     email.send_notification(tournament.name)
 
@@ -54,7 +54,7 @@ def deploy_test(name, clone_url, branch):
     db.session.add(tournament)
     db.session.commit()
 
-    deploy_droplet(tournament, 'password', '512mb')
+    deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
     command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
 

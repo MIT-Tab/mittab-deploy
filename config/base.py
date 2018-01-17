@@ -37,3 +37,8 @@ class BaseConfig(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['benmuschol@gmail.com']
+
+    # DigitalOcean server config
+    # https://developers.digitalocean.com/documentation/changelog/api-v2/new-size-slugs-for-droplet-plan-changes/
+    DEFAULT_SIZE_SLUG = 's-1vcpu-2gb'
+    TEST_SIZE_SLUG = 's-1vcpu-1gb'
