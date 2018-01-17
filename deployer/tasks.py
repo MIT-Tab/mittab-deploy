@@ -106,17 +106,17 @@ def update_repo():
     os.system('./bin/update')
 
 
-@celery.task()
-def backup_tournament(tournament_id):
-    tournament = Tournament.query.get(tournament_id)
-    backup_file = os.path.join(
-            'tmp',
-            '%s_%s.db' % (tournament.name, int(time.time()))
-    )
-    command = './bin/clone_db {} {}'.format(
-            tournament.droplet.ip_address,
-            backup_file
-    )
-    os.system(command)
-    upload_file(backup_file, 'mittab-backups', tournament.droplet_name)
-    os.remove(backup_file)
+# @celery.task()
+# def backup_tournament(tournament_id):
+#     tournament = Tournament.query.get(tournament_id)
+#     backup_file = os.path.join(
+#             'tmp',
+#             '%s_%s.db' % (tournament.name, int(time.time()))
+#     )
+#     command = './bin/clone_db {} {}'.format(
+#             tournament.droplet.ip_address,
+#             backup_file
+#     )
+#     os.system(command)
+#     upload_file(backup_file, 'mittab-backups', tournament.droplet_name)
+#     os.remove(backup_file)
