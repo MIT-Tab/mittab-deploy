@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+DST="${1}-backup.db"
+SRC='/usr/src/mit-tab/mittab/pairing_db.sqlite3'
+scp root@$1.nu-tab.com:$SRC $DST
+
+s3cmd --host=nyc3.digitaloceanspaces.com \
+  --access_key=$DIGITALOCEAN_ACCESS_KEY_ID \
+  --host-bucket=mittab-backups.nyc3.digitaloceanspaces.com \
+  --secret_key=$DIGITALOCEAN_ACCESS_KEY_SECRET --no-mime-magic \
+  put $DST s3://mittab-backups/$1-$(date +%s)/
+
+./bin/delete $1
+
+rm $DST
