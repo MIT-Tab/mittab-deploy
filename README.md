@@ -9,6 +9,7 @@ This is an application to handle automatic deployments of the
   Ocean's remote Docker hosts)
 - Creates a DNS record at {tournament}.nu-tab.com that maps to that droplet's IP
   address using the Digital Ocean DNS services
+- Useful scripts to backup tournaments
 
 
 # TODO:
