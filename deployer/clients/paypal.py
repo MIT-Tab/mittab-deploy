@@ -42,7 +42,7 @@ def send_invoice(recipient):
                 }
             }]
         })
-        success = invoice.create()
+        success = invoice.create() and invoice.send()
     finally:
         if success is not True:
             raise PaymentNotSentError(recipient)
