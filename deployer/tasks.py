@@ -1,12 +1,10 @@
-import shutil
 import os
 import time
 
 from celery import Celery
 
 from deployer import app, db
-from deployer.clients import email
-# from deployer.clients.digital_ocean import upload_file
+from deployer.clients import email, paypal
 from deployer.models import Tournament
 
 
@@ -36,16 +34,20 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
+
 celery = make_celery(app)
 
 
 @celery.task()
-def deploy_tournament(tournament_id, password, email_address):
+def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
-    email.send_confirmation(email_address, tournament, password)
+    email.send_confirmation(email_addr, tournament, password)
     email.send_notification(tournament.name)
+
+    with_invoice and paypal.send_invoice(email_addr)
+
 
 
 @celery.task()
