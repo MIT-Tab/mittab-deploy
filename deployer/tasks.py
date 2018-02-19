@@ -49,7 +49,6 @@ def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
     with_invoice and paypal.send_invoice(email_addr)
 
 
-
 @celery.task()
 def deploy_test(name, clone_url, branch):
     tournament = Tournament('{}-test'.format(name), clone_url, branch)
