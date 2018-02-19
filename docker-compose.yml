@@ -2,8 +2,8 @@ web:
   restart: always
   build: .
   dockerfile: Dockerfile.web
-  expose:
-    - "8000"
+  ports:
+    - "8000:8000"
   links:
     - postgres:postgres
     - redis:redis

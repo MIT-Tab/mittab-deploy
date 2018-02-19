@@ -1,8 +1,6 @@
 import os
 from time import time
 
-import boto3
-from botocore.client import Config
 import digitalocean
 
 __token = os.environ['DIGITALOCEAN_TOKEN']
@@ -62,7 +60,6 @@ def get_droplet(droplet_name):
 
 
 def create_domain_record(name, ip, domain='nu-tab.com'):
-    record_type = 'A'
     domain = digitalocean.Domain(token=__token, name=domain)
 
     return domain.create_new_domain_record(type='A',
@@ -78,21 +75,3 @@ def get_domain_record(name, domain='nu-tab.com'):
         if record.name == name:
             return record
     raise NoRecordError(name)
-
-
-##########################
-# Spaces interations
-# In progress, not working
-##########################
-
-# __session = boto3.session.Session()
-# __client = __session.client(
-#         's3',
-#         region_name='nyc3',
-#         endpoint_url='https://nyc3.digitaloceanspaces.com',
-#         aws_access_key_id=os.environ['DIGITALOCEAN_ACCESS_KEY_ID'],
-#         aws_secret_access_key=os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
-# )
-# 
-# def upload_file(filename, bucket_name, key_name):
-#     __client.upload_file(filename, bucket_name, key_name)
