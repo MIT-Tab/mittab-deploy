@@ -9,6 +9,7 @@ web:
     - redis:redis
   volumes:
     - ./:/usr/src/app
+    - ~/.ssh/id_rsa:/root/.ssh/id_rsa
   env_file:
     - .env
     - .env.secret
@@ -25,6 +26,7 @@ celery:
     - redis:redis
   volumes:
     - ./:/usr/src/app
+    - ~/.ssh/id_rsa:/root/.ssh/id_rsa
   env_file:
     - .env
     - .env.secret
