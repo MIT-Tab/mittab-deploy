@@ -15,6 +15,7 @@ class BaseConfig(object):
         DB_USER, DB_PASS, DB_SERVICE, DB_PORT, DB_NAME
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_POOL_RECYCLE = 120
 
     # configure celery to work with redis
     CELERY_RESULT_BACKEND = 'redis://{0}:{1}'.format(
