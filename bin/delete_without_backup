@@ -1,0 +1,21 @@
+#! /usr/local/bin/python
+
+import sys
+from deployer.models import Droplet
+
+droplet = Droplet.query.filter_by(name=sys.argv[1]).first()
+test_droplet = Droplet.query.filter_by(name=sys.argv[1]+"-test").first()
+
+if droplet:
+    print("Destroying main droplet...")
+    droplet.destroy()
+    print("Success!")
+else:
+    print("No droplet found")
+
+if test_droplet:
+    print("Destroying test droplet...")
+    test_droplet.destroy()
+    print("Success!")
+else:
+    print("No test droplet found")

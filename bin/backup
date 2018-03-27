@@ -12,6 +12,4 @@ s3cmd --host=nyc3.digitaloceanspaces.com \
   --secret_key=$DIGITALOCEAN_ACCESS_KEY_SECRET --no-mime-magic \
   put $DST s3://mittab-backups/$1-$(date +%s)/
 
-./bin/delete $1
-
 rm $DST
