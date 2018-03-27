@@ -10,6 +10,7 @@ web:
   volumes:
     - ./:/usr/src/app
     - ~/.ssh/id_rsa:/root/.ssh/id_rsa
+    - ~/.ssh/id_rsa.pub:/root/.ssh/id_rsa.pub
   env_file:
     - .env
     - .env.secret
