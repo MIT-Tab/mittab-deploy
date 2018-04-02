@@ -11,8 +11,8 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env.secret;
   echo 'TOURNAMENT_NAME=$5' >> .env;
   docker-compose up -d;
-  docker-compose run -d --rm web ./bin/setup;
-  docker-compose run -d --rm web python manage.py initialize_tourney --tab-password $4 backups .;
+  docker-compose run --rm web ./bin/setup;
+  docker-compose run --rm web python manage.py initialize_tourney --tab-password $4 backups .;
   docker-compose restart web;
   docker-compose restart nginx
 EOL
