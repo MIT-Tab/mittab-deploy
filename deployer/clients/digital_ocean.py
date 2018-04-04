@@ -1,10 +1,20 @@
 import os
 from time import time
 
+import boto3
 import digitalocean
 
+__access_key = os.environ['DIGITALOCEAN_ACCESS_KEY_ID']
+__secret_key = os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
 __token = os.environ['DIGITALOCEAN_TOKEN']
 __manager = digitalocean.Manager(token=__token)
+__boto_client = boto3.client(
+        's3',
+        aws_access_key_id=__access_key,
+        aws_secret_access_key=__secret_key,
+        region_name='nyc3',
+        endpoint_url='https://nyc3.digitaloceanspaces.com'
+)
 
 
 class NoDropletError(Exception):
@@ -54,6 +64,7 @@ def get_droplet(droplet_name):
             return droplet
     raise NoDropletError(droplet_name)
 
+
 ############################
 # Domain record interactions
 ############################
@@ -75,3 +86,12 @@ def get_domain_record(name, domain='nu-tab.com'):
         if record.name == name:
             return record
     raise NoRecordError(name)
+
+
+########
+# Spaces
+########
+
+
+def upload_file(src_path, dst_path):
+    __boto_client.upload_file(src_path, 'mittab-backups', dst_path)
