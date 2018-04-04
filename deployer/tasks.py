@@ -122,7 +122,7 @@ def backup_tournament(tournament_id):
         raise BackupFailedError()
 
     try:
-        digital_ocean.upload_file(backup_file, tournament.droplet_name)
+        digital_ocean.upload_file(backup_file, os.path.join(tournament.name, backup_file))
     except Exception as e:
         raise BackupFailedError(e)
 
