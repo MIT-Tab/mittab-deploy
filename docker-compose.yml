@@ -1,5 +1,5 @@
 web:
-  restart: false
+  restart: "no"
   build: .
   dockerfile: Dockerfile.web
   ports:
