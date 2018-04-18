@@ -3,7 +3,7 @@ FROM python:3.4-onbuild
 WORKDIR /usr/src/app
 
 # necessary for the ./bin/wait_for_db script
-RUN apt-get update && apt-get install -y postgresql
+RUN apt-get update && apt-get install -y sqlite3
 
 RUN apt-get update
 RUN apt-get dist-upgrade -y

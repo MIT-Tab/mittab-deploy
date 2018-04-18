@@ -8,7 +8,7 @@ Flask-Mail==0.9
 Flask-Migrate==2.0
 Jinja2==2.9
 gunicorn==19.7.1
-psycopg2==2.7
+pysqlite==2.8
 python-digitalocean==1.10
 redis>=2.10.5
 raven==6.1.0
