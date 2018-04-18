@@ -2,5 +2,4 @@
 
 set -e
 
-./bin/wait_for_db
 echo "Hello, world!"
