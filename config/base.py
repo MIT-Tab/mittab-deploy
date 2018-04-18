@@ -7,7 +7,7 @@ class BaseConfig(object):
     DEBUG = os.environ['DEBUG'] == 'True'
 
     DB_FILE = 'db.sqlite'
-    SQLALCHEMY_DATABASE_URI = 'sqlite+pysqlite:///{}'.format(DB_FILE)
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///{}'.format(DB_FILE)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
