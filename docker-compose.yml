@@ -8,7 +8,7 @@ web:
     - redis:redis
   volumes:
     - ./:/usr/src/app
-    - ~/.ssh:/root/.ssh
+    - ~/.ssh:${HOME}/.ssh
   env_file:
     - .env
     - .env.secret
