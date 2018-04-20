@@ -6,7 +6,8 @@ class BaseConfig(object):
     SECRET_KEY = os.environ['SECRET_KEY']
     DEBUG = os.environ['DEBUG'] == 'True'
 
-    DB_FILE = 'db.sqlite'
+    # note: absolute path specific to docker container
+    DB_FILE = '/usr/src/app/deployer/db.sqlite'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///{}'.format(DB_FILE)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
