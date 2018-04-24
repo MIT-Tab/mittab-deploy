@@ -11,6 +11,10 @@ from config.base import BaseConfig
 
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}'.format(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), app.config['DB_FILE'])
+)
+print("DB_FILE: %s", app.config['SQLALCHEMY_DATABASE_URI'])
 db = SQLAlchemy(app)
 sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
