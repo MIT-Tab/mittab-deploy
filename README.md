@@ -21,8 +21,8 @@ This is an application to handle automatic deployments of the
 # Installation and Running
 
 This application requires you to have docker and docker-compose installed. You
-can also do your own thing with virtualenv and stuff I guess. Just make sure it
-works with Postgres and whatever I end up using for background tasks
+can also run it via virtualenv locally, but it will require you to install & set
+up redis.
 
 To run:
 
