@@ -11,6 +11,7 @@ from config.base import BaseConfig
 
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
+print(app.config['SQLALCHEMY_DATABASE_URI'])
 db = SQLAlchemy(app)
 sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
