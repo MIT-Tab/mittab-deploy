@@ -4,7 +4,6 @@ web:
   expose:
     - "8000"
   links:
-    - postgres:postgres
     - redis:redis
   volumes:
     - /usr/src/app
@@ -26,21 +25,6 @@ nginx:
     - web
   links:
     - web:web
-  cached: true
-
-data:
-  image: postgres:latest
-  volumes:
-    - /var/lib/postgresql
-  command: "true"
-  cached: true
-
-postgres:
-  image: postgres:latest
-  volumes_from:
-    - data
-  ports:
-    - "5432:5432"
   cached: true
 
 redis:
