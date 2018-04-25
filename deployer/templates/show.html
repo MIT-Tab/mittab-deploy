@@ -4,7 +4,7 @@
 <div id="tournament">
   <center>
     <h2>[[ tournament.name ]]</h3>
-    <div v-if="tournament.deployed">
+    <div v-if="deployed">
       <span class="lead">Deployed!</span>
       <br/>
       <small>
@@ -31,22 +31,26 @@ var app = new Vue({
   data: {
     tournament: {
       name: '{{ tournament.name }}',
-      status: '{{ tournament.status }}',
-      deployed: '{{ tournament.deployed }}' == 'True'
+      status: '{{ tournament.status }}'
     },
     dots: 3
   },
   // Use [[  ]] to wrap vue to prevent conflicts with Jinja
   delimiters: ['[[',']]'],
+  computed: {
+    deployed: function() {
+      return this.tournament.status == 'Deployed'
+    }
+  },
   methods: {
     updateTournament: function() {
       axios.get(window.location + '/status')
         .then(function(response) {
           data = response.data
           this.tournament.status = data.status
-          this.tournament.deployed = data.deployed
+          this.deployed = data.deployed
 
-          if (this.tournament.deployed) {
+          if (this.deployed) {
             clearInterval(this.intervals.tournament)
             clearInterval(this.intervals.dots)
           }
