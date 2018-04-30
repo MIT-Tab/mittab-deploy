@@ -13,7 +13,7 @@ class Droplet(db.Model):
     name = db.Column(db.String, nullable=False)
     droplet_name = db.Column(db.String, nullable=True)
     status = db.Column(db.String, nullable=True)
-    deployed = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, nullable=False)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
@@ -63,17 +63,12 @@ class Droplet(db.Model):
         db.session.add(self)
         return db.session.commit()
 
-    def set_deployed(self):
-        self.deployed = True
-        self.status = 'Deployed'
-        db.session.add(self)
-        return db.session.commit()
-
-    def destroy(self):
+    def deactivate(self):
         self.domain_record and self.domain_record.destroy()
         self.droplet and self.droplet.destroy()
+        self.active = False
 
-        db.session.delete(self)
+        db.session.add(self)
         return db.session.commit()
 
     def __repr__(self):
