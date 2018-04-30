@@ -19,8 +19,8 @@ def validate_name(form, field):
 
 
 def validate_unique_name(form, field):
-    if Droplet.query.filter_by(name=field.data.lower()).count() > 0:
-        raise ValidationError('A tournament with that name already exists')
+    if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
+        raise ValidationError('An active tournament with that name already exists')
 
 #################
 # Form definition

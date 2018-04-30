@@ -95,9 +95,10 @@ def deploy_droplet(droplet, password, size):
 
         droplet.set_status('Creating domain name')
         droplet.create_domain()
-        droplet.set_deployed()
+        droplet.set_status('Deployed')
     except Exception as e:
         droplet.set_status('An error occurred')
+        droplet.deactivate()
         raise e
 
 
