@@ -3,9 +3,16 @@
 set -e
 
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
-  apt-get install -y --fix-missing python-pip;
-  pip install docker-compose;
   cd /usr/src;
+  if [! -d "/usr/src/mit-tab" ]; then
+    apt-get install -y --fix-missing python-pip;
+    pip install docker-compose;
+  else
+    cd mit-tab;
+    docker-compose down;
+    cd /usr/src;
+    rm -rf mit-tab;
+  fi
   git clone -b $3 $2;
   cd mit-tab;
   echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env.secret;

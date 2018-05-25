@@ -17,8 +17,10 @@ class Droplet(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
+    pr_number = db.Column(db.Integer, nullable=True)
+    to_delete_at = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, name, droplet_name):
+    def __init__(self, name, droplet_name, pr_number=None, to_delete_at=None):
         self.name = name.lower()
         self.droplet_name = droplet_name
         self.created_at = datetime.datetime.now()
@@ -26,6 +28,10 @@ class Droplet(db.Model):
     @property
     def url(self):
         return 'http://{0}.nu-tab.com'.format(self.name)
+
+    @property
+    def is_pr(self):
+        return self.pr_number is not None
 
     @property
     def droplet(self):

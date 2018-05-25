@@ -12,3 +12,4 @@ python-digitalocean==1.10
 redis>=2.10.5
 raven==6.1.0
 paypalrestsdk==1.13.1
+PyGithub==1.39

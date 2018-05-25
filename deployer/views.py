@@ -7,6 +7,7 @@ from deployer import hooks
 from deployer.models import *
 from deployer.tasks import *
 from deployer.forms import TournamentForm
+from deployer.clients import github_bot
 
 
 @app.route('/', methods=['GET'])
@@ -72,6 +73,16 @@ def update(payload, delivery):
         return ('', 201)
     else:
         return ('', 204)
+
+
+@hooks.hook('pull_request')
+def pr_open(payload, delivery):
+    if payload['action'] == 'opened':
+        github_bot.post_deploy_option(payload['number'])
+        return ('', 201)
+    else:
+        return ('', 204)
+
 
 if __name__ == '__main__':
     app.run()
