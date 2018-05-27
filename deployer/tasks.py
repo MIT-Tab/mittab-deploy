@@ -56,7 +56,7 @@ def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
 
 @celery.task()
 def deploy_pr(pr_number, clone_url, branch):
-    is_new = Droplet.query.filter_by(pr_number=pr_number, active=True).count() > 0
+    is_new = Tournament.query.filter_by(pr_number=pr_number, active=True).count() > 0
     if is_new:
         tournament = Tournament('{}-pr-{}'.format(branch, pr_number), clone_url, branch)
         db.session.add(tournament)
