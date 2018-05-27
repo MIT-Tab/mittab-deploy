@@ -1,5 +1,5 @@
 boto3==1.4.7
-celery==4.0
+celery==4.1.1
 Flask==0.12.2
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.14
