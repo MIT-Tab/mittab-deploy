@@ -56,18 +56,16 @@ def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
 
 @celery.task()
 def deploy_pr(pr_number, clone_url, branch):
-    tournament = Tournament('{}-pr-{}'.format(branch, pr_number), clone_url, branch)
-    db.session.add(tournament)
-    db.session.commit()
-
-    deploy_deploy(tournament, 'password', app.config['TEST_SIZE_SLUG'])
-    command = './bin/setup_test {}'.format(tournament.ip_address)
-    os.system(command)
-
-
-@celery.task()
-def update_pr(tournament_id):
-    tournament = Tournament.query.get(tournament_id)
+    is_new = Droplet.query.filter_by(pr_number=pr_number, active=True).count() > 0
+    if is_new:
+        tournament = Tournament('{}-pr-{}'.format(branch, pr_number), clone_url, branch)
+        db.session.add(tournament)
+        db.session.commit()
+    else:
+        tournament = tournament_for_pr.first()
+    deploy_staging(tournament)
+    if is_new:
+        github_post.post_deploy_success(pr_number, tournament.name)
 
 
 @celery.task()
@@ -77,8 +75,14 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
+    deploy_staging(tournament)
+
+
+def deploy_staging(tournament):
+    deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
     command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
+
 
 def deploy_droplet(droplet, password, size):
     try:
