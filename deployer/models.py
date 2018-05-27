@@ -18,7 +18,7 @@ class Droplet(db.Model):
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
     pr_number = db.Column(db.Integer, nullable=True)
-    to_delete_at = db.Column(db.DateTime, nullable=False)
+    to_delete_at = db.Column(db.DateTime, nullable=True)
 
     def __init__(self, name, droplet_name, pr_number=None, to_delete_at=None):
         self.name = name.lower()

@@ -56,13 +56,14 @@ def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
 
 @celery.task()
 def deploy_pr(pr_number, clone_url, branch):
-    is_new = Tournament.query.filter_by(pr_number=pr_number, active=True).count() > 0
+    tournament_query = Tournament.query.filter_by(pr_number=pr_number, active=True)
+    is_new = tournament_query.count() == 0
     if is_new:
         tournament = Tournament('{}-pr-{}'.format(branch, pr_number), clone_url, branch)
         db.session.add(tournament)
         db.session.commit()
     else:
-        tournament = tournament_for_pr.first()
+        tournament = tournament_query.first()
     deploy_staging(tournament)
     if is_new:
         github_post.post_deploy_success(pr_number, tournament.name)
