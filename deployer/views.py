@@ -58,7 +58,7 @@ def tournament_status(name):
     if not tournament:
         return ('', 404)
 
-    return jsonify(deployed=tournament.deployed, status=tournament.status)
+    return jsonify(status=tournament.status)
 
 
 @hooks.hook('push')
