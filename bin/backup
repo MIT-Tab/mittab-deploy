@@ -2,14 +2,25 @@
 
 set -e
 
-DST="${1}-backup.db"
-SRC='/usr/src/mit-tab/mittab/pairing_db.sqlite3'
-scp root@$1.nu-tab.com:$SRC $DST
+DST_DIR="./backups"
+mkdir $DST_DIR
+
+DST_DB="${DST_DIR}/${1}-backup.db"
+SRC_DB='/usr/src/mit-tab/mittab/pairing_db.sqlite3'
+SRC_CSV='/usr/src/mit-tab/exports'
+
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1.nu-tab.com <<EOL
+  cd /usr/src/mit-tab;
+  docker-compose run --rm web python manage.py export_stats --root exports
+EOL
+
+scp root@$1.nu-tab.com:$SRC_CSV/* $DST_DIR
+scp root@$1.nu-tab.com:$SRC_DB $DST_DB
 
 s3cmd --host=nyc3.digitaloceanspaces.com \
   --access_key=$DIGITALOCEAN_ACCESS_KEY_ID \
   --host-bucket=mittab-backups.nyc3.digitaloceanspaces.com \
   --secret_key=$DIGITALOCEAN_ACCESS_KEY_SECRET --no-mime-magic \
-  put $DST s3://mittab-backups/$1-$(date +%s)/
+  put -r $DST_DIR/* s3://mittab-backups/$1-$(date +%Y-%m-%s)/
 
-rm $DST
+rm -rf $DST_DIR
