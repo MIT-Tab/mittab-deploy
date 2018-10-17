@@ -50,7 +50,7 @@ def create_droplet(droplet_name, size):
     droplet = digitalocean.Droplet(token=__token,
                                    name=droplet_name,
                                    region='nyc3',
-                                   image='docker',
+                                   image='docker-16-04',
                                    size_slug=size,
                                    ssh_keys=keys)
     droplet.create()
