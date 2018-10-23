@@ -45,8 +45,7 @@ celery = make_celery(app)
 
 @celery.on_after_configure.connect
 def schedule_deletions(sender, **kwargs):
-    seconds_per_day = 86400.0
-    sender.add_periodic_task(seconds_per_day,
+    sender.add_periodic_task(crontab(day_of_week=2, hour=7, minute=30),
             delete_droplets.s(),
             name='Delete droplets')
 
