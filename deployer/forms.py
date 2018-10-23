@@ -16,6 +16,8 @@ def validate_name(form, field):
     pattern = re.compile('^[\w\d\-]+$')
     if not pattern.match(field.data):
         raise ValidationError('Name contains invalid characters')
+    if form.data.endswith("-test"):
+        raise ValidationError("Tournament name cannot end with '-test'")
 
 
 def validate_unique_name(form, field):

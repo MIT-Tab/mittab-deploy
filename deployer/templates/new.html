@@ -3,6 +3,12 @@
 {% block content %}
   <center>
     <h1>Create a Tournament</h1>
+
+    <b>IMPORTANT: Your tournament will be deleted after 31 days. There will be a
+      back-up to recover data, but <em>the server will not be running</em>.
+      It is recommended that you set up your tournament no more than <em>two
+        weeks before the actual tournament date</em>.
+    </b>
   </center>
 
   <form action="/tournaments/new" method="post" name="tournament">
@@ -59,6 +65,8 @@
         [tournament_name]-test.nu-tab.com pre-loaded with test data. If you've
         never run a tournament with mit-tab, this is a good way to learn the
         software. Note: The login for the tab user will always be 'password'
+
+        This server will be deleted after 7 days.
       </span>
       {% for error in form.add_test.errors %}
         <span class="text-danger">[{{error}}]</span>

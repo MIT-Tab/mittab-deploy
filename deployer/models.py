@@ -6,7 +6,6 @@ from deployer.clients.digital_ocean import *
 
 
 class Droplet(db.Model):
-
     __tablename__ = 'droplets'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +14,7 @@ class Droplet(db.Model):
     status = db.Column(db.String, nullable=True)
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, nullable=False)
+    deletion_date = db.Column(db.DateTime, nullable=True)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
 
@@ -22,6 +22,7 @@ class Droplet(db.Model):
         self.name = name.lower()
         self.droplet_name = droplet_name
         self.created_at = datetime.datetime.now()
+        self.deletion_date = self._calculate_deletion_date()
 
     @property
     def url(self):
@@ -63,6 +64,9 @@ class Droplet(db.Model):
         db.session.add(self)
         return db.session.commit()
 
+    def should_be_deleted(self):
+        return self.active and datetime.datetime.now() > self.deletion_date
+
     def deactivate(self):
         self.domain_record and self.domain_record.destroy()
         self.droplet and self.droplet.destroy()
@@ -70,6 +74,12 @@ class Droplet(db.Model):
 
         db.session.add(self)
         return db.session.commit()
+
+    def _calculate_deletion_date(self):
+        if self.name.endswith("-test"):
+            return self.created_at + datetime.timedelta(days=7)
+        else:
+            return self.created_at + datetime.timedelta(days=31)
 
     def __repr__(self):
         return "<Droplet name={} ip={} status={}>".format(self.name,

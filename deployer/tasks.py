@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 
 from celery import Celery
+from celery.schedules import crontab
 
 from deployer import app, db
 from deployer.clients import email, paypal, digital_ocean
@@ -41,6 +42,13 @@ def make_celery(app):
 
 
 celery = make_celery(app)
+
+@celery.on_after_configure.connect
+def schedule_deletions(sender, **kwargs):
+    seconds_per_day = 86400.0
+    sender.add_periodic_task(seconds_per_day,
+            delete_droplets.s(),
+            name='Delete droplets')
 
 
 @celery.task()
@@ -101,30 +109,15 @@ def deploy_droplet(droplet, password, size):
         droplet.deactivate()
         raise e
 
-
 @celery.task()
 def update_repo():
     os.system('./bin/update')
 
-
 @celery.task()
-def backup_tournament(tournament_id):
-    tournament = Tournament.query.get(tournament_id)
-    backup_file = os.path.join(
-            '%s_%s_%s.db' % (tournament.name, int(time.time()), datetime.now().year)
-    )
-    command = './bin/clone_db {} {}'.format(
-            tournament.droplet.ip_address,
-            backup_file
-    )
-    return_code = os.system(command)
-
-    if return_code != 1:
-        raise BackupFailedError()
-
-    try:
-        digital_ocean.upload_file(backup_file, os.path.join(tournament.name, backup_file))
-    except Exception as e:
-        raise BackupFailedError(e)
-
-    os.remove(backup_file)
+def delete_droplets():
+    for droplet in Droplet.query.all():
+        if droplet.should_be_deleted():
+            command = './bin/backup {}'.format(droplet.name)
+            backup_result = os.system(command)
+            if backup_result == 0:
+                droplet.deactivate()
