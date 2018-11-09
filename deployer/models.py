@@ -76,7 +76,7 @@ class Droplet(db.Model):
         return db.session.commit()
 
     def _calculate_deletion_date(self):
-        return self.created_at + datetime.timedelta(days=7)
+        return self.created_at + datetime.timedelta(days=31)
 
     def __repr__(self):
         return "<Droplet name={} ip={} status={}>".format(self.name,
