@@ -12,12 +12,13 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
-    # configure celery to work with redis
-    CELERY_RESULT_BACKEND = 'redis://{0}:{1}'.format(
-        os.environ['REDIS_PORT_6379_TCP_ADDR'],
-        os.environ['REDIS_PORT_6379_TCP_PORT']
-    )
-    CELERY_BROKER_URL = CELERY_RESULT_BACKEND
+    # configure celery to work with sqs
+    # AWS creds auto-loaded from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env
+    # vars
+    CELERY_RESULT_BACKEND = None
+    CELERY_BROKER_URL = 'sqs://'
+    SQS_QUEUE_NAME = os.environ['SQS_QUEUE']
+    CELERY_DEFAULT_QUEUE = SQS_QUEUE_NAME
 
     # for Flask-Webhooks extension
     GITHUB_WEBHOOKS_KEY = os.environ['GITHUB_SECRET']

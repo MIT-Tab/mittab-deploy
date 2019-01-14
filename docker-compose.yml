@@ -4,8 +4,6 @@ web:
   dockerfile: Dockerfile.web
   ports:
     - "8000:8000"
-  links:
-    - redis:redis
   volumes:
     - ./:/usr/src/app
     - ${HOME}/.ssh:/root/.ssh
@@ -20,8 +18,6 @@ web:
 celery:
   build: .
   dockerfile: Dockerfile.web
-  links:
-    - redis:redis
   volumes:
     - ./:/usr/src/app
     - ${HOME}/.ssh:/root/.ssh
@@ -45,9 +41,3 @@ nginx:
     - web
   links:
     - web:web
-
-redis:
-  image: redis:3.2
-  command: redis-server
-  ports:
-    - '6379:6379'

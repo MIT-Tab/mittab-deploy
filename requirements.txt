@@ -1,6 +1,6 @@
 boto3==1.4.7
-celery==4.0
-Flask==0.12.2
+celery[sqs]==4.2
+Flask==0.12.3
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.14
 Flask-Hookserver==1.1
@@ -9,6 +9,5 @@ Flask-Migrate==2.0
 Jinja2==2.9
 gunicorn==19.7.1
 python-digitalocean==1.10
-redis>=2.10.5
 raven==6.1.0
 paypalrestsdk==1.13.1
