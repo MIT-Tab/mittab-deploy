@@ -21,8 +21,8 @@ This is an application to handle automatic deployments of the
 # Installation and Running
 
 This application requires you to have docker and docker-compose installed. You
-can also run it via virtualenv locally, but it will require you to install & set
-up redis.
+can also run it via virtualenv locally. You will need the AWS credentials to
+test this. Email me.
 
 To run:
 
