@@ -3,8 +3,6 @@ web:
     dockerfile_path: Dockerfile.web
   expose:
     - "8000"
-  links:
-    - redis:redis
   volumes:
     - /usr/src/app
   env_file: .env
@@ -25,11 +23,4 @@ nginx:
     - web
   links:
     - web:web
-  cached: true
-
-redis:
-  image: redis:3.2
-  command: redis-server
-  ports:
-    - '6379:6379'
   cached: true
