@@ -4,3 +4,4 @@ __pycache__/
 mit-tab/
 .env.secret
 db.sqlite
+data/certbot
