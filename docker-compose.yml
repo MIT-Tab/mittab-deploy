@@ -31,13 +31,13 @@ celery:
 
 nginx:
   restart: always
-  build: .
-  dockerfile: Dockerfile.nginx
+  image: nginx:1.15-alpine
   ports:
     - "80:80"
     - "443:443"
   volumes:
     - /www/static
+    - ./data/nginx:/etc/nginx/conf.d
     - ./data/certbot/conf:/etc/letsencrypt
     - ./data/certbot/www:/var/www/certbot
   volumes_from:
