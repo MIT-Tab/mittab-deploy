@@ -57,7 +57,7 @@ def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
 @celery.task()
 def deploy_test(name, clone_url, branch):
     name = '{}-test'.format(name)
-    if Droplet.query.filter_by(name=name, active=True).count() > 0:
+    if Tournament.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
     tournament = Tournament(name, clone_url, branch)

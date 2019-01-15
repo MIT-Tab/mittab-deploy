@@ -45,7 +45,7 @@ def new_tournament():
 
 @app.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):
-    tournament = Tournament.query.filter_by(name=name).first()
+    tournament = Tournament.query.filter_by(name=name).order_by(Tournament.id.desc()).first()
     if not tournament:
         return ('', 404)
 
@@ -54,7 +54,7 @@ def show_tournament(name):
 
 @app.route('/tournaments/<name>/status', methods=['GET'])
 def tournament_status(name):
-    tournament = Tournament.query.filter_by(name=name).first()
+    tournament = Tournament.query.filter_by(name=name).order_by(Tournament.id.desc()).first()
     if not tournament:
         return ('', 404)
 
