@@ -35,7 +35,7 @@ class NoRecordError(Exception):
 
 
 def create_droplet(droplet_name, size):
-    user_ssh_key = open('/root/.ssh/id_rsa.pub').read()
+    user_ssh_key = open(os.path.join(os.environ['HOME'], '.ssh/id_rsa.pub')).read()
     keys = __manager.get_all_sshkeys()
 
     if user_ssh_key.strip() not in [key.public_key for key in keys]:

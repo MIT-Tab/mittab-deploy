@@ -24,11 +24,21 @@ This application requires you to have docker and docker-compose installed. You
 can also run it via virtualenv locally. You will need the AWS credentials to
 test this. Email me.
 
-To run:
+It is not recommended to use docker for local development, because docker also
+handles things like the SSL certs, so stuff just gets kinda annoying to work
+with. Instead, use virtualenv. I find it convenient to add this to the
+postactivate script:
 
 ```
-docker-compose build
-docker-compose up -d
+export $(grep -v '^#' .env | xargs -0)
+export $(grep -v '^#' .env.secret | xargs -0)
+```
+
+And this to the postdeactivate script:
+
+```
+unset $(grep -v '^#' .env | sed -E 's/(.*)=.*/\1/' | xargs -d '\n')
+unset $(grep -v '^#' .env.secret | sed -E 's/(.*)=.*/\1/' | xargs -d '\n')
 ```
 
 ## Environment Variables
