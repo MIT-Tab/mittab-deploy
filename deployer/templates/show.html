@@ -19,7 +19,7 @@
     <div v-else>
       <span class="lead">[[ tournament.status || 'Waiting for response' ]][[ '.'.repeat(dots) ]]</span>
       <br/>
-      <small v-if="tournament.status === 'An error occurrred'">
+      <small v-if="tournament.status === 'An error occurred'">
         Looks like an error occurred. Don't worry, you won't have to pay again.
         Contact Ben via the link in the footer and we'll get things working.
       </small>
