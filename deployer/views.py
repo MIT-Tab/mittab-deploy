@@ -1,12 +1,13 @@
 import os
 
-from flask import render_template, redirect, jsonify, request
+from flask import render_template, redirect, jsonify, request, flash
 
 from config.repo_options import options
 from deployer import hooks
 from deployer.models import *
 from deployer.tasks import *
 from deployer.forms import TournamentForm
+from deployer.clients import stripe
 
 
 @app.route('/', methods=['GET'])
@@ -33,12 +34,16 @@ def new_tournament():
 
         if form.add_test.data:
             deploy_test.delay(tournament.name,
-                              tournament.clone_url,
-                              tournament.branch)
-
+                            tournament.clone_url,
+                            tournament.branch)
         return redirect('/tournaments/%s' % tournament.name)
 
+    form.stripe_token.data = ""
+    for stripe_err in form.stripe_token.errors:
+        flash(stripe_err)
     return render_template('new.html',
+                           stripe_cost=stripe.COST_IN_CENTS,
+                           stripe_key=stripe.get_publishable_key(),
                            title='Create a Tournament',
                            form=form)
 

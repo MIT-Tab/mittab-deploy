@@ -10,4 +10,4 @@ Jinja2==2.9
 gunicorn==19.7.1
 python-digitalocean==1.10
 raven==6.1.0
-paypalrestsdk==1.13.1
+stripe==2.18

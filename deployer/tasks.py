@@ -5,7 +5,7 @@ from datetime import datetime
 from celery import Celery
 
 from deployer import app, db
-from deployer.clients import email, paypal, digital_ocean
+from deployer.clients import email, digital_ocean
 from deployer.models import Tournament
 
 
@@ -44,14 +44,12 @@ celery = make_celery(app)
 
 
 @celery.task()
-def deploy_tournament(tournament_id, password, email_addr, with_invoice=True):
+def deploy_tournament(tournament_id, password, email_addr):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
     email.send_confirmation(email_addr, tournament, password)
     email.send_notification(tournament.name)
-
-    with_invoice and paypal.send_invoice(email_addr)
 
 
 @celery.task()
