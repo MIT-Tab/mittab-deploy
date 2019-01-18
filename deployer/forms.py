@@ -1,10 +1,12 @@
 import re
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField
+from wtforms import StringField, PasswordField, SelectField, BooleanField, \
+        HiddenField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from deployer.models import Droplet
+from deployer.clients import stripe
 from config.repo_options import options
 
 ####################
@@ -22,6 +24,15 @@ def validate_unique_name(form, field):
     if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
 
+
+def validate_payment(form, field):
+    if not stripe.charge(form.email.data, field.data):
+        raise ValidationError("""
+                Error processing payment. Contact Ben via the link in the footer
+                if the problem persists
+                """)
+
+
 #################
 # Form definition
 #################
@@ -32,6 +43,7 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name]
             )
+    stripe_token = HiddenField('Stripe Token', [validate_payment])
     email = StringField('Email Address', [Email()])
     password = PasswordField(
             'Password',

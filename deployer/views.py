@@ -19,31 +19,28 @@ def index():
 def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        if stripe.charge(request.form['stripeEmail'], request.form['stripeToken']):
-            repo_data = options[form.repo_options.data]
-            tournament = Tournament(form.name.data,
-                                    repo_data['clone_url'],
-                                    repo_data['branch'])
+        repo_data = options[form.repo_options.data]
+        tournament = Tournament(form.name.data,
+                                repo_data['clone_url'],
+                                repo_data['branch'])
 
-            db.session.add(tournament)
-            db.session.commit()
+        db.session.add(tournament)
+        db.session.commit()
 
-            tournament.set_status('Initializing')
-            deploy_tournament.delay(tournament.id,
-                                    form.password.data,
-                                    form.email.data)
+        tournament.set_status('Initializing')
+        deploy_tournament.delay(tournament.id,
+                                form.password.data,
+                                form.email.data)
 
-            if form.add_test.data:
-                deploy_test.delay(tournament.name,
-                                tournament.clone_url,
-                                tournament.branch)
-            return redirect('/tournaments/%s' % tournament.name)
-        else:
-            flash("""
-                  Error processing payment. Contact Ben (email in footer) if
-                  the problem persists
-                  """)
+        if form.add_test.data:
+            deploy_test.delay(tournament.name,
+                            tournament.clone_url,
+                            tournament.branch)
+        return redirect('/tournaments/%s' % tournament.name)
 
+    form.stripe_token.data = ""
+    for stripe_err in form.stripe_token.errors:
+        flash(stripe_err)
     return render_template('new.html',
                            stripe_cost=stripe.COST_IN_CENTS,
                            stripe_key=stripe.get_publishable_key(),
