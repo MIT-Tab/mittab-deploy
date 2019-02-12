@@ -27,7 +27,7 @@ celery:
   environment:
     - PYTHONPATH=/usr/src/app
     - FLASK_APP=/usr/src/app/deployer/__init__.py
-  command: celery -A deployer.tasks.celery worker --loglevel=debug
+  command: ./bin/start_celery
 
 nginx:
   restart: always

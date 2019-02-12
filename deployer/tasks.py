@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 
 from celery import Celery
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deployer import app, db
 from deployer.clients import email, digital_ocean
@@ -66,6 +67,7 @@ def deploy_test(name, clone_url, branch):
     command = './bin/setup_test {}'.format(tournament.ip_address)
     os.system(command)
 
+@retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
 def deploy_droplet(droplet, password, size):
     try:
         droplet.set_status('Creating server')
@@ -99,7 +101,7 @@ def deploy_droplet(droplet, password, size):
         droplet.create_domain()
         droplet.set_status('Deployed')
     except Exception as e:
-        droplet.set_status('An error occurred')
+        droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
 
