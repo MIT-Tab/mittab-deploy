@@ -1,0 +1,3 @@
+#!/bin/bash
+
+celery -A deployer.tasks.celery worker --loglevel=debug
