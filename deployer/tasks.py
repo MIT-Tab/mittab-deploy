@@ -1,5 +1,5 @@
-import os
 import time
+import subprocess
 from datetime import datetime
 
 from celery import Celery
@@ -64,8 +64,7 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
-    command = './bin/setup_test {}'.format(tournament.ip_address)
-    os.system(command)
+    subprocess.check_call('./bin/setup_test', str(tournament.ip_address))
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
 def deploy_droplet(droplet, password, size):
@@ -86,16 +85,12 @@ def deploy_droplet(droplet, password, size):
             raise ServerNotReadyError()
 
         droplet.set_status('Installing mit-tab on server')
-        command = './bin/setup_droplet {} {} {} {} {}'.format(
+        subprocess.check_call('./bin/setup_droplet',
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
                 password,
-                droplet.droplet_name
-        )
-        return_code = os.system(command)
-        if return_code != 0:
-            raise SetupFailedError()
+                droplet.droplet_name)
 
         droplet.set_status('Creating domain name')
         droplet.create_domain()
@@ -104,31 +99,3 @@ def deploy_droplet(droplet, password, size):
         droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
-
-
-@celery.task()
-def update_repo():
-    os.system('./bin/update')
-
-
-@celery.task()
-def backup_tournament(tournament_id):
-    tournament = Tournament.query.get(tournament_id)
-    backup_file = os.path.join(
-            '%s_%s_%s.db' % (tournament.name, int(time.time()), datetime.now().year)
-    )
-    command = './bin/clone_db {} {}'.format(
-            tournament.droplet.ip_address,
-            backup_file
-    )
-    return_code = os.system(command)
-
-    if return_code != 1:
-        raise BackupFailedError()
-
-    try:
-        digital_ocean.upload_file(backup_file, os.path.join(tournament.name, backup_file))
-    except Exception as e:
-        raise BackupFailedError(e)
-
-    os.remove(backup_file)
