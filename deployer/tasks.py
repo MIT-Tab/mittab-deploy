@@ -64,7 +64,7 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
-    subprocess.check_call('./bin/setup_test', str(tournament.ip_address))
+    subprocess.check_call(['./bin/setup_test', str(tournament.ip_address)])
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
 def deploy_droplet(droplet, password, size):
@@ -85,17 +85,18 @@ def deploy_droplet(droplet, password, size):
             raise ServerNotReadyError()
 
         droplet.set_status('Installing mit-tab on server')
-        subprocess.check_call('./bin/setup_droplet',
+        subprocess.check_call(['./bin/setup_droplet',
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
                 password,
-                droplet.droplet_name)
+                droplet.droplet_name])
 
         droplet.set_status('Creating domain name')
         droplet.create_domain()
         droplet.set_status('Deployed')
     except Exception as e:
+        import traceback; traceback.print_exc()
         droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
