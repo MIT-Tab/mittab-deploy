@@ -3,7 +3,6 @@ import os
 from flask import render_template, redirect, jsonify, request, flash
 
 from config.repo_options import options
-from deployer import hooks
 from deployer.models import *
 from deployer.tasks import *
 from deployer.forms import TournamentForm
@@ -65,18 +64,6 @@ def tournament_status(name):
 
     return jsonify(status=tournament.status)
 
-
-@hooks.hook('push')
-def update(payload, delivery):
-    """
-    Called via github for all push events.
-    This is used to automate (some of) the deployments.
-    """
-    if payload['ref'] == 'refs/heads/master':
-        update_repo.delay()
-        return ('', 201)
-    else:
-        return ('', 204)
 
 if __name__ == '__main__':
     app.run()

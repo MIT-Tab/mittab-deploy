@@ -20,11 +20,6 @@ class BaseConfig(object):
     SQS_QUEUE_NAME = os.environ['SQS_QUEUE']
     CELERY_DEFAULT_QUEUE = SQS_QUEUE_NAME
 
-    # for Flask-Webhooks extension
-    GITHUB_WEBHOOKS_KEY = os.environ['GITHUB_SECRET']
-    VALIDATE_IP = False
-    VALIDATE_SIGNATURE = True
-
     # for Flask-Mail
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 465
