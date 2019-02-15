@@ -17,6 +17,7 @@ web:
 
 celery:
   build: .
+  restart: on-failure
   dockerfile: Dockerfile.web
   volumes:
     - ./:/usr/src/app
