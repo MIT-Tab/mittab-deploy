@@ -30,6 +30,23 @@ celery:
     - FLASK_APP=/usr/src/app/deployer/__init__.py
   command: ./bin/start_celery
 
+flower:
+  build: .
+  restart: on-failure
+  dockerfile: Dockerfile.web
+  ports:
+    - "5555:5555"
+  volumes:
+    - ./:/usr/src/app
+    - ${HOME}/.ssh:/root/.ssh
+  env_file:
+    - .env
+    - .env.secret
+  environment:
+    - PYTHONPATH=/usr/src/app
+    - FLASK_APP=/usr/src/app/deployer/__init__.py
+  command: ./bin/start_flower
+
 nginx:
   restart: always
   image: nginx:1.15-alpine
@@ -43,8 +60,10 @@ nginx:
     - ./data/certbot/www:/var/www/certbot
   volumes_from:
     - web
+    - flower
   links:
     - web:web
+    - flower:flower
 
 certbot:
   image: certbot/certbot

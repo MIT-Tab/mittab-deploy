@@ -11,3 +11,4 @@ python-digitalocean==1.10
 raven==6.1.0
 stripe==2.18
 tenacity==5.0.3
+flower==0.9.2
