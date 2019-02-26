@@ -15,7 +15,7 @@ __boto_client = boto3.client(
         region_name='nyc3',
         endpoint_url='https://nyc3.digitaloceanspaces.com'
 )
-__image_slug = 'docker-18-04'
+__image_slug = 'docker'
 
 
 class NoDropletError(Exception):
