@@ -16,9 +16,9 @@ class BaseConfig(object):
     # AWS creds auto-loaded from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env
     # vars
     CELERY_RESULT_BACKEND = None
-    CELERY_BROKER_URL = 'sqs://'
-    SQS_QUEUE_NAME = os.environ['SQS_QUEUE']
-    CELERY_DEFAULT_QUEUE = SQS_QUEUE_NAME
+    CELERY_BROKER_URL = os.environ['CLOUD_AMQP_URL']
+    AMQP_QUEUE_NAME = os.environ['AMQP_QUEUE']
+    CELERY_DEFAULT_QUEUE = AMQP_QUEUE_NAME
 
     # for Flask-Mail
     MAIL_SERVER = 'smtp.gmail.com'
