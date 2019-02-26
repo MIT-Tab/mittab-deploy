@@ -25,7 +25,14 @@ class BackupFailedError(Exception):
 def make_celery(app):
     celery = Celery(app.import_name,
                     backend=app.config['CELERY_RESULT_BACKEND'],
-                    broker=app.config['CELERY_BROKER_URL'])
+                    broker=app.config['CELERY_BROKER_URL'],
+                    broker_pool_limit=1,
+                    broker_heartbeat=None,
+                    broker_connection_timeout=30,
+                    result_backend=None,
+                    event_queue_expires=60,
+                    worker_prefetch_multiplier=1,
+                    worker_concurrency=50)
 
     celery.conf.update(app.config)
     TaskBase = celery.Task

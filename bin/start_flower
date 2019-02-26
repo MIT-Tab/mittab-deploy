@@ -1,0 +1,5 @@
+#!/bin/bash
+
+celery flower --basic_auth="$FLOWER_USER:$FLOWER_PASS" \
+  --broker="amqp://$CLOUD_AMQP_USER:$CLOUD_AMQP_PASS@$CLOUD_AMQP_HOST:5671/$CLOUD_AMQP_USER?ssl=true" \
+  --broker_api="https://$CLOUD_AMQP_USER:$CLOUD_AMQP_PASS@$CLOUD_AMQP_HOST:443/api/"
