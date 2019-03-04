@@ -65,7 +65,7 @@ def get_droplet(droplet_name):
     raise NoDropletError(droplet_name)
 
 def __get_image_slug():
-    images = __manage.get_images()
+    images = __manager.get_images()
     return sorted(filter(lambda i: i.slug and ('docker' in i.slug), images), key=lambda i: i.created_at)[0]
 
 
