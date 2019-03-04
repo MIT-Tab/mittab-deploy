@@ -15,7 +15,6 @@ __boto_client = boto3.client(
         region_name='nyc3',
         endpoint_url='https://nyc3.digitaloceanspaces.com'
 )
-__image_slug = 'docker'
 
 
 class NoDropletError(Exception):
@@ -51,7 +50,7 @@ def create_droplet(droplet_name, size):
     droplet = digitalocean.Droplet(token=__token,
                                    name=droplet_name,
                                    region='nyc3',
-                                   image=__image_slug,
+                                   image=__get_image_slug(),
                                    size_slug=size,
                                    ssh_keys=keys)
     droplet.create()
@@ -64,6 +63,9 @@ def get_droplet(droplet_name):
         if droplet.name == droplet_name:
             return droplet
     raise NoDropletError(droplet_name)
+
+def __get_image_slug():
+    return sorted(filter(lambda i: i.slug and ('docker' in i.slug), images), key=lambda i: i.created_at)[0]
 
 
 ############################
