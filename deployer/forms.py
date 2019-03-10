@@ -19,6 +19,12 @@ def validate_name(form, field):
     if not pattern.match(field.data):
         raise ValidationError('Name contains invalid characters')
 
+def validate_password(form, field):
+    pattern = re.compile('[a-zA-Z0-9]+$')
+    if not pattern.match(field.data):
+        raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
+    return False
+
 
 def validate_unique_name(form, field):
     if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
@@ -40,7 +46,8 @@ class TournamentForm(FlaskForm):
             'Password',
             [
                 DataRequired(),
-                EqualTo('confirm', message='Passwords must match')
+                EqualTo('confirm', message='Passwords must match'),
+                validate_password
             ])
     confirm = PasswordField('Confirm Password')
     repo_options = SelectField(
