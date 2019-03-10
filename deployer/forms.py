@@ -19,18 +19,15 @@ def validate_name(form, field):
     if not pattern.match(field.data):
         raise ValidationError('Name contains invalid characters')
 
+def validate_password(form, field):
+    pattern = re.compile('[a-zA-Z0-9]+$')
+    if not pattern.match(field.data):
+        raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
+
 
 def validate_unique_name(form, field):
     if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
-
-
-def validate_payment(form, field):
-    if not stripe.charge(form.email.data, field.data):
-        raise ValidationError("""
-                Error processing payment. Contact Ben via the link in the footer
-                if the problem persists
-                """)
 
 
 #################
@@ -43,13 +40,13 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name]
             )
-    stripe_token = HiddenField('Stripe Token', [validate_payment])
     email = StringField('Email Address', [Email()])
     password = PasswordField(
             'Password',
             [
                 DataRequired(),
-                EqualTo('confirm', message='Passwords must match')
+                EqualTo('confirm', message='Passwords must match'),
+                validate_password
             ])
     confirm = PasswordField('Confirm Password')
     repo_options = SelectField(
@@ -58,3 +55,4 @@ class TournamentForm(FlaskForm):
             default='default'
             )
     add_test = BooleanField('Include Test Tournament?')
+    stripe_token = HiddenField('Stripe Token')
