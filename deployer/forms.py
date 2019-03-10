@@ -43,7 +43,6 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name]
             )
-    stripe_token = HiddenField('Stripe Token', [validate_payment])
     email = StringField('Email Address', [Email()])
     password = PasswordField(
             'Password',
@@ -58,3 +57,4 @@ class TournamentForm(FlaskForm):
             default='default'
             )
     add_test = BooleanField('Include Test Tournament?')
+    stripe_token = HiddenField('Stripe Token', [validate_payment])
