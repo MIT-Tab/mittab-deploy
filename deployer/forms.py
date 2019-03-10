@@ -23,7 +23,6 @@ def validate_password(form, field):
     pattern = re.compile('[a-zA-Z0-9]+$')
     if not pattern.match(field.data):
         raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
-    return False
 
 
 def validate_unique_name(form, field):
