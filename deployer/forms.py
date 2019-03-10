@@ -25,14 +25,6 @@ def validate_unique_name(form, field):
         raise ValidationError('An active tournament with that name already exists')
 
 
-def validate_payment(form, field):
-    if not stripe.charge(form.email.data, field.data):
-        raise ValidationError("""
-                Error processing payment. Contact Ben via the link in the footer
-                if the problem persists
-                """)
-
-
 #################
 # Form definition
 #################
@@ -57,4 +49,4 @@ class TournamentForm(FlaskForm):
             default='default'
             )
     add_test = BooleanField('Include Test Tournament?')
-    stripe_token = HiddenField('Stripe Token', [validate_payment])
+    stripe_token = HiddenField('Stripe Token')
