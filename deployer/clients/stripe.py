@@ -23,7 +23,8 @@ def charge(email, stripe_token):
             customer=customer.id,
             amount=COST_IN_CENTS,
             currency='usd',
-            description='MIT-Tab Server'
+            description='MIT-Tab Server',
+            receipt_email=email
         )
         return True
     except stripe.error.StripeError:
