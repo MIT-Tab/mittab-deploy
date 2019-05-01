@@ -12,7 +12,7 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
-    # configure celery to work with sqs
+    # configure celery to work with cloud amqp
     # AWS creds auto-loaded from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env
     # vars
     CELERY_RESULT_BACKEND = None
