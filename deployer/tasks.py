@@ -71,7 +71,7 @@ def deploy_test(name, clone_url, branch):
     db.session.commit()
 
     deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
-    subprocess.check_call(['./bin/setup_test', str(tournament.ip_address)])
+    subprocess.check_call(['sh', './bin/setup_test', str(tournament.ip_address)])
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
 def deploy_droplet(droplet, password, size):
@@ -92,7 +92,8 @@ def deploy_droplet(droplet, password, size):
             raise ServerNotReadyError()
 
         droplet.set_status('Installing mit-tab on server')
-        subprocess.check_call(['./bin/setup_droplet',
+        subprocess.check_call(['sh',
+		'./bin/setup_droplet',
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
