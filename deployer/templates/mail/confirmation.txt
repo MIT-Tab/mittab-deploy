@@ -16,11 +16,11 @@ confirm that the server is working, try accesing it via its ip address:
 http://{{ ip_address }}. If that does not work, respond to this email to let me
 know.
 
-Questions? Try reading the MIT-Tab Wiki: https://github.com/jolynch/mit-tab/wiki
+Questions? Try reading the MIT-Tab Documentation: https://http://mit-tab.readthedocs.io
 
 It covers everything from importing data in bulk, pairing your round, and more.
 
-If anything isn't covered in the wiki, just respond to this email and I'll get back to you. My phone
+If anything isn't covered in the docs, just respond to this email and I'll get back to you. My phone
 number is 813-469-0382 if anything urgent comes up.
 
 Best,
