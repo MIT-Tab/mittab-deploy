@@ -16,7 +16,7 @@ confirm that the server is working, try accesing it via its ip address:
 http://{{ ip_address }}. If that does not work, respond to this email to let me
 know.
 
-Questions? Try reading the MIT-Tab Documentation: https://http://mit-tab.readthedocs.io
+Questions? Try reading the MIT-Tab Documentation: https://mit-tab.readthedocs.io
 
 It covers everything from importing data in bulk, pairing your round, and more.
 
