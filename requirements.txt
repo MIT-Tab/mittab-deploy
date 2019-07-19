@@ -1,6 +1,6 @@
 boto3==1.4.7
 celery==4.2
-Flask==0.12.3
+Flask==1.0
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.14
 Flask-Mail==0.9
