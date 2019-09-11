@@ -9,9 +9,9 @@
   (tournament name).nu-tab.com. Here is a list of active tournaments:</p>
 
   <ul>
-    {% for tournaments in tournaments %}
+    {% for tournament in tournaments %}
       {% if not tournament.name.endswith("-test") %}
-      <li href="{{tournament.url}}">{{tournament.name}}.nu-tab.com</li>
+      <li><a href="{{ tournament.url }}">{{ tournament.name }}.nu-tab.com</a></li>
       {% endif %}
     {% endfor %}
   </ul>
