@@ -11,7 +11,8 @@ from deployer.clients import stripe
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    tournaments = Tournament.query.filter_by(active=True).all()
+    return render_template('index.html', tournaments=tournaments)
 
 
 @app.route('/tournaments/new', methods=['GET', 'POST'])

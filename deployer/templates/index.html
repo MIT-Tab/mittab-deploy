@@ -6,5 +6,13 @@
   <p>Trying to set up a tournament? <a href="/tournaments/new">Click here.</a></p>
 
   <p>Are you trying to view the pairings for a tournament? If so, try going to
-  (tournament name).nu-tab.com</p>
+  (tournament name).nu-tab.com. Here is a list of active tournaments:</p>
+
+  <ul>
+    {% for tournaments in tournaments %}
+      {% if not tournament.name.endswith("-test") %}
+      <li href="{{tournament.url}}">{{tournament.name}}.nu-tab.com</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
 {% endblock %}
