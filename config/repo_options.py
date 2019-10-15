@@ -4,7 +4,7 @@ options = {
         "branch": "master",
         "name": "Default"
     },
-    "default": {
+    "outs": {
         "clone_url": "https://github.com/roddajohn/mit-tab.git",
         "branch": "outrounds",
         "name": "Outrounds - BETA, only use with explicit approval"
