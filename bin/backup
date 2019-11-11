@@ -13,7 +13,10 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1.nu-tab.c
   cd /usr/src/mit-tab;
   mkdir -p $SRC_CSV;
   docker-compose run --rm web python manage.py export_stats --root exports;
-  docker-compose run --rm web python manage.py dumpdata --exclude tab.Scratch > $SRC_DB;
+EOL
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1.nu-tab.com <<EOL
+  cd /usr/src/mit-tab;
+  docker-compose run --rm web python manage.py dumpdata --exclude tab.Scratch --exclude auth.permission --exclude contenttypes --exclude admin.logentry --natural-foreign > $SRC_DB;
 EOL
 
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1.nu-tab.com:$SRC_CSV/* $DST_DIR
