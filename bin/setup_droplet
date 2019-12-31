@@ -14,9 +14,9 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   systemctl restart ufw;
   ufw route allow proto tcp from any to any port 80;
   ufw route allow proto tcp from any to any port 22;
-  ufw enable;
   docker-compose up -d;
   docker-compose run --rm web ./bin/setup $4 && \
     docker-compose restart web && \
     docker-compose restart nginx;
+  ufw enable;
 EOL
