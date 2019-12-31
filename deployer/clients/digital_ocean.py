@@ -1,4 +1,5 @@
 import os
+import subprocess
 from time import time
 
 import boto3
@@ -15,6 +16,9 @@ __boto_client = boto3.client(
         region_name='nyc3',
         endpoint_url='https://nyc3.digitaloceanspaces.com'
 )
+__ssh_dir = os.path.join(os.environ['HOME'], '.ssh')
+__ssh_key_base = os.path.join(__ssh_dir, 'id_rsa')
+__ssh_key_location = os.path.join(__ssh_dir, 'id_rsa.pub') 
 
 
 class NoDropletError(Exception):
@@ -34,7 +38,7 @@ class NoRecordError(Exception):
 
 
 def create_droplet(droplet_name, size):
-    user_ssh_key = open(os.path.join(os.environ['HOME'], '.ssh/id_rsa.pub')).read()
+    user_ssh_key = __get_or_create_ssh_key()
     keys = __manager.get_all_sshkeys()
 
     if user_ssh_key.strip() not in [key.public_key for key in keys]:
@@ -67,6 +71,14 @@ def get_droplet(droplet_name):
 def __get_image_slug():
     images = __manager.get_images()
     return sorted(filter(lambda i: i.slug and ('docker' in i.slug), images), key=lambda i: i.created_at)[0].slug
+
+def __get_or_create_ssh_key():
+    if not os.path.exists(__ssh_key_location):
+        os.makedirs(__ssh_dir, exist_ok=True)
+        subprocess.check_call(['ssh-keygen', '-f', __ssh_key_base])
+
+    with open(__ssh_key_location) as f:
+        return f.read()
 
 
 ############################

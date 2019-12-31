@@ -2,7 +2,7 @@
 
 set -e
 
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $HOME/.ssh/id_rsa root@$1 <<EOL
   apt-get install -y --fix-missing python-pip;
   pip install docker-compose;
   cd /usr/src;
