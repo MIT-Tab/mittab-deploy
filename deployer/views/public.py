@@ -3,6 +3,7 @@ import os
 from flask import render_template, redirect, jsonify, request, flash
 
 from config.repo_options import options
+from deployer import app
 from deployer.models import *
 from deployer.tasks import *
 from deployer.forms import TournamentForm
