@@ -5,3 +5,4 @@ mit-tab/
 .env.secret
 db.sqlite
 data/certbot
+.env
