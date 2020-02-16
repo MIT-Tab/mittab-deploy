@@ -14,7 +14,9 @@ app.config.from_object(BaseConfig)
 
 Bootstrap(app)
 db = SQLAlchemy(app)
-sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
+
+if not app.config.get('DEBUG'):
+    sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 from deployer.models import *
 

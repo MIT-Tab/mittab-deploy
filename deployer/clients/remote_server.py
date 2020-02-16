@@ -23,4 +23,4 @@ def get_file(host, src, dst):
     ssh_client.connect(host, username='root')
 
     scp_client = SCPClient(ssh_client.get_transport())
-    scp_client.get(src, dst)
+    scp_client.get(src, dst, recursive=True)

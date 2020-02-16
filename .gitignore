@@ -6,3 +6,4 @@ mit-tab/
 db.sqlite
 data/certbot
 .env
+deployer/backups
