@@ -3,6 +3,7 @@ import datetime
 
 from deployer import db
 from deployer.clients.digital_ocean import *
+from deployer.clients import remote_server
 
 
 class Droplet(db.Model):
@@ -70,6 +71,31 @@ class Droplet(db.Model):
 
         db.session.add(self)
         return db.session.commit()
+
+    def backup(self):
+        src_csv = "/usr/src/mit-tab/exports"
+        src_db "/usr/src/mit-tab/mittab/final-backup.json"
+        dst_db = "TODO"
+        dst_csv = "TODO"
+
+        dumpdata_cmd = "docker-compose run --rm web python manage.py dumpdata " \
+                "--exclude tab.Scratch --exclude auth.permission " \
+                "--exclude contenttypes --exclude admin.logentry " \
+                "--natural-foreign > %s" % (src_db)
+        export_cmd = "docker-compose run --rm web python manage.py " \
+                "export_stats --root exports"
+
+        remote_server.exec_commands(
+                self.ip_address,
+                "cd /usr/src/mit-tab; mkdir -p %s" % src_csv,
+                "cd /usr/src/mit-tab; %s" % dumpdata_cmd,
+                "cd /usr/src/mit-tab; %s" % export_cmd
+        )
+        remote_server.get_file(
+                self.ip_address,
+                "%s/*" % src_csv,
+                dst_csv
+        )
 
     def __repr__(self):
         return "<Droplet name={} ip={} status={}>".format(self.name,

@@ -11,5 +11,9 @@ def admin_index():
     tournaments = Tournament.query.all()
     return render_template('admin/index.html', tournaments=tournaments)
 
+@app.route('/admin/tournaments/:id', methods=['DELETE'])
+def delete_tournament(tournament_id):
+
+
 if __name__ == '__main__':
     app.run()

@@ -4,15 +4,13 @@
 {% block content %}
 <div class="container">
   <h1>Tournaments</h1>
-  <table class="table table-striped">
+  <table class="table">
     <thead>
       <th>Name</th>
       <th>Status</th>
       <th>Active?</th>
       <th>Created At</th>
       <th>Git Branch</th>
-      <th colspan="2">Actions</th>
-      <th>Logs</th>
     </thead>
     <tbody>
       {% for tournament in tournaments %}
@@ -22,9 +20,6 @@
         <td>{{ tournament.active }}</td>
         <td>{{ tournament.created_at }}</td>
         <td>{{ tournament.branch }}</td>
-        <td>Delete</td>
-        <td>Refund</td>
-        <td>Placeholder</td>
       </tr>
       {% endfor %}
     </tbody>
