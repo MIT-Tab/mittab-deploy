@@ -3,6 +3,16 @@
 
 {% block content %}
 <div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <!-- <strong>Title</strong> --> {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
   <h1>Tournaments</h1>
   <table class="table table-striped">
     <thead>
@@ -11,7 +21,7 @@
       <th>Active?</th>
       <th>Created At</th>
       <th>Git Branch</th>
-      <th colspan="2">Actions</th>
+      <th colspan="1">Actions</th>
       <th>Logs</th>
     </thead>
     <tbody>
@@ -22,8 +32,17 @@
         <td>{{ tournament.active }}</td>
         <td>{{ tournament.created_at }}</td>
         <td>{{ tournament.branch }}</td>
-        <td>Delete</td>
-        <td>Refund</td>
+        <td>
+          {% if tournament.active %}
+            <form
+              onsubmit="return confirm('Delete {{ tournament.name }}?')"
+              method="post"
+              action="/admin/tournaments/{{ tournament.id }}/delete"
+              class="form-inline">
+              <input type="submit" value="Delete"/>
+            </form>
+          {% endif %}
+        </td>
         <td>Placeholder</td>
       </tr>
       {% endfor %}
