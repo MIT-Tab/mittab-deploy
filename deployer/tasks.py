@@ -108,3 +108,19 @@ def deploy_droplet(droplet, password, size):
         droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
+
+@retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
+def delete_tournament(tournament_id, idempotency_token):
+    tournament = Tournament.query.get(tournament_id)
+    if tournament_id.idempotency_token != idempotency_token:
+        print('Idempotency token mis-match. Skipping execution to prevent duplicate runs')
+        return
+    try:
+        tournament.set_set
+        if not tournament.is_test:
+            tournament.backup()
+        tournament.deactivate()
+    import traceback; traceback.print_exc()
+        droplet.set_status('An error occurred. Retrying up to 5 times')
+        droplet.deactivate()
+        raise e

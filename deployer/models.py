@@ -20,6 +20,8 @@ class Droplet(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
+    # to avoid duplicate deletions
+    idempotency_token = db.Column(db.String, nullable=True)
 
     def __init__(self, name, droplet_name):
         self.name = name.lower()

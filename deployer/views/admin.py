@@ -1,13 +1,14 @@
 import json
 import logging
 import os
+import uuid
 
 from flask import render_template, redirect, flash, request
 import flask_login
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 
-from deployer import app, login_manager
+from deployer import app, login_manager, db
 from deployer.models import Tournament
 
 
@@ -43,16 +44,17 @@ def admin_index():
 @app.route('/admin/tournaments/<tournament_id>/delete', methods=['POST'])
 @flask_login.login_required
 def delete_tournament(tournament_id):
-    tournament = Tournament.query.get(int(tournament_id))
+    idempotency_token = uuid.uuid1()
 
-    if not tournament.is_test:
-        tournament.backup()
-    tournament.deactivate()
+    tournament = Tournament.query.get(int(tournament_id))
+    tournament.idempotency_token = idempotency_token
+    db.session.add(tournament)
+    db.session.commit()
 
     if tournament.is_test:
-        flash("Tournament %s deleted (without backup)" % tournament.name, "success")
+        flash("Preparing to delete %s (without backup)" % tournament.name, "success")
     else:
-        flash("Tournament %s deleted (with backup)" % tournament.name, "success")
+        flash("Preparing to delete %s (with backup)" % tournament.name, "success")
     return redirect("/admin/tournaments")
 
 @app.route("/admin/oauth-callback")
@@ -72,13 +74,6 @@ def callback():
         data=body,
         auth=(app.config.get('GOOGLE_CLIENT_ID'), app.config.get('GOOGLE_CLIENT_SECRET')),
     )
-
-    
-    print("REDIRECT_URI: " + redirect_uri, flush=True)
-    print("REDIRECT_URL: " + request.base_url, flush=True)
-    print("REQUEST_URL: " + request.url, flush=True)
-    print("TOKEN RESPONSE: " + str(token_response.json()), flush=True)
-
 
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
