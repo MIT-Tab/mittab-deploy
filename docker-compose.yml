@@ -9,7 +9,6 @@ web:
     - ${HOME}/.ssh:/root/.ssh
   env_file:
     - .env
-    - .env.secret
   environment:
     - PYTHONPATH=/usr/src/app
     - FLASK_APP=/usr/src/app/deployer/__init__.py
@@ -24,7 +23,6 @@ celery:
     - ${HOME}/.ssh:/root/.ssh
   env_file:
     - .env
-    - .env.secret
   environment:
     - PYTHONPATH=/usr/src/app
     - FLASK_APP=/usr/src/app/deployer/__init__.py
@@ -41,7 +39,6 @@ flower:
     - ${HOME}/.ssh:/root/.ssh
   env_file:
     - .env
-    - .env.secret
   environment:
     - PYTHONPATH=/usr/src/app
     - FLASK_APP=/usr/src/app/deployer/__init__.py

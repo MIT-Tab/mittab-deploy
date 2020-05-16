@@ -1,0 +1,28 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Tournaments list page{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Tournaments</h1>
+  <table class="table">
+    <thead>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Active?</th>
+      <th>Created At</th>
+      <th>Git Branch</th>
+    </thead>
+    <tbody>
+      {% for tournament in tournaments %}
+      <tr>
+        <td>{{ tournament.name }}</td>
+        <td>{{ tournament.status }}</td>
+        <td>{{ tournament.active }}</td>
+        <td>{{ tournament.created_at }}</td>
+        <td>{{ tournament.branch }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
