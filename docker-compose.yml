@@ -1,7 +1,6 @@
 web:
   restart: "no"
-  build: .
-  dockerfile: Dockerfile.web
+  image: benmusch/mit-tab
   ports:
     - "8000:8000"
   volumes:
@@ -15,9 +14,8 @@ web:
   command: ./bin/start_web
 
 celery:
-  build: .
   restart: on-failure
-  dockerfile: Dockerfile.web
+  image: benmusch/mit-tab
   volumes:
     - ./:/usr/src/app
     - ${HOME}/.ssh:/root/.ssh
@@ -29,9 +27,8 @@ celery:
   command: ./bin/start_celery
 
 flower:
-  build: .
   restart: on-failure
-  dockerfile: Dockerfile.web
+  image: benmusch/mit-tab
   ports:
     - "5555:5555"
   volumes:
