@@ -14,5 +14,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile.web --tag mit-tab:latest
+    - name: Build and publish the Docker image
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: benmusch/mit-tab
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        dockerfile: Dockerfile.web
+        tags: latest
+        snapshot: true
