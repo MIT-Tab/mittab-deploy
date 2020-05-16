@@ -24,6 +24,10 @@ Jinja2 = "==2.9"
 werkzeug = "==0.16"
 paramiko = "*"
 scp = "*"
+flask-login = "*"
+oauthlib = "*"
+requests = "*"
+email-validator = "*"
 
 [requires]
 python_version = "3.7"

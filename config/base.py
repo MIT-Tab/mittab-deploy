@@ -34,3 +34,14 @@ class BaseConfig(object):
     # https://developers.digitalocean.com/documentation/changelog/api-v2/new-size-slugs-for-droplet-plan-changes/
     DEFAULT_SIZE_SLUG = 's-1vcpu-3gb'
     TEST_SIZE_SLUG = 's-1vcpu-2gb'
+
+    # Oauth login for admin app
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+    GOOGLE_DISCOVERY_URL = (
+        "https://accounts.google.com/.well-known/openid-configuration"
+    )
+    GOOGLE_AUTH_ALLOWED_EMAILS = [
+        "ben.muschol@airbnb.com",
+        "benmuschol@gmail.com",
+    ]
