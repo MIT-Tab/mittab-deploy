@@ -83,9 +83,14 @@ def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
+    if app.config.get("PRODUCTION"):
+        redirect_uri = "https://nu-tab.com/admin/oauth-callback"
+    else:
+        redirect_uri = "http://localhost:5000/admin/oauth-callback"
+
     request_uri = oauth_client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri="http://" + request.host + "/admin/oauth-callback",
+        redirect_uri=redirect_uri,
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)

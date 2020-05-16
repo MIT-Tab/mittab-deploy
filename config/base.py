@@ -5,6 +5,7 @@ class BaseConfig(object):
     WEB_CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
     DEBUG = os.environ['DEBUG'] == 'True'
+    PRODUCTION = os.environ['PRODUCTION'] == 'True'
 
     DB_FILE = 'db.sqlite'
     DB_PATH = os.path.join(os.path.abspath(os.path.dirname(DB_FILE)), DB_FILE)
