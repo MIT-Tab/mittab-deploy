@@ -71,6 +71,12 @@ def callback():
         data=body,
         auth=(app.config.get('GOOGLE_CLIENT_ID'), app.config.get('GOOGLE_CLIENT_SECRET')),
     )
+
+    print("REDIRECT_URI: " + redirect_uri)
+    print("REDIRECT_URL: " + request.base_url)
+    print("REQUEST_URL: " + request.url)
+    print("TOKEN RESPONSE: " + str(token_response.json()))
+
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = oauth_client.add_token(userinfo_endpoint)
