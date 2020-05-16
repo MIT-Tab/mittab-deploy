@@ -57,8 +57,8 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
     token_url, headers, body = oauth_client.prepare_token_request(
         token_endpoint,
-        authorization_response=request.url,
-        redirect_url=request.base_url,
+        authorization_response=request.url.replace("web:8000", "nu-tab.com"),
+        redirect_url=request.base_url.replace("web:8000", "nu-tab.com"),
         code=code
     )
     token_response = requests.post(
