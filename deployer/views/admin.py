@@ -74,7 +74,7 @@ def callback():
     )
 
     msg = "REDIRECT_URI: " + redirect_uri + "       \n" + "REDIRECT_URL: " + \
-            request.base_url + "       \n" + "REQUEST_URL: " + request.url \
+            request.base_url + "       \n" + "REQUEST_URL: " + request.url + \
             "       \n" + "TOKEN RESPONSE: " + str(token_response.json())
     raise Exception(msg)
 
