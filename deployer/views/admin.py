@@ -37,7 +37,7 @@ def get_google_provider_cfg():
 @app.route('/admin/tournaments', methods=['GET'])
 @flask_login.login_required
 def admin_index():
-    tournaments = Tournament.query.limit(100).order_by(Tournament.created_at.desc())
+    tournaments = Tournament.query.order_by(Tournament.created_at.desc()).limit(100)
     return render_template('admin/index.html', tournaments=tournaments)
 
 @app.route('/admin/tournaments/<tournament_id>/delete', methods=['POST'])
