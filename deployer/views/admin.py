@@ -73,9 +73,9 @@ def callback():
         auth=(app.config.get('GOOGLE_CLIENT_ID'), app.config.get('GOOGLE_CLIENT_SECRET')),
     )
 
-    msg = "REDIRECT_URI: " + redirect_uri + "       \n" + "REDIRECT_URL: " + \
-            request.base_url + "       \n" + "REQUEST_URL: " + request.url + \
-            "       \n" + "TOKEN RESPONSE: " + str(token_response.json())
+    msg = "REDIRECT_URI: " + redirect_uri + "       \n REDIRECT_URL: " + \
+            request.base_url + "       \n REQUEST_URL: " + request.url + \
+            "       \n TOKEN RESPONSE: " + str(token_response.json())
     raise Exception(msg)
 
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
