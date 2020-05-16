@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from flask import render_template, redirect, flash, request
@@ -72,10 +73,10 @@ def callback():
         auth=(app.config.get('GOOGLE_CLIENT_ID'), app.config.get('GOOGLE_CLIENT_SECRET')),
     )
 
-    print("REDIRECT_URI: " + redirect_uri)
-    print("REDIRECT_URL: " + request.base_url)
-    print("REQUEST_URL: " + request.url)
-    print("TOKEN RESPONSE: " + str(token_response.json()))
+    logging.critical("REDIRECT_URI: " + redirect_uri)
+    logging.critical("REDIRECT_URL: " + request.base_url)
+    logging.critical("REQUEST_URL: " + request.url)
+    logging.critical("TOKEN RESPONSE: " + str(token_response.json()))
 
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
