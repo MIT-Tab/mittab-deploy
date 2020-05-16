@@ -25,6 +25,10 @@ def user_loader(user_id):
     return user
 
 oauth_client = WebApplicationClient(app.config.get('GOOGLE_CLIENT_ID'))
+if app.config.get("PRODUCTION"):
+    redirect_uri = "https://nu-tab.com/admin/oauth-callback"
+else:
+    redirect_uri = "http://localhost:5000/admin/oauth-callback"
 
 def get_google_provider_cfg():
     return requests.get('https://accounts.google.com/.well-known/openid-configuration').json()
@@ -57,8 +61,8 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
     token_url, headers, body = oauth_client.prepare_token_request(
         token_endpoint,
-        authorization_response=request.url.replace("web:8000", "nu-tab.com"),
-        redirect_url=request.base_url.replace("web:8000", "nu-tab.com"),
+        authorization_response=request.url,
+        redirect_url=request.base_url,
         code=code
     )
     token_response = requests.post(
@@ -82,11 +86,6 @@ def callback():
 def login():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-
-    if app.config.get("PRODUCTION"):
-        redirect_uri = "https://nu-tab.com/admin/oauth-callback"
-    else:
-        redirect_uri = "http://localhost:5000/admin/oauth-callback"
 
     request_uri = oauth_client.prepare_request_uri(
         authorization_endpoint,
