@@ -44,4 +44,5 @@ class BaseConfig(object):
     GOOGLE_AUTH_ALLOWED_EMAILS = [
         "ben.muschol@airbnb.com",
         "benmuschol@gmail.com",
+        "johnrod.john@gmail.com",
     ]
