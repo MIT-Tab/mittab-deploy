@@ -30,6 +30,17 @@ def validate_unique_name(form, field):
         raise ValidationError('An active tournament with that name already exists')
 
 
+def validate_discord_required(form, field):
+    if form.cleaned_data['repo_options'] == 'discord' and not field.data:
+        raise ValidationError('Please submit a valid Discord ID since you have selected a Discord version of MIT-Tab')
+
+
+def validate_discord_id(form, field):
+    pattern = re.compile('[\w\d]+#\d{4}')
+    if not pattern.match(field.data):
+        raise ValidationError('The Discord ID is in the wrong format.  It should take the form <username>#<discord ID>'.)
+
+
 #################
 # Form definition
 #################
@@ -55,4 +66,10 @@ class TournamentForm(FlaskForm):
             default='default'
             )
     add_test = BooleanField('Include Test Tournament?')
+    discord_admin = StringField(
+        'Discord ID of superadmin',
+        [
+            validate_discord_required, validate_discord_id
+        ]
+    )
     stripe_token = HiddenField('Stripe Token')
