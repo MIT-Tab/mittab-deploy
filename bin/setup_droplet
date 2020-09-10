@@ -9,15 +9,15 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   git clone -b $3 $2;
   cd mit-tab;
 
-  echo 'MYSQL_DATABASE=mittab' >> .env;
-  echo 'MITTAB_DB_HOST=mysql' >> .env;
-  echo 'MYSQL_USER=root' >> .env;
-  echo 'MYSQL_HOST=localhost' >> .env;
-  echo 'MYSQL_PASSWORD=$MITTAB_MYSQL_PASSWORD' >> .env;
-  echo 'MYSQL_ROOT_PASSWORD=$MITTAB_MYSQL_PASSWORD' >> .env;
-  echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env;
-  echo 'DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN' >> .env;
-  echo 'TOURNAMENT_NAME=$5' >> .env;
+  echo "MYSQL_DATABASE=mittab" >> .env;
+  echo "MITTAB_DB_HOST=mysql" >> .env;
+  echo "MYSQL_USER=root" >> .env;
+  echo "MYSQL_HOST=localhost" >> .env;
+  echo "MYSQL_PASSWORD=$MITTAB_MYSQL_PASSWORD" >> .env;
+  echo "MYSQL_ROOT_PASSWORD=$MITTAB_MYSQL_PASSWORD" >> .env;
+  echo "SENTRY_DSN=$MITTAB_SENTRY_DSN" >> .env;
+  echo "DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN" >> .env;
+  echo "TOURNAMENT_NAME=$5" >> .env;
 
   curl https://gist.githubusercontent.com/BenMusch/c9bf350e550769b941ef5c505de239e7/raw/08864e6c51eaa7c00a4b32b254fffaa5df239a53/after.rules >> /etc/ufw/after.rules;
   systemctl restart ufw;
