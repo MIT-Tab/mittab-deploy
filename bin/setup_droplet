@@ -18,6 +18,8 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
   echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env;
   echo 'DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN' >> .env;
   echo 'TOURNAMENT_NAME=$5' >> .env;
+  echo 'DISCORD_SERVER_NAME=$6' >> .env;
+  echo 'DISCORD_SUDO=$7' >> .env;
   printenv;
 
   curl https://gist.githubusercontent.com/BenMusch/c9bf350e550769b941ef5c505de239e7/raw/08864e6c51eaa7c00a4b32b254fffaa5df239a53/after.rules >> /etc/ufw/after.rules;
