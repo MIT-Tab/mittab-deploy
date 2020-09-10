@@ -3,6 +3,7 @@
 set -e
 
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
+  apt-get update;
   apt-get install -y --fix-missing python-pip;
   pip install docker-compose;
   cd /usr/src;
