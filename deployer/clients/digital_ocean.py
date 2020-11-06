@@ -65,8 +65,12 @@ def get_droplet(droplet_name):
     raise NoDropletError(droplet_name)
 
 def __get_image_slug():
+    """
+    TODO: Un-comment after fixing API pagination error
     images = __manager.get_images()
     return sorted(filter(lambda i: i.slug and ('docker' in i.slug), images), key=lambda i: i.created_at)[0].slug
+    """
+    return 'docker-20-04'
 
 
 ############################
