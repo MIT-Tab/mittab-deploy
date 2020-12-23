@@ -27,7 +27,7 @@ The easiest way to run is with `pipenv`
 ```
 pip install pipenv
 pipenv install
-PYTHON_PATH=$(pwd) FLASK_APP=deployer pipenv run flask run
+PYTHONPATH=$(pwd) FLASK_APP=deployer pipenv run flask run
 ```
 
 ## Environment Variables

@@ -1,8 +1,10 @@
 import re
 
+from datetime import datetime
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, BooleanField, \
-        HiddenField
+        HiddenField, DateField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from deployer.models import Droplet
@@ -24,10 +26,20 @@ def validate_password(form, field):
     if not pattern.match(field.data):
         raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
 
-
 def validate_unique_name(form, field):
     if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
+
+def validate_date(form, field):
+    if field.data <= datetime.now().date():
+        raise ValidationError('Deletion date must be in the future')
+
+def validate_present_and_inactive_tournament(form, field):
+    tournament = Tournament.query.get(field.data)
+    if tournament is None:
+        raise ValidationError('Tournament not provided')
+    elif tournament.active:
+        raise ValidationError('Cannot confirm a tournament which is already active')
 
 
 #################
@@ -40,6 +52,17 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name]
             )
+    repo_options = SelectField(
+            'MIT-Tab Version',
+            choices=[(key, options[key]['name']) for key in options.keys()],
+            default='default'
+            )
+    deletion_date = DateField('Deletion Date', [validate_date], format='%m/%d/%Y')
+
+class ConfirmTournamentForm(FlaskForm):
+    add_test = BooleanField('Include Test Tournament?')
+    tournament_id = HiddenField('Tournament ID')
+    stripe_token = HiddenField('Stripe Token')
     email = StringField('Email Address', [Email()])
     password = PasswordField(
             'Password',
@@ -49,10 +72,3 @@ class TournamentForm(FlaskForm):
                 validate_password
             ])
     confirm = PasswordField('Confirm Password')
-    repo_options = SelectField(
-            'MIT-Tab Version',
-            choices=[(key, options[key]['name']) for key in options.keys()],
-            default='default'
-            )
-    add_test = BooleanField('Include Test Tournament?')
-    stripe_token = HiddenField('Stripe Token')

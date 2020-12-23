@@ -61,12 +61,12 @@ def deploy_tournament(tournament_id, password, email_addr):
 
 
 @celery.task()
-def deploy_test(name, clone_url, branch):
+def deploy_test(name, clone_url, branch, deletion_date):
     name = '{}-test'.format(name)
     if Tournament.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
-    tournament = Tournament(name, clone_url, branch)
+    tournament = Tournament(name, clone_url, branch, deletion_date)
     db.session.add(tournament)
     db.session.commit()
 

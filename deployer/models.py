@@ -1,7 +1,7 @@
 import os
 import shutil
 from time import time
-from datetime import datetime
+from datetime import datetime, date
 
 from deployer import db, app
 from deployer.clients.digital_ocean import *
@@ -20,11 +20,13 @@ class Droplet(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
+    deletion_date = db.Column(db.Date, nullable=False)
 
-    def __init__(self, name, droplet_name):
+    def __init__(self, name, droplet_name, deletion_date):
         self.name = name.lower()
         self.droplet_name = droplet_name
         self.created_at = datetime.now()
+        self.deletion_date = deletion_date
 
     @property
     def url(self):
@@ -122,9 +124,9 @@ class Droplet(db.Model):
 
 class Tournament(Droplet):
 
-    def __init__(self, name, clone_url, branch):
+    def __init__(self, name, clone_url, branch, deletion_date):
         name = name.lower()
         droplet_name = '{0}-{1}'.format(name, int(time()))
         self.clone_url = clone_url
         self.branch = branch
-        super(Tournament, self).__init__(name, droplet_name)
+        super(Tournament, self).__init__(name, droplet_name, deletion_date)

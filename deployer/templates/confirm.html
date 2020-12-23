@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <center>
+    <h1>Finalize Tournament</h1>
+  </center>
+  <br>
+
+<script src="https://checkout.stripe.com/checkout.js"></script>
+<script>
+var stripeCost = {{ base_cost }}
+var handler = StripeCheckout.configure({
+  key: "{{stripe_key}}",
+  locale: 'auto',
+  token: function(token) {
+    document.tournament.stripe_token.value = token.id
+    document.tournament.submit()
+  }
+});
+
+function handleSubmit() {
+  if (!document.tournament.stripe_token.value) {
+    handler.open({
+      name: 'MIT-Tab',
+      description: 'MIT-Tab server',
+      email: document.tournament.email.value,
+      amount: stripeCost
+    });
+  }
+  return !!document.tournament.stripe_token.value;
+}
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  var checkbox = document.getElementById("add_test")
+  var submit = document.getElementById("submit_button")
+
+  checkbox.addEventListener('change', function() {
+    document.tournament.stripe_token = null;
+    if (this.checked) {
+      submit.value = 'Confirm & Pay {{ cents_as_string(base_cost + test_cost) }}'
+      stripeCost = {{ base_cost + test_cost }}
+    } else {
+      submit.value = 'Confirm & Pay {{ cents_as_string(base_cost) }}'
+      stripeCost = {{ base_cost }}
+    }
+  });
+})
+</script>
+<pre>
+Deletion date: {{ tournament.deletion_date }}
+Base cost: {{ cents_as_string(base_cost) }}
+(Optional) Test tournament cost: {{ cents_as_string(test_cost) }}
+</pre>
+<br/>
+
+<form action="/tournaments/{{ tournament.id }}/confirm"
+  method="post"
+  id="form"
+  onsubmit="return handleSubmit()"
+  name="tournament">
+  {{ form.hidden_tag() }}
+
+  <div class="form-group">
+    {{ form.email.label }}
+    <span class="help-block">
+      You will receive an email with info about running the tournament.
+    </span>
+    {% for error in form.email.errors %}
+      <span class="text-danger">[{{error}}]</span>
+    {% endfor %}<br>
+    {{ form.email(class='form-control', id='email') }}
+  </div>
+
+  <div class="form-group">
+    {{ form.password.label }}
+    <span class="help-block">
+      You should choose a password you're comfortable sharing with tab staff
+      members. Avoid something you use for other web sites.
+    </span>
+    {% for error in form.password.errors %}
+      <span class="text-danger">[{{error}}]</span>
+    {% endfor %}<br>
+    {{ form.password(class='form-control') }}
+  </div>
+
+  <div class="form-group">
+    {{ form.confirm.label }}
+    {% for error in form.confirm.errors %}
+      <span class="text-danger">[{{error}}]</span>
+    {% endfor %}<br>
+    {{ form.confirm(class='form-control') }}
+  </div>
+
+  <div class="form-group">
+    {{ form.add_test.label }}: {{ form.add_test }}
+    <span class="help-block">
+      This will spin up a smaller tournament at
+      [tournament_name]-test.nu-tab.com pre-loaded with test data. If you've
+      never run a tournament with mit-tab, this is a good way to learn the
+      software. Note: The login for the tab user will always be 'password'
+      <br/>
+      <b>This will cost an extra $0.25/day</b>
+    </span>
+    {% for error in form.add_test.errors %}
+      <span class="text-danger">[{{error}}]</span>
+    {% endfor %}<br>
+  </div>
+
+  <input type="submit"
+         id="submit_button"
+         value="Confirm & Pay {{ cents_as_string(base_cost) }}"
+         class="btn btn-primary" />
+</form>
+{% endblock %}

@@ -6,39 +6,9 @@
   </center>
   <br>
 
-<script src="https://checkout.stripe.com/checkout.js"></script>
-<script>
-var handler = StripeCheckout.configure({
-  key: "{{stripe_key}}",
-  locale: 'auto',
-  token: function(token) {
-    document.tournament.stripe_token.value = token.id
-    document.tournament.submit()
-  }
-});
-
-function handleSubmit() {
-  if (!document.tournament.stripe_token.value) {
-    handler.open({
-      name: 'MIT-Tab',
-      description: 'MIT-Tab server',
-      email: document.tournament.email.value,
-      amount: {{ stripe_cost }}
-    });
-  }
-  return !!document.tournament.stripe_token.value;
-}
-
-// Close Checkout on page navigation:
-window.addEventListener('popstate', function() {
-  handler.close();
-});
-</script>
-
   <form action="/tournaments/new"
     method="post"
     id="form"
-    onsubmit="return handleSubmit()"
     name="tournament">
     {{ form.hidden_tag() }}
 
@@ -55,47 +25,17 @@ window.addEventListener('popstate', function() {
     </div>
 
     <div class="form-group">
-      {{ form.email.label }}
+      {{ form.deletion_date.label }}
       <span class="help-block">
-        You will receive an email with info about running the tournament.
-      </span>
-      {% for error in form.email.errors %}
-        <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.email(class='form-control', id='email') }}
-    </div>
+        The tournament will be deleted on this date, and <b>you will be charged $0.50 per-day until the deletion date</b>.
 
-    <div class="form-group">
-      {{ form.password.label }}
-      <span class="help-block">
-        You should choose a password you're comfortable sharing with tab staff
-        members. Avoid something you use for other web sites.
+        It's recommended to select a few days after your tournament ends to give
+        yourself time to upload results.
       </span>
-      {% for error in form.password.errors %}
+      {% for error in form.deletion_date.errors %}
         <span class="text-danger">[{{error}}]</span>
       {% endfor %}<br>
-      {{ form.password(class='form-control') }}
-    </div>
-
-    <div class="form-group">
-      {{ form.confirm.label }}
-      {% for error in form.confirm.errors %}
-        <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.confirm(class='form-control') }}
-    </div>
-
-    <div class="form-group">
-      {{ form.add_test.label }}: {{ form.add_test }}
-      <span class="help-block">
-        This will spin up a smaller tournament at
-        [tournament_name]-test.nu-tab.com pre-loaded with test data. If you've
-        never run a tournament with mit-tab, this is a good way to learn the
-        software. Note: The login for the tab user will always be 'password'
-      </span>
-      {% for error in form.add_test.errors %}
-        <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
+      {{ form.deletion_date(placeholder="mm/dd/yyyy", class="form-control") }}
     </div>
 
     <div class="form-group">
@@ -107,7 +47,8 @@ window.addEventListener('popstate', function() {
     </div>
 
     <input type="submit"
-           value="Create & Pay ${{stripe_cost // 100}}"
+           id="submit_button"
+           value="Continue"
            class="btn btn-primary" />
 
   </form>

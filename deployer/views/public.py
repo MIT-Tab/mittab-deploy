@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 
 from flask import render_template, redirect, jsonify, request, flash
@@ -6,7 +7,7 @@ from config.repo_options import options
 from deployer import app
 from deployer.models import *
 from deployer.tasks import *
-from deployer.forms import TournamentForm
+from deployer.forms import TournamentForm, ConfirmTournamentForm
 from deployer.clients import stripe
 
 
@@ -20,38 +21,51 @@ def index():
 def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        if stripe.charge(form.email.data, form.stripe_token.data):
-            repo_data = options[form.repo_options.data]
-            tournament = Tournament(form.name.data,
-                                    repo_data['clone_url'],
-                                    repo_data['branch'])
+        repo_data = options[form.repo_options.data]
+        tournament = Tournament(form.name.data,
+                                repo_data['clone_url'],
+                                repo_data['branch'],
+                                form.deletion_date.data)
 
-            db.session.add(tournament)
-            db.session.commit()
+        db.session.add(tournament)
+        db.session.commit()
 
-            tournament.set_status('Initializing')
-            deploy_tournament.delay(tournament.id,
-                                    form.password.data,
-                                    form.email.data)
-
-            if form.add_test.data:
-                deploy_test.delay(tournament.name,
-                                tournament.clone_url,
-                                tournament.branch)
-            return redirect('/tournaments/%s' % tournament.name)
-        else:
-            flash(
-                    """An error occurred while processing payment info.
-                       Contact Ben via the link in the footer if the problem
-                       persists."""
-                )
+        tournament.set_status('Confirming payment')
+        return redirect('/tournaments/%s/confirm' % tournament.id)
 
     return render_template('new.html',
-                           stripe_cost=stripe.COST_IN_CENTS,
-                           stripe_key=stripe.get_publishable_key(),
                            title='Create a Tournament',
                            form=form)
 
+@app.route('/tournaments/<tournament_id>/confirm', methods=['POST', 'GET'])
+def confirm_tournament(tournament_id):
+    tournament = Tournament.query.get(tournament_id)
+    if tournament is None: return 404
+
+    days_active = (tournament.deletion_date - datetime.now().date()).days + 1
+    base_cost = stripe.DAILY_COST * days_active
+    test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
+    form = ConfirmTournamentForm()
+
+    if request.method == "GET":
+        return render_template('confirm.html',
+                               title='Confirm Details',
+                               tournament=tournament,
+                               form=form,
+                               stripe_key=stripe.get_publishable_key(),
+                               base_cost=base_cost,
+                               test_cost=test_cost)
+    elif request.method == "POST":
+        cost = base_cost + test_cost if form.add_test.data else base_cost
+        if stripe.charge(form.email.data, form.stripe_token.data):
+            # TODO
+            pass
+        else:
+            flash(
+                    """An error occurred while processing payment info.
+                        Contact Ben via the link in the footer if the problem
+                        persists."""
+                )
 
 @app.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):
