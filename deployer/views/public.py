@@ -41,6 +41,7 @@ def new_tournament():
 def confirm_tournament(tournament_id):
     tournament = Tournament.query.get(tournament_id)
     if tournament is None: return 404
+    elif tournament.active: return ("Cannot confirm an active tournament!", 422)
 
     days_active = (tournament.deletion_date - datetime.now().date()).days + 1
     base_cost = stripe.DAILY_COST * days_active
@@ -55,17 +56,26 @@ def confirm_tournament(tournament_id):
                                stripe_key=stripe.get_publishable_key(),
                                base_cost=base_cost,
                                test_cost=test_cost)
-    elif request.method == "POST":
+
+    if form.validate_on_submit():
         cost = base_cost + test_cost if form.add_test.data else base_cost
-        if stripe.charge(form.email.data, form.stripe_token.data):
-            # TODO
-            pass
+        if stripe.charge(form.email.data, form.stripe_token.data, cost):
+            tournament.set_status('Initializing')
+            deploy_tournament.delay(tournament.id,
+                                    form.password.data,
+                                    form.email.data)
+
+            if form.add_test.data:
+                deploy_test.delay(tournament.name,
+                                tournament.clone_url,
+                                tournament.branch)
+            return redirect('/tournaments/%s' % tournament.name)
         else:
             flash(
-                    """An error occurred while processing payment info.
-                        Contact Ben via the link in the footer if the problem
-                        persists."""
-                )
+                """An error occurred while processing payment info.
+                   Contact Ben via the link in the footer if the problem
+                   persists."""
+            )
 
 @app.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):

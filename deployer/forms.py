@@ -34,14 +34,6 @@ def validate_date(form, field):
     if field.data <= datetime.now().date():
         raise ValidationError('Deletion date must be in the future')
 
-def validate_present_and_inactive_tournament(form, field):
-    tournament = Tournament.query.get(field.data)
-    if tournament is None:
-        raise ValidationError('Tournament not provided')
-    elif tournament.active:
-        raise ValidationError('Cannot confirm a tournament which is already active')
-
-
 #################
 # Form definition
 #################
@@ -61,7 +53,6 @@ class TournamentForm(FlaskForm):
 
 class ConfirmTournamentForm(FlaskForm):
     add_test = BooleanField('Include Test Tournament?')
-    tournament_id = HiddenField('Tournament ID')
     stripe_token = HiddenField('Stripe Token')
     email = StringField('Email Address', [Email()])
     password = PasswordField(
