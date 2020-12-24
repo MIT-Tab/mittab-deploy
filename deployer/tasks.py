@@ -3,6 +3,7 @@ import subprocess
 from datetime import datetime
 
 from celery import Celery
+from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deployer import app, db
@@ -50,6 +51,12 @@ def make_celery(app):
 
 celery = make_celery(app)
 
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(
+        contab(hour=10, minute=30),
+        delete_droplets.s()
+    )
 
 @celery.task()
 def deploy_tournament(tournament_id, password, email_addr):
@@ -108,3 +115,13 @@ def deploy_droplet(droplet, password, size):
         droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
+
+def delete_droplets():
+    tournaments = Tournament.query.filter_by(active=True)
+    current_date = datetime.now().date()
+    for tournment in tournaments:
+        if tournament.deletion_date > current_date:
+            print("Deleting {}...".format(tournament))
+            if not tournament.is_test:
+                tournament.backup()
+            tournament.deactivate()

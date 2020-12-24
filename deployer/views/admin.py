@@ -74,12 +74,6 @@ def callback():
     )
 
     
-    print("REDIRECT_URI: " + redirect_uri, flush=True)
-    print("REDIRECT_URL: " + request.base_url, flush=True)
-    print("REQUEST_URL: " + request.url, flush=True)
-    print("TOKEN RESPONSE: " + str(token_response.json()), flush=True)
-
-
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = oauth_client.add_token(userinfo_endpoint)
