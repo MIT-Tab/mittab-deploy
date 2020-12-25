@@ -100,7 +100,7 @@ def deploy_droplet(droplet, password, size):
 
         droplet.set_status('Installing mit-tab on server')
         subprocess.check_call(['sh',
-		'./bin/setup_droplet',
+                './bin/setup_droplet',
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
@@ -122,6 +122,12 @@ def delete_droplets():
     for tournment in tournaments:
         if tournament.deletion_date > current_date:
             print("Deleting {}...".format(tournament))
-            if not tournament.is_test:
-                tournament.backup()
-            tournament.deactivate()
+            try:
+                if not tournament.is_test:
+                    tournament.backup()
+                tournament.deactivate()
+                tournament.set_status('Deleted')
+            except Exception as e:
+                print("Error deleting {}".format(tournament))
+                tournament.set_status('Error while deleting')
+                import traceback; traceback.print_exc()
