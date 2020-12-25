@@ -21,12 +21,14 @@ class Droplet(db.Model):
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
     deletion_date = db.Column(db.Date, nullable=False)
+    email = db.Column(db.String, nullable=False)
 
-    def __init__(self, name, droplet_name, deletion_date):
+    def __init__(self, name, droplet_name, deletion_date, email):
         self.name = name.lower()
         self.droplet_name = droplet_name
         self.created_at = datetime.now()
         self.deletion_date = deletion_date
+        self.email = email
 
     @property
     def url(self):
@@ -124,9 +126,9 @@ class Droplet(db.Model):
 
 class Tournament(Droplet):
 
-    def __init__(self, name, clone_url, branch, deletion_date):
+    def __init__(self, name, clone_url, branch, deletion_date, email):
         name = name.lower()
         droplet_name = '{0}-{1}'.format(name, int(time()))
         self.clone_url = clone_url
         self.branch = branch
-        super(Tournament, self).__init__(name, droplet_name, deletion_date)
+        super(Tournament, self).__init__(name, droplet_name, deletion_date, email)

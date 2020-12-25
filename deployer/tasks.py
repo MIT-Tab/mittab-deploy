@@ -59,21 +59,21 @@ def setup_periodic_tasks(sender, **kwargs):
     )
 
 @celery.task()
-def deploy_tournament(tournament_id, password, email_addr):
+def deploy_tournament(tournament_id, password):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
-    email.send_confirmation(email_addr, tournament, password)
+    email.send_confirmation(tournament.email, tournament, password)
     email.send_notification(tournament.name)
 
 
 @celery.task()
-def deploy_test(name, clone_url, branch, deletion_date):
+def deploy_test(name, clone_url, branch, deletion_date, email):
     name = '{}-test'.format(name)
     if Tournament.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
-    tournament = Tournament(name, clone_url, branch, deletion_date)
+    tournament = Tournament(name, clone_url, branch, deletion_date, email)
     db.session.add(tournament)
     db.session.commit()
 

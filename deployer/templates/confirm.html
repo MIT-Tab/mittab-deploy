@@ -23,7 +23,7 @@ function handleSubmit() {
     handler.open({
       name: 'MIT-Tab',
       description: 'MIT-Tab server',
-      email: document.tournament.email.value,
+      email: '{{ tournament.email }}',
       amount: stripeCost
     });
   }
@@ -65,17 +65,6 @@ Base cost: {{ cents_as_string(base_cost) }}
   onsubmit="return handleSubmit()"
   name="tournament">
   {{ form.hidden_tag() }}
-
-  <div class="form-group">
-    {{ form.email.label }}
-    <span class="help-block">
-      You will receive an email with info about running the tournament.
-    </span>
-    {% for error in form.email.errors %}
-      <span class="text-danger">[{{error}}]</span>
-    {% endfor %}<br>
-    {{ form.email(class='form-control', id='email') }}
-  </div>
 
   <div class="form-group">
     {{ form.password.label }}

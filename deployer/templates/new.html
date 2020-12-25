@@ -25,6 +25,17 @@
     </div>
 
     <div class="form-group">
+      {{ form.email.label }}
+      <span class="help-block">
+        You will receive an email with info about running the tournament.
+      </span>
+      {% for error in form.email.errors %}
+        <span class="text-danger">[{{error}}]</span>
+      {% endfor %}<br>
+      {{ form.email(class='form-control', id='email') }}
+    </div>
+
+    <div class="form-group">
       {{ form.deletion_date.label }}
       <span class="help-block">
         The tournament will be deleted on this date, and <b>you will be charged $0.50 per-day until the deletion date</b>.
