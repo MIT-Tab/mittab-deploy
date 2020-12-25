@@ -119,8 +119,8 @@ def deploy_droplet(droplet, password, size):
 def delete_droplets():
     tournaments = Tournament.query.filter_by(active=True)
     current_date = datetime.now().date()
-    for tournment in tournaments:
-        if tournament.deletion_date > current_date:
+    for tournament in tournaments:
+        if tournament.deletion_date < current_date and tournament.warning_email_sent:
             print("Deleting {}...".format(tournament))
             try:
                 if not tournament.is_test:
@@ -131,9 +131,9 @@ def delete_droplets():
                 print("Error deleting {}".format(tournament))
                 tournament.set_status('Error while deleting')
                 import traceback; traceback.print_exc()
-        elif (current_date - tournament.deletion_date).days <= 3 and \
+        elif (tournament.deletion_date - current_date).days <= 3 and \
                 not tournament.warning_email_sent:
             email.send_warning(tournament)
-            tournment.warning_email_sent = True
+            tournament.warning_email_sent = True
             db.session.add(tournament)
             db.session.commit()

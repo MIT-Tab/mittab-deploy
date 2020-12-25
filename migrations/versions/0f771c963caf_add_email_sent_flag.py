@@ -15,8 +15,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    pass
+    op.add_column('droplets', sa.Column('warning_email_sent', sa.Boolean(), nullable=True, default=False))
 
 
 def downgrade():
-    pass
+    op.drop_column('droplets', 'warning_email_sent')
