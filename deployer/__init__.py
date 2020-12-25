@@ -23,6 +23,7 @@ if not app.config.get('DEBUG'):
     sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 from deployer.models import *
+from deployer import helpers
 
 migrate = Migrate(app, db)
 mail = Mail(app)

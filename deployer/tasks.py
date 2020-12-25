@@ -3,6 +3,7 @@ import subprocess
 from datetime import datetime
 
 from celery import Celery
+from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deployer import app, db
@@ -50,23 +51,29 @@ def make_celery(app):
 
 celery = make_celery(app)
 
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(
+        contab(hour=10, minute=30),
+        delete_droplets.s()
+    )
 
 @celery.task()
-def deploy_tournament(tournament_id, password, email_addr):
+def deploy_tournament(tournament_id, password):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
-    email.send_confirmation(email_addr, tournament, password)
+    email.send_confirmation(tournament, password)
     email.send_notification(tournament.name)
 
 
 @celery.task()
-def deploy_test(name, clone_url, branch):
+def deploy_test(name, clone_url, branch, deletion_date, email):
     name = '{}-test'.format(name)
     if Tournament.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
-    tournament = Tournament(name, clone_url, branch)
+    tournament = Tournament(name, clone_url, branch, deletion_date, email)
     db.session.add(tournament)
     db.session.commit()
 
@@ -93,7 +100,7 @@ def deploy_droplet(droplet, password, size):
 
         droplet.set_status('Installing mit-tab on server')
         subprocess.check_call(['sh',
-		'./bin/setup_droplet',
+                './bin/setup_droplet',
                 droplet.ip_address,
                 droplet.clone_url,
                 droplet.branch,
@@ -108,3 +115,25 @@ def deploy_droplet(droplet, password, size):
         droplet.set_status('An error occurred. Retrying up to 5 times')
         droplet.deactivate()
         raise e
+
+def delete_droplets():
+    tournaments = Tournament.query.filter_by(active=True)
+    current_date = datetime.now().date()
+    for tournament in tournaments:
+        if tournament.deletion_date < current_date and tournament.warning_email_sent:
+            print("Deleting {}...".format(tournament))
+            try:
+                if not tournament.is_test:
+                    tournament.backup()
+                tournament.deactivate()
+                tournament.set_status('Deleted')
+            except Exception as e:
+                print("Error deleting {}".format(tournament))
+                tournament.set_status('Error while deleting')
+                import traceback; traceback.print_exc()
+        elif (tournament.deletion_date - current_date).days <= 3 and \
+                not tournament.warning_email_sent:
+            email.send_warning(tournament)
+            tournament.warning_email_sent = True
+            db.session.add(tournament)
+            db.session.commit()

@@ -7,12 +7,13 @@ __secret_key = os.environ['STRIPE_SECRET_KEY']
 
 stripe.api_key = __secret_key
 
-COST_IN_CENTS = 3000
+DAILY_COST_TEST_TOURNAMENT = 25
+DAILY_COST                 = 50
 
 def get_publishable_key():
     return __publishable_key
 
-def charge(email, stripe_token):
+def charge(email, stripe_token, amount):
     try:
         customer = stripe.Customer.create(
             email=email,
@@ -21,7 +22,7 @@ def charge(email, stripe_token):
 
         stripe.Charge.create(
             customer=customer.id,
-            amount=COST_IN_CENTS,
+            amount=amount,
             currency='usd',
             description='MIT-Tab Server',
             receipt_email=email

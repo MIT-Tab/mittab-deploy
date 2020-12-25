@@ -1,8 +1,10 @@
 import re
 
+from datetime import datetime
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, BooleanField, \
-        HiddenField
+        HiddenField, DateField, IntegerField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from deployer.models import Droplet
@@ -24,11 +26,17 @@ def validate_password(form, field):
     if not pattern.match(field.data):
         raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
 
-
 def validate_unique_name(form, field):
     if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
 
+def validate_date(form, field):
+    if field.data <= datetime.now().date():
+        raise ValidationError('Deletion date must be in the future')
+
+def validate_days(form, field):
+    if field.data < 1:
+        raise ValidationError('Must be at least 1 day')
 
 #################
 # Form definition
@@ -40,7 +48,20 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name]
             )
+    repo_options = SelectField(
+            'MIT-Tab Version',
+            choices=[(key, options[key]['name']) for key in options.keys()],
+            default='default'
+            )
+    deletion_date = DateField(
+            'Deletion Date',
+            [DataRequired(), validate_date],
+            format='%m/%d/%Y')
     email = StringField('Email Address', [Email()])
+
+class ConfirmTournamentForm(FlaskForm):
+    add_test = BooleanField('Include Test Tournament?')
+    stripe_token = HiddenField('Stripe Token')
     password = PasswordField(
             'Password',
             [
@@ -49,10 +70,7 @@ class TournamentForm(FlaskForm):
                 validate_password
             ])
     confirm = PasswordField('Confirm Password')
-    repo_options = SelectField(
-            'MIT-Tab Version',
-            choices=[(key, options[key]['name']) for key in options.keys()],
-            default='default'
-            )
-    add_test = BooleanField('Include Test Tournament?')
+
+class ExtendTournamentForm(FlaskForm):
     stripe_token = HiddenField('Stripe Token')
+    days = IntegerField('Number of Days to Add', [DataRequired(), validate_days])

@@ -1,0 +1,77 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+  <center>
+    <h1>Extend Tournament</h1>
+  </center>
+  <br>
+
+<script src="https://checkout.stripe.com/checkout.js"></script>
+<script>
+var dailyCostInCents = {{ daily_cost }}
+var handler = StripeCheckout.configure({
+  key: "{{stripe_key}}",
+  locale: 'auto',
+  token: function(token) {
+    document.tournament.stripe_token.value = token.id
+    document.tournament.submit()
+  }
+});
+
+function handleSubmit() {
+  var daysSelected = parseFloat(document.tournament.days.value)
+  if (isNaN(daysSelected)) {
+    alert('Must select a number of days!')
+    return false
+  } else if (daysSelected < 1 || !Number.isInteger(daysSelected)) {
+    alert('Invalid day selection. Must be a full number above 0')
+    return false
+  }
+
+  if (!document.tournament.stripe_token.value) {
+    handler.open({
+      name: 'MIT-Tab',
+      description: 'MIT-Tab server',
+      email: '{{ tournament.email }}',
+      amount: dailyCostInCents * daysSelected
+    });
+  }
+  return !!document.tournament.stripe_token.value;
+}
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+</script>
+<pre>
+Name: {{ tournament.name }}
+Deletion date: {{ tournament.deletion_date }}
+</pre>
+<br/>
+
+<form action="/tournaments/{{ tournament.id }}/extend"
+  method="post"
+  id="form"
+  onsubmit="return handleSubmit()"
+  name="tournament">
+  {{ form.hidden_tag() }}
+
+  <div class="form-group">
+    {{ form.days.label }}
+    <span class="help-block">
+      Number of days to extend the deletion date for. <b>You will be charged $0.50/day</b>
+    </span>
+    {% for error in form.days.errors %}
+      <span class="text-danger">[{{error}}]</span>
+    {% endfor %}<br>
+    {{ form.days(class='form-control') }}
+  </div>
+
+  <input type="submit"
+         id="submit_button"
+         value="Confirm & Pay"
+         class="btn btn-primary" />
+</form>
+{% endblock %}
