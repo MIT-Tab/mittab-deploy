@@ -63,7 +63,7 @@ def deploy_tournament(tournament_id, password):
     tournament = Tournament.query.get(tournament_id)
 
     deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
-    email.send_confirmation(tournament.email, tournament, password)
+    email.send_confirmation(tournament, password)
     email.send_notification(tournament.name)
 
 
@@ -131,3 +131,9 @@ def delete_droplets():
                 print("Error deleting {}".format(tournament))
                 tournament.set_status('Error while deleting')
                 import traceback; traceback.print_exc()
+        elif (current_date - tournament.deletion_date).days <= 3 and \
+                not tournament.warning_email_sent:
+            email.send_warning(tournament)
+            tournment.warning_email_sent = True
+            db.session.add(tournament)
+            db.session.commit()

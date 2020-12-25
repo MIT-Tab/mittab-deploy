@@ -91,6 +91,7 @@ def extend_tournament(tournament_id):
         cost = form.days.data * stripe.DAILY_COST
         if stripe.charge(tournament.email, form.stripe_token.data, cost):
             tournament.deletion_date += timedelta(days=form.days.data)
+            tournament.warning_email_sent = False
             db.session.add(tournament)
             db.session.commit()
             flash("Tournament extended successfully!", "success")

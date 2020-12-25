@@ -13,7 +13,7 @@ def __send_email(subject, recipient, text_body, html_body):
     return mail.send(msg)
 
 
-def send_confirmation(recipient, tournament, password):
+def send_confirmation(tournament, password):
     txt = render_template('mail/confirmation.txt',
                           tournament_name=tournament.name,
                           ip_address=tournament.ip_address,
@@ -23,7 +23,14 @@ def send_confirmation(recipient, tournament, password):
                            ip_address=tournament.ip_address,
                            password=password)
     subject = 'Your MIT-Tab Tournament Has Been Created!'
-    return __send_email(subject, recipient, txt, html)
+    return __send_email(subject, tournament.email, txt, html)
+
+
+def send_warning(tournament):
+    txt = render_template('mail/warning.txt', tournament=tournament)
+    html = render_template('mail/warning.html', tournament=tournament)
+    subject = '[IMPORTANT] Your mit-tab tournament will be deleted soon!'
+    return __send_email(subject, tournament.email, txt, html)
 
 
 def send_notification(tournament_name):

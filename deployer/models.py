@@ -22,6 +22,7 @@ class Droplet(db.Model):
     branch = db.Column(db.String, nullable=True)
     deletion_date = db.Column(db.Date, nullable=False)
     email = db.Column(db.String, nullable=False)
+    warning_email_sent = db.Column(db.Boolean, default=False)
 
     def __init__(self, name, droplet_name, deletion_date, email):
         self.name = name.lower()
