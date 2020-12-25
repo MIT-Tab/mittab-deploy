@@ -42,7 +42,7 @@ def new_tournament():
 def confirm_tournament(tournament_id):
     tournament = Tournament.query.get(tournament_id)
     if tournament is None: return 404
-    elif tournament.active: return ("Cannot confirm an active tournament!", 422)
+    elif tournament.confirmed: return ("Tournament already paid for and finalized", 422)
 
     days_active = (tournament.deletion_date - datetime.now().date()).days + 1
     base_cost = stripe.DAILY_COST * days_active
@@ -53,6 +53,9 @@ def confirm_tournament(tournament_id):
         cost = base_cost + test_cost if form.add_test.data else base_cost
         if stripe.charge(tournament.email, form.stripe_token.data, cost):
             tournament.set_status('Initializing')
+            tournament.confirmed = True
+            db.session.add(tournament)
+            db.session.commit()
             deploy_tournament.delay(tournament.id, form.password.data)
 
             if form.add_test.data:

@@ -17,6 +17,7 @@ class Droplet(db.Model):
     droplet_name = db.Column(db.String, nullable=True)
     status = db.Column(db.String, nullable=True)
     active = db.Column(db.Boolean, default=True)
+    confirmed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)
     clone_url = db.Column(db.String, nullable=True)
     branch = db.Column(db.String, nullable=True)
