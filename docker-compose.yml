@@ -26,6 +26,19 @@ celery:
     - FLASK_APP=/usr/src/app/deployer/__init__.py
   command: ./bin/start_celery
 
+celery-beat:
+  restart: on-failure
+  image: benmusch/mit-tab:latest
+  volumes:
+    - ./:/usr/src/app
+    - ${HOME}/.ssh:/root/.ssh
+  env_file:
+    - .env
+  environment:
+    - PYTHONPATH=/usr/src/app
+    - FLASK_APP=/usr/src/app/deployer/__init__.py
+  command: celery -A deployer.tasks.celery beat
+
 flower:
   restart: on-failure
   image: benmusch/mit-tab:latest
