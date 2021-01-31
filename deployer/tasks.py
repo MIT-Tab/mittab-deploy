@@ -127,6 +127,9 @@ def delete_droplets():
                     tournament.backup()
                 tournament.deactivate()
                 tournament.set_status('Deleted')
+            except digital_ocean.NoDropletError as e:
+                print("Droplet not found, skipping")
+                continue
             except Exception as e:
                 print("Error deleting {}".format(tournament))
                 tournament.set_status('Error while deleting')

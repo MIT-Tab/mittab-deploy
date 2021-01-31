@@ -85,7 +85,7 @@ class Droplet(db.Model):
         return db.session.commit()
 
     def backup(self):
-        if not self.droplet: raise ValueError('No droplet found!')
+        if not self.droplet: raise NoDropletError('No droplet found!')
 
         src_csv = "/usr/src/mit-tab/exports/"
         src_db = "/usr/src/mit-tab/mittab/final-backup.json"
