@@ -62,6 +62,7 @@ def confirm_tournament(tournament_id):
                 deploy_test.delay(tournament.name,
                                   tournament.clone_url,
                                   tournament.branch,
+                                  tournament.deletion_date,
                                   tournament.email)
             return redirect('/tournaments/%s' % tournament.name)
         else:
