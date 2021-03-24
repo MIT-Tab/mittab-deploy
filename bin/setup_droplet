@@ -12,9 +12,7 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$1 <<EOL
 
   echo 'MYSQL_DATABASE=mittab' >> .env;
   echo 'MITTAB_DB_HOST=mysql' >> .env;
-  echo 'MYSQL_USER=root' >> .env;
   echo 'MYSQL_HOST=localhost' >> .env;
-  echo 'MYSQL_PASSWORD=$MITTAB_MYSQL_PASSWORD' >> .env;
   echo 'MYSQL_ROOT_PASSWORD=$MITTAB_MYSQL_PASSWORD' >> .env;
   echo 'SENTRY_DSN=$MITTAB_SENTRY_DSN' >> .env;
   echo 'DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN' >> .env;
