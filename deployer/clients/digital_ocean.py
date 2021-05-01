@@ -136,7 +136,7 @@ def __build_app_spec(name, tab_password, database):
             env_var("BACKUP_PREFIX", f"backups/{name}/{int(time())}"),
             env_var("BACKUP_S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com"),
             env_var("AWS_ACCESS_KEY_ID", __access_key, True),
-            env_var("AWS_SECRET_ACCESS_KEY_ID", __secret_key, True),
+            env_var("AWS_SECRET_ACCESS_KEY", __secret_key, True),
             env_var("AWS_DEFAULT_REGION", "nyc3"),
             env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN"), True),
             env_var("TOURNAMENT_NAME", name),
@@ -194,6 +194,7 @@ def is_database_ready(db_id):
     resp = requests.get(f"https://api.digitalocean.com/v2/databases/{db_id}",
             headers={"Authorization": f"Bearer {__token}"})
     resp.raise_for_status()
+    import pprint; pprint.pprint(resp.json()["database"])
     return resp.json()["database"]["status"] == "online"
 
 
