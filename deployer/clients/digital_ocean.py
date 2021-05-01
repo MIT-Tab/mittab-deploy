@@ -1,5 +1,5 @@
 import os
-from time import time
+from time import time, sleep
 
 import boto3
 import digitalocean
@@ -82,10 +82,7 @@ def create_app(name, tab_password, database):
     """
     Create the main App. DB must be created first.
     """
-    resp = requests.post("https://api.digitalocean.com/v2/apps",
-            json=__build_app_spec(name, tab_password, database),
-            headers={"Authorization": f"Bearer {__token}"})
-    resp.raise_for_status()
+    return __post("apps", {"spec": __build_app_spec(name, tab_password, database)})
 
 
 def __build_app_spec(name, tab_password, database):
@@ -114,7 +111,7 @@ def __build_app_spec(name, tab_password, database):
         "services": [{
             "name": "web",
             "instance_count": 1,
-            "instance_size_slug": "profesional-xs",
+            "instance_size_slug": "professional-xs",
             "dockerfile_path": "Dockerfile",
             "http_port": 8000,
             "github": github_config,
@@ -129,35 +126,75 @@ def __build_app_spec(name, tab_password, database):
         }],
         "envs": [
             env_var("TAB_PASSWORD", tab_password, True),
-            env_var("MYSQL_DATABASE", "${mysql.DATABASE}"),
-            env_var("MYSQL_PASSWORD", "${mysql.PASSWORD}"),
-            env_var("MYSQL_USER", "${mysql.USERNAME}"),
-            env_var("MYSQL_HOST", "${mysql.HOSTNAME}"),
-            env_var("MYSQL_PORT", "${mysql.PORT}"),
+            env_var("MYSQL_DATABASE", "${%s.DATABASE}" % database["name"]),
+            env_var("MYSQL_PASSWORD", "${%s.PASSWORD}" % database["name"]),
+            env_var("MYSQL_USER", "${%s.USERNAME}" % database["name"]),
+            env_var("MYSQL_HOST", "${%s.HOSTNAME}" % database["name"]),
+            env_var("MYSQL_PORT", "${%s.PORT}" % database["name"]),
             env_var("BACKUP_STORAGE", "S3"),
             env_var("BACKUP_BUCKET", "mittab-backups"),
             env_var("BACKUP_PREFIX", f"backups/{name}/{int(time())}"),
             env_var("BACKUP_S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com"),
             env_var("AWS_ACCESS_KEY_ID", __access_key, True),
             env_var("AWS_SECRET_ACCESS_KEY_ID", __secret_key, True),
+            env_var("AWS_DEFAULT_REGION", "nyc3"),
             env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN"), True),
             env_var("TOURNAMENT_NAME", name),
             env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", True)),
         ],
         "databases": [{
-            "name": "mysql",
-            "production": Truem
-            "engine": "MySQL",
-            "db_name": "foo",      #TODO
-            "db_user": "foo",      #TODO
-            "cluster_name": "baz", #TODO
+            "name": database["name"],
+            "production": True,
+            "engine": "MYSQL",
+            "db_name": database["connection"]["database"],
+            "db_user": database["connection"]["user"],
+            "cluster_name": database["name"],
         }],
         "domains": [{
-            "name": f"{name}.nu-tab.com",
+            "domain": f"{name}.nu-tab.com",
             "type": "PRIMARY",
             "wildcard": False,
         }]
     }
+
+
+############################
+# Databases
+############################
+
+def create_database(name, timeout=600):
+    data = __post("databases",
+            {
+                "name": f"mittab-db-{name}",
+                "engine": "mysql",
+                "version": "8",
+                "size": "db-s-1vcpu-1gb",
+                "region": "nyc3",
+                "num_nodes": 1,
+            })["database"]
+
+
+    seconds_elapsed = 0
+    while seconds_elapsed < timeout:
+        if is_database_ready(data["id"]):
+            break
+        seconds_elapsed += 5
+        sleep(5)
+
+    if not is_database_ready(data["id"]):
+        raise ValueError('Timeout exceeded')
+
+    # necessary for python's mysql client
+    path = f"databases/{data['id']}/users/{data['connection']['user']}/reset_auth"
+    __post(path, {"mysql_settings": {"auth_plugin": "mysql_native_password"}})
+
+    return data
+
+def is_database_ready(db_id):
+    resp = requests.get(f"https://api.digitalocean.com/v2/databases/{db_id}",
+            headers={"Authorization": f"Bearer {__token}"})
+    resp.raise_for_status()
+    return resp.json()["database"]["status"] == "online"
 
 
 ############################
@@ -190,3 +227,18 @@ def get_domain_record(name, domain='nu-tab.com'):
 
 def upload_file(src_path, dst_path):
     __boto_client.upload_file(src_path, 'mittab-backups', dst_path)
+
+
+def __post(path, data):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.post(f"https://api.digitalocean.com/v2{path}",
+            json=data,
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        import pprint; pprint.pprint(resp.json())
+        raise e
