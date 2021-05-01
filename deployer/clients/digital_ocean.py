@@ -113,7 +113,7 @@ def __build_app_spec(name, tab_password, database):
             "instance_count": 1,
             "instance_size_slug": "professional-xs",
             "dockerfile_path": "Dockerfile",
-            "http_port": 8000,
+            "http_port": 8010,
             "github": github_config,
             "routes": [{ "path": "/" }],
         }],
@@ -158,6 +158,22 @@ def __build_app_spec(name, tab_password, database):
     }
 
 
+def delete_app(app_name):
+    if not app_name.startswith("mittab-"):
+        app_name = f"mittab-{app_name}"
+    apps = __get("apps")["apps"]
+    for app in apps:
+        if app["spec"]["name"] != app_name:
+            continue
+        dbs = __get("databases")["databases"]
+        for db in dbs:
+
+        __delete(f"apps/{app['id']}")
+        delete_database(app["spec"]["databases"][0]["cluster_name"])
+        return
+    raise ValueError(f"App {app_name} not found")
+
+
 ############################
 # Databases
 ############################
@@ -190,12 +206,18 @@ def create_database(name, timeout=600):
 
     return data
 
+
+def delete_database(name):
+    for db in __get("databases")["databases"]:
+        if db["name"] != name:
+            continue
+        __delete(f"databases/{db['id']}")
+        return
+    raise ValueError(f"DB {name} not found")
+
+
 def is_database_ready(db_id):
-    resp = requests.get(f"https://api.digitalocean.com/v2/databases/{db_id}",
-            headers={"Authorization": f"Bearer {__token}"})
-    resp.raise_for_status()
-    import pprint; pprint.pprint(resp.json()["database"])
-    return resp.json()["database"]["status"] == "online"
+    return __get(f"databases/{db_id}")["database"]["status"] == "online"
 
 
 ############################
@@ -241,5 +263,30 @@ def __post(path, data):
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
-        import pprint; pprint.pprint(resp.json())
+        raise e
+
+
+def __delete(path):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.delete(f"https://api.digitalocean.com/v2{path}",
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise e
+
+
+def __get(path):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.get(f"https://api.digitalocean.com/v2{path}",
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
         raise e

@@ -49,6 +49,7 @@ class App(db.Model):
 
     def deactivate(self):
         """TODO: Destroy DB and app"""
+        delete_app(self.name)
         self.active = False
 
         db.session.add(self)
