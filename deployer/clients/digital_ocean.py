@@ -120,7 +120,7 @@ def __build_app_spec(name, tab_password, database):
         "static_sites": [{
             "name": "static",
             "output_dir": "/var/www/tab/assets",
-            "dockerfile_path": "Dockerfile",
+            "dockerfile_path": "Dockerfile.static",
             "github": github_config,
             "routes": [{ "path": "/static" }]
         }],
@@ -161,16 +161,15 @@ def __build_app_spec(name, tab_password, database):
 def delete_app(app_name):
     if not app_name.startswith("mittab-"):
         app_name = f"mittab-{app_name}"
+
     apps = __get("apps")["apps"]
     for app in apps:
         if app["spec"]["name"] != app_name:
             continue
-        dbs = __get("databases")["databases"]
-        for db in dbs:
-
         __delete(f"apps/{app['id']}")
         delete_database(app["spec"]["databases"][0]["cluster_name"])
         return
+
     raise ValueError(f"App {app_name} not found")
 
 
