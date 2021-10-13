@@ -8,7 +8,7 @@ from oauthlib.oauth2 import WebApplicationClient
 import requests
 
 from deployer import app, login_manager
-from deployer.models import Tournament
+from deployer.models import App
 
 
 # Lightweight user object for admin auth since we don't need persistent users
@@ -37,22 +37,15 @@ def get_google_provider_cfg():
 @app.route('/admin/tournaments', methods=['GET'])
 @flask_login.login_required
 def admin_index():
-    tournaments = Tournament.query.order_by(Tournament.created_at.desc()).limit(100)
-    return render_template('admin/index.html', tournaments=tournaments)
+    apps = App.query.order_by(App.created_at.desc()).limit(100)
+    return render_template('admin/index.html', tournaments=apps)
 
-@app.route('/admin/tournaments/<tournament_id>/delete', methods=['POST'])
+@app.route('/admin/tournaments/<app_id>/delete', methods=['POST'])
 @flask_login.login_required
-def delete_tournament(tournament_id):
-    tournament = Tournament.query.get(int(tournament_id))
-
-    if not tournament.is_test:
-        tournament.backup()
-    tournament.deactivate()
-
-    if tournament.is_test:
-        flash("Tournament %s deleted (without backup)" % tournament.name, "success")
-    else:
-        flash("Tournament %s deleted (with backup)" % tournament.name, "success")
+def delete_tournament(app_id):
+    app = App.query.get(int(app_id))
+    app.deactivate()
+    flash("Tournament %s deleted (with backup)" % app.name, "success")
     return redirect("/admin/tournaments")
 
 @app.route("/admin/oauth-callback")

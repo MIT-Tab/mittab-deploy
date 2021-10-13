@@ -40,7 +40,12 @@ class App(db.Model):
         return self.name.endswith('-test')
 
     def is_ready(self):
-        return True # TODO: Implement this
+        try:
+            app = get_app(self.name)
+        except ValueError:
+            return False
+
+        return app.get('active_deployment', {}).get('phase') == 'ACTIVE'
 
     def set_status(self, status):
         self.status = status
@@ -48,17 +53,11 @@ class App(db.Model):
         return db.session.commit()
 
     def deactivate(self):
-        """TODO: Destroy DB and app"""
         delete_app(self.name)
         self.active = False
 
         db.session.add(self)
         return db.session.commit()
-
-    def backup(self):
-        """TODO: Implement"""
-        pass
-
 
 class Droplet(db.Model):
     """

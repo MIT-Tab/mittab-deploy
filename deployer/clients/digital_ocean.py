@@ -113,7 +113,7 @@ def __build_app_spec(name, tab_password, database):
             "instance_count": 1,
             "instance_size_slug": "professional-xs",
             "dockerfile_path": "Dockerfile",
-            "http_port": 8010,
+            "http_port": 8000,
             "github": github_config,
             "routes": [{ "path": "/" }],
         }],
@@ -158,7 +158,7 @@ def __build_app_spec(name, tab_password, database):
     }
 
 
-def delete_app(app_name):
+def get_app(app_name):
     if not app_name.startswith("mittab-"):
         app_name = f"mittab-{app_name}"
 
@@ -166,11 +166,16 @@ def delete_app(app_name):
     for app in apps:
         if app["spec"]["name"] != app_name:
             continue
-        __delete(f"apps/{app['id']}")
-        delete_database(app["spec"]["databases"][0]["cluster_name"])
-        return
+        return app
 
     raise ValueError(f"App {app_name} not found")
+
+
+
+def delete_app(app_name):
+    app = get_app(app_name)
+    __delete(f"apps/{app['id']}")
+    delete_database(app["spec"]["databases"][0]["cluster_name"])
 
 
 ############################

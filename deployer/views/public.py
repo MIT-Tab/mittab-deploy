@@ -13,8 +13,8 @@ from deployer.clients import stripe
 
 @flask_app.route('/', methods=['GET'])
 def index():
-    tournaments = Tournament.query.filter_by(active=True).all()
-    return render_template('index.html', tournaments=tournaments)
+    apps = App.query.filter_by(active=True).all()
+    return render_template('index.html', tournaments=apps)
 
 
 @flask_app.route('/tournaments/new', methods=['GET', 'POST'])
@@ -86,19 +86,19 @@ def confirm_tournament(app_id):
 
 @flask_app.route('/tournaments/<tournament_id>/extend', methods=['POST', 'GET'])
 def extend_tournament(tournament_id):
-    tournament = Tournament.query.get(tournament_id)
-    if tournament is None: return 404
-    elif not tournament.active: return ("Cannot extend an inactive tournament!", 422)
-    elif tournament.is_test: return ("Cannot extend a test tournament!", 422)
+    app = App.query.get(tournament_id)
+    if app is None: return 404
+    elif not app.active: return ("Cannot extend an inactive tournament!", 422)
+    elif app.is_test: return ("Cannot extend a test tournament!", 422)
 
     form = ExtendTournamentForm()
 
     if request.method == "POST" and form.validate_on_submit():
         cost = form.days.data * stripe.DAILY_COST
-        if stripe.charge(tournament.email, form.stripe_token.data, cost):
-            tournament.deletion_date += timedelta(days=form.days.data)
-            tournament.warning_email_sent = False
-            db.session.add(tournament)
+        if stripe.charge(app.email, form.stripe_token.data, cost):
+            app.deletion_date += timedelta(days=form.days.data)
+            app.warning_email_sent = False
+            db.session.add(app)
             db.session.commit()
             flash("Tournament extended successfully!", "success")
         else:
@@ -112,7 +112,7 @@ def extend_tournament(tournament_id):
     form.stripe_token.data = None
     return render_template('extend.html',
                             title='Extend Tournament',
-                            tournament=tournament,
+                            tournament=app,
                             form=form,
                             stripe_key=stripe.get_publishable_key(),
                             daily_cost=stripe.DAILY_COST)
