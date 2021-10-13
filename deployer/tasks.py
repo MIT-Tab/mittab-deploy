@@ -86,7 +86,10 @@ def deploy_app(app, password):
         app.set_status('Creating database')
         db = digital_ocean.create_database(app.name)
 
+        app.set_status('Creating server')
         digital_ocean.create_app(app.name, password, db)
+
+        app.set_status('Deployed')
     except Exception as e:
         import traceback; traceback.print_exc()
         app.set_status('An error occurred. Retrying up to 5 times')

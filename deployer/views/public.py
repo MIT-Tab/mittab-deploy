@@ -127,7 +127,7 @@ def show_tournament(name):
 @flask_app.route('/tournaments/<name>/status', methods=['GET'])
 def tournament_status(name):
     app = App.query.filter_by(name=name).order_by(App.id.desc()).first()
-    if not tournament:
+    if not app:
         return ('', 404)
 
     return jsonify(status=app.status)
