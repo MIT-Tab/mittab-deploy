@@ -1,6 +1,7 @@
 web:
   restart: "no"
-  image: benmusch/mit-tab:latest
+  build: .
+  dockerfile: Dockerfile.web
   ports:
     - "8000:8000"
   volumes:
@@ -15,7 +16,8 @@ web:
 
 celery:
   restart: on-failure
-  image: benmusch/mit-tab:latest
+  build: .
+  dockerfile: Dockerfile.web
   volumes:
     - ./:/usr/src/app
     - ${HOME}/.ssh:/root/.ssh
@@ -41,7 +43,8 @@ celery-beat:
 
 flower:
   restart: on-failure
-  image: benmusch/mit-tab:latest
+  build: .
+  dockerfile: Dockerfile.web
   ports:
     - "5555:5555"
   volumes:
