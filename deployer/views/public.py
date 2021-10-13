@@ -58,14 +58,12 @@ def confirm_tournament(app_id):
             db.session.commit()
             deploy_tournament.delay(app.id, form.password.data)
 
-            """ TODO
             if form.add_test.data:
-                deploy_test.delay(tournament.name,
-                                  tournament.clone_url,
-                                  tournament.branch,
-                                  tournament.deletion_date,
-                                  tournament.email)
-            """
+                deploy_test.delay(app.name,
+                                  app.repo_slug,
+                                  app.branch,
+                                  app.deletion_date,
+                                  app.email)
             return redirect('/tournaments/%s' % app.name)
         else:
             flash(

@@ -69,17 +69,16 @@ def deploy_tournament(app_id, password):
 
 
 @celery.task()
-def deploy_test(name, clone_url, branch, deletion_date, email):
+def deploy_test(name, repo_slug, branch, deletion_date, email):
     name = '{}-test'.format(name)
-    if Tournament.query.filter_by(name=name, active=True).count() > 0:
+    if App.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
-    tournament = Tournament(name, clone_url, branch, deletion_date, email)
-    db.session.add(tournament)
+    app = App(name, repo_slug, branch, deletion_date, email)
+    db.session.add(app)
     db.session.commit()
 
-    deploy_droplet(tournament, 'password', flask_app.config['TEST_SIZE_SLUG'])
-    subprocess.check_call(['sh', './bin/setup_test', str(tournament.ip_address)])
+    deploy_app(app, 'password')
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(120))
 def deploy_app(app, password):

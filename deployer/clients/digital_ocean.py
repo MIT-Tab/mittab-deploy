@@ -278,7 +278,7 @@ def __delete(path):
             headers={"Authorization": f"Bearer {__token}"})
     try:
         resp.raise_for_status()
-        return resp.json()
+        return
     except Exception as e:
         raise e
 
