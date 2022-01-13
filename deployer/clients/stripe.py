@@ -28,5 +28,7 @@ def charge(email, stripe_token, amount):
             receipt_email=email
         )
         return True
-    except stripe.error.StripeError:
+    except stripe.error.StripeError as e:
+        print("Got error %s" % e)
+        import traceback; traceback.print_exc()
         return False
