@@ -27,9 +27,9 @@ def user_loader(user_id):
 
 oauth_client = WebApplicationClient(app.config.get('GOOGLE_CLIENT_ID'))
 if app.config.get("PRODUCTION"):
-    redirect_uri = "http://nu-tab.com/admin/oauth-callback"
+    redirect_uri = "https://nu-tab.com/admin/oauth-callback"
 else:
-    redirect_uri = "http://localhost:5000/admin/oauth-callback"
+    redirect_uri = "https://localhost:5000/admin/oauth-callback"
 
 def get_google_provider_cfg():
     return requests.get('https://accounts.google.com/.well-known/openid-configuration').json()
