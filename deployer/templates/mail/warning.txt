@@ -4,5 +4,5 @@ Your mit-tab tournament ({{ tournament.url }}) will be deleted on
 If you would like to extend the tournament, you can do so at
 http://nu-tab.com/tournaments/{{ tournament.id }}/extend
 
-If necessary, we can re-create the tournament from a backup, but please avoid having to
-result to this scenario.
+If necessary, we can re-create the tournament from a backup, but it's safer to avoid
+this scenario.
