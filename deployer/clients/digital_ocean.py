@@ -1,8 +1,9 @@
 import os
-from time import time
+from time import time, sleep
 
 import boto3
 import digitalocean
+import requests
 
 __access_key = os.environ['DIGITALOCEAN_ACCESS_KEY_ID']
 __secret_key = os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
@@ -74,6 +75,156 @@ def __get_image_slug():
 
 
 ############################
+# Apps
+############################
+
+def create_app(name, tab_password, database):
+    """
+    Create the main App. DB must be created first.
+    """
+    return __post("apps", {"spec": __build_app_spec(name, tab_password, database)})
+
+
+def __build_app_spec(name, tab_password, database):
+    """
+    Build the appspec object for digitalocean. Ideally we could use a yaml file on the
+    branch of the deployment, but it gets a bit tricky with databases and secrets, which
+    cannot be easily managed through that file.
+
+    Reference: https://docs.digitalocean.com/products/app-platform/references/app-specification-reference/
+    """
+    def env_var(key, value, is_secret=False):
+        return {
+            "key": key,
+            "value": value,
+            "type": "SECRET" if is_secret else "GENERAL",
+        }
+
+    github_config = {
+        "repo": "MIT-Tab/mit-tab",
+        "branch": "do-apps", # TODO: customize
+        "deploy_on_push": False,
+    }
+
+    return {
+        "name": f"mittab-{name}",
+        "services": [{
+            "name": "web",
+            "instance_count": 1,
+            "instance_size_slug": "professional-xs",
+            "dockerfile_path": "Dockerfile",
+            "http_port": 8000,
+            "github": github_config,
+            "routes": [{ "path": "/" }],
+        }],
+        "static_sites": [{
+            "name": "static",
+            "output_dir": "/var/www/tab/assets",
+            "dockerfile_path": "Dockerfile.static",
+            "github": github_config,
+            "routes": [{ "path": "/static" }]
+        }],
+        "envs": [
+            env_var("TAB_PASSWORD", tab_password, True),
+            env_var("MYSQL_DATABASE", "${%s.DATABASE}" % database["name"]),
+            env_var("MYSQL_PASSWORD", "${%s.PASSWORD}" % database["name"]),
+            env_var("MYSQL_USER", "${%s.USERNAME}" % database["name"]),
+            env_var("MYSQL_HOST", "${%s.HOSTNAME}" % database["name"]),
+            env_var("MYSQL_PORT", "${%s.PORT}" % database["name"]),
+            env_var("BACKUP_STORAGE", "S3"),
+            env_var("BACKUP_BUCKET", "mittab-backups"),
+            env_var("BACKUP_PREFIX", f"backups/{name}/{int(time())}"),
+            env_var("BACKUP_S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com"),
+            env_var("AWS_ACCESS_KEY_ID", __access_key, True),
+            env_var("AWS_SECRET_ACCESS_KEY", __secret_key, True),
+            env_var("AWS_DEFAULT_REGION", "nyc3"),
+            env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN"), True),
+            env_var("TOURNAMENT_NAME", name),
+            env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", True)),
+        ],
+        "databases": [{
+            "name": database["name"],
+            "production": True,
+            "engine": "MYSQL",
+            "db_name": database["connection"]["database"],
+            "db_user": database["connection"]["user"],
+            "cluster_name": database["name"],
+        }],
+        "domains": [{
+            "domain": f"{name}.nu-tab.com",
+            "type": "PRIMARY",
+            "wildcard": False,
+        }]
+    }
+
+
+def get_app(app_name):
+    if not app_name.startswith("mittab-"):
+        app_name = f"mittab-{app_name}"
+
+    apps = __get("apps")["apps"]
+    for app in apps:
+        if app["spec"]["name"] != app_name:
+            continue
+        return app
+
+    raise ValueError(f"App {app_name} not found")
+
+
+
+def delete_app(app_name):
+    app = get_app(app_name)
+    __delete(f"apps/{app['id']}")
+    delete_database(app["spec"]["databases"][0]["cluster_name"])
+
+
+############################
+# Databases
+############################
+
+def create_database(name, timeout=600):
+    data = __post("databases",
+            {
+                "name": f"mittab-db-{name}",
+                "engine": "mysql",
+                "version": "8",
+                "size": "db-s-1vcpu-1gb",
+                "region": "nyc3",
+                "num_nodes": 1,
+            })["database"]
+
+
+    seconds_elapsed = 0
+    while seconds_elapsed < timeout:
+        if is_database_ready(data["id"]):
+            break
+        seconds_elapsed += 5
+        sleep(5)
+
+    if not is_database_ready(data["id"]):
+        raise ValueError('Timeout exceeded')
+
+    # necessary for python's mysql client
+    path = f"databases/{data['id']}/users/{data['connection']['user']}/reset_auth"
+    __post(path, {"mysql_settings": {"auth_plugin": "mysql_native_password"}})
+
+    return data
+
+
+def delete_database(name):
+    for db in __get("databases")["databases"]:
+        if db["name"] != name:
+            continue
+        __delete(f"databases/{db['id']}")
+        return
+    raise ValueError(f"DB {name} not found")
+
+
+def is_database_ready(db_id):
+    return __get(f"databases/{db_id}")["database"]["status"] == "online"
+
+
+############################
 # Domain record interactions
 ############################
 
@@ -103,3 +254,43 @@ def get_domain_record(name, domain='nu-tab.com'):
 
 def upload_file(src_path, dst_path):
     __boto_client.upload_file(src_path, 'mittab-backups', dst_path)
+
+
+def __post(path, data):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.post(f"https://api.digitalocean.com/v2{path}",
+            json=data,
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise e
+
+
+def __delete(path):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.delete(f"https://api.digitalocean.com/v2{path}",
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return
+    except Exception as e:
+        raise e
+
+
+def __get(path):
+    if not path.startswith("/"):
+        path = f"/{path}"
+
+    resp = requests.get(f"https://api.digitalocean.com/v2{path}",
+            headers={"Authorization": f"Bearer {__token}"})
+    try:
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        raise e

@@ -6,9 +6,10 @@ from celery import Celery
 from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from deployer import app, db
+from deployer import app as flask_app
+from deployer import db
 from deployer.clients import email, digital_ocean
-from deployer.models import Tournament
+from deployer.models import Tournament, App
 
 
 class ServerNotReadyError(Exception):
@@ -23,10 +24,10 @@ class BackupFailedError(Exception):
     pass
 
 
-def make_celery(app):
-    celery = Celery(app.import_name,
-                    backend=app.config['CELERY_RESULT_BACKEND'],
-                    broker=app.config['CELERY_BROKER_URL'],
+def make_celery(flask_app):
+    celery = Celery(flask_app.import_name,
+                    backend=flask_app.config['CELERY_RESULT_BACKEND'],
+                    broker=flask_app.config['CELERY_BROKER_URL'],
                     broker_pool_limit=1,
                     broker_heartbeat=None,
                     broker_connection_timeout=30,
@@ -35,21 +36,21 @@ def make_celery(app):
                     worker_prefetch_multiplier=1,
                     worker_concurrency=50)
 
-    celery.conf.update(app.config)
+    celery.conf.update(flask_app.config)
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):
         abstract = True
 
         def __call__(self, *args, **kwargs):
-            with app.app_context():
+            with flask_app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
     return celery
 
 
-celery = make_celery(app)
+celery = make_celery(flask_app)
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
@@ -59,26 +60,42 @@ def setup_periodic_tasks(sender, **kwargs):
     )
 
 @celery.task()
-def deploy_tournament(tournament_id, password):
-    tournament = Tournament.query.get(tournament_id)
+def deploy_tournament(app_id, password):
+    app = App.query.get(app_id)
 
-    deploy_droplet(tournament, password, app.config['DEFAULT_SIZE_SLUG'])
-    email.send_confirmation(tournament, password)
-    email.send_notification(tournament.name)
+    deploy_app(app, password)
+    email.send_confirmation(app, password)
+    email.send_notification(app.name)
 
 
 @celery.task()
-def deploy_test(name, clone_url, branch, deletion_date, email):
+def deploy_test(name, repo_slug, branch, deletion_date, email):
     name = '{}-test'.format(name)
-    if Tournament.query.filter_by(name=name, active=True).count() > 0:
+    if App.query.filter_by(name=name, active=True).count() > 0:
         raise SetupFailedError('Duplicate tournament {}'.format(name))
 
-    tournament = Tournament(name, clone_url, branch, deletion_date, email)
-    db.session.add(tournament)
+    app = App(name, repo_slug, branch, deletion_date, email)
+    db.session.add(app)
     db.session.commit()
 
-    deploy_droplet(tournament, 'password', app.config['TEST_SIZE_SLUG'])
-    subprocess.check_call(['sh', './bin/setup_test', str(tournament.ip_address)])
+    deploy_app(app, 'password')
+
+@retry(stop=stop_after_attempt(5), wait=wait_fixed(120))
+def deploy_app(app, password):
+    try:
+        app.set_status('Creating database')
+        db = digital_ocean.create_database(app.name)
+
+        app.set_status('Creating server')
+        digital_ocean.create_app(app.name, password, db)
+
+        app.set_status('Deployed')
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        app.set_status('An error occurred. Retrying up to 5 times')
+        app.deactivate()
+        raise e
+
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
 def deploy_droplet(droplet, password, size):
