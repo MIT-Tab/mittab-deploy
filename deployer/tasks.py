@@ -133,7 +133,6 @@ def deploy_droplet(droplet, password, size):
         droplet.deactivate()
         raise e
 
-@app.cli.command("delete-droplets")
 def delete_droplets():
     tournaments = Tournament.query.filter_by(active=True)
     current_date = datetime.now().date()
@@ -158,5 +157,3 @@ def delete_droplets():
             tournament.warning_email_sent = True
             db.session.add(tournament)
             db.session.commit()
-
-app.cli.add_command(delete_droplets)
