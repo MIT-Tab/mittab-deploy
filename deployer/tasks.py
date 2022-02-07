@@ -68,18 +68,6 @@ def deploy_tournament(app_id, password):
     email.send_notification(app.name)
 
 
-@celery.task()
-def deploy_test(name, repo_slug, branch, deletion_date, email):
-    name = '{}-test'.format(name)
-    if App.query.filter_by(name=name, active=True).count() > 0:
-        raise SetupFailedError('Duplicate tournament {}'.format(name))
-
-    app = App(name, repo_slug, branch, deletion_date, email)
-    db.session.add(app)
-    db.session.commit()
-
-    deploy_app(app, 'password')
-
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(120))
 def deploy_app(app, password):
     try:

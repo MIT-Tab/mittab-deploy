@@ -9,9 +9,4 @@ options = {
         "branch": "discord",
         "name": "Discord - BETA, only use with explicit approval"
     },
-    "apps": {
-        "repo_slug": "MIT-Tab/mit-tab",
-        "branch": "do-apps",
-        "name": "App Platform"
-    },
 }
