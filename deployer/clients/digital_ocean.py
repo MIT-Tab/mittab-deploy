@@ -153,6 +153,7 @@ def __build_app_spec(name, tab_password, database):
         "domains": [{
             "domain": f"{name}.nu-tab.com",
             "type": "PRIMARY",
+            "zone": "nu-tab.com",
             "wildcard": False,
         }]
     }
