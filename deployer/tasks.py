@@ -75,7 +75,7 @@ def deploy_app(app, password):
         db = digital_ocean.create_database(app.name)
 
         app.set_status('Creating server')
-        digital_ocean.create_app(app.name, password, db)
+        digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
 
         app.set_status('Deployed')
     except Exception as e:

@@ -78,14 +78,15 @@ def __get_image_slug():
 # Apps
 ############################
 
-def create_app(name, tab_password, database):
+def create_app(name, tab_password, database, repo_slug, branch):
     """
     Create the main App. DB must be created first.
     """
-    return __post("apps", {"spec": __build_app_spec(name, tab_password, database)})
+    return __post("apps",
+            {"spec": __build_app_spec(name, tab_password, database, repo_slug, branch)})
 
 
-def __build_app_spec(name, tab_password, database):
+def __build_app_spec(name, tab_password, database, repo_slug, branch):
     """
     Build the appspec object for digitalocean. Ideally we could use a yaml file on the
     branch of the deployment, but it gets a bit tricky with databases and secrets, which
@@ -101,8 +102,8 @@ def __build_app_spec(name, tab_password, database):
         }
 
     github_config = {
-        "repo": "MIT-Tab/mit-tab",
-        "branch": "do-apps", # TODO: customize
+        "repo": repo_slug,
+        "branch": branch,
         "deploy_on_push": False,
     }
 
