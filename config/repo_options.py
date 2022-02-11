@@ -5,7 +5,7 @@ options = {
         "name": "Default"
     },
     "discord": {
-        "repo_slug": "roddajohn/mit-tab",
+        "repo_slug": "MIT-Tab/mit-tab",
         "branch": "discord",
         "name": "Discord - BETA, only use with explicit approval"
     },
