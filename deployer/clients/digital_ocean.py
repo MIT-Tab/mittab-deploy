@@ -269,6 +269,7 @@ def __post(path, data):
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
+        print(resp.json())
         raise e
 
 
@@ -282,6 +283,7 @@ def __delete(path):
         resp.raise_for_status()
         return
     except Exception as e:
+        print(resp.json())
         raise e
 
 
@@ -295,4 +297,5 @@ def __get(path):
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
+        print(resp.json())
         raise e
