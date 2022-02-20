@@ -53,6 +53,7 @@ def confirm_tournament(app_id):
         cost = base_cost + test_cost if form.add_test.data else base_cost
         if stripe.charge(app.email, form.stripe_token.data, cost):
             app.set_status('Initializing')
+            app.active = True
             app.confirmed = True
             db.session.add(app)
             db.session.commit()
