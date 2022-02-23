@@ -68,7 +68,7 @@ def deploy_tournament(app_id, password):
     email.send_notification(app.name)
 
 
-@retry(stop=stop_after_attempt(5), wait=wait_fixed(120))
+@retry(stop=stop_after_attempt(5), wait=wait_fixed(300))
 def deploy_app(app, password):
     try:
         app.set_status('Creating database')
@@ -121,27 +121,26 @@ def deploy_droplet(droplet, password, size):
         droplet.deactivate()
         raise e
 
-def delete_droplets():
-    tournaments = Tournament.query.filter_by(active=True)
+@app.cli.command("delete-apps")
+def delete_apps():
+    apps = App.query.filter_by(active=True)
     current_date = datetime.now().date()
-    for tournament in tournaments:
-        if tournament.deletion_date < current_date and tournament.warning_email_sent:
-            print("Deleting {}...".format(tournament))
+    for app in apps:
+        if app.deletion_date < current_date and apps.warning_email_sent:
+            print("Deleting {}...".format(app))
             try:
-                if not tournament.is_test:
-                    tournament.backup()
-                tournament.deactivate()
-                tournament.set_status('Deleted')
-            except digital_ocean.NoDropletError as e:
-                print("Droplet not found, skipping")
+                app.deactivate()
+                app.set_status('Deleted')
                 continue
             except Exception as e:
-                print("Error deleting {}".format(tournament))
+                print("Error deleting {}".format(app))
                 tournament.set_status('Error while deleting')
                 import traceback; traceback.print_exc()
-        elif (tournament.deletion_date - current_date).days <= 3 and \
-                not tournament.warning_email_sent:
-            email.send_warning(tournament)
-            tournament.warning_email_sent = True
-            db.session.add(tournament)
+        elif (app.deletion_date - current_date).days <= 3 and \
+                not app.warning_email_sent:
+            email.send_warning(app)
+            app.warning_email_sent = True
+            db.session.add(app)
             db.session.commit()
+
+app.cli.add_command(delete_apps)

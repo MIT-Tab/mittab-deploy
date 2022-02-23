@@ -14,6 +14,19 @@ web:
     - FLASK_APP=/usr/src/app/deployer/__init__.py
   command: ./bin/start_web
 
+deleter:
+  restart: "no"
+  image: benmusch/mit-tab:latest
+  volumes:
+    - ./:/usr/src/app
+    - ${HOME}/.ssh:/root/.ssh
+  env_file:
+    - .env
+  environment:
+    - PYTHONPATH=/usr/src/app
+    - FLASK_APP=/usr/src/app/deployer/__init__.py
+  command: 'bash -c "while true; do flask delete-apps; sleep 3600; done"'
+
 celery:
   restart: on-failure
   build: .

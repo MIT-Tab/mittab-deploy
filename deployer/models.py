@@ -14,7 +14,7 @@ class App(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     status = db.Column(db.String, nullable=True)
-    active = db.Column(db.Boolean, default=True)
+    active = db.Column(db.Boolean, default=False)
     confirmed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)
     repo_slug = db.Column(db.String, nullable=True)
