@@ -121,7 +121,7 @@ def deploy_droplet(droplet, password, size):
         droplet.deactivate()
         raise e
 
-@app.cli.command("delete-apps")
+@flask_app.cli.command("delete-apps")
 def delete_apps():
     apps = App.query.filter_by(active=True)
     current_date = datetime.now().date()
