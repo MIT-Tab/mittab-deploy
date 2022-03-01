@@ -143,4 +143,4 @@ def delete_apps():
             db.session.add(app)
             db.session.commit()
 
-app.cli.add_command(delete_apps)
+flask_app.cli.add_command(delete_apps)
