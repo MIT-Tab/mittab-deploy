@@ -126,7 +126,7 @@ def delete_apps():
     apps = App.query.filter_by(active=True)
     current_date = datetime.now().date()
     for app in apps:
-        if app.deletion_date < current_date and apps.warning_email_sent:
+        if app.deletion_date < current_date and app.warning_email_sent:
             print("Deleting {}...".format(app))
             try:
                 app.deactivate()
