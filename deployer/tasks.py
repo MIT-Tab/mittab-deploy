@@ -134,7 +134,7 @@ def delete_apps():
                 continue
             except Exception as e:
                 print("Error deleting {}".format(app))
-                tournament.set_status('Error while deleting')
+                app.set_status('Error while deleting')
                 import traceback; traceback.print_exc()
         elif (app.deletion_date - current_date).days <= 3 and \
                 not app.warning_email_sent:
