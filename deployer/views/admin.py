@@ -66,7 +66,7 @@ def callback():
         auth=(app.config.get('GOOGLE_CLIENT_ID'), app.config.get('GOOGLE_CLIENT_SECRET')),
     )
 
-    
+
     oauth_client.parse_request_body_response(json.dumps(token_response.json()))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = oauth_client.add_token(userinfo_endpoint)
@@ -93,6 +93,3 @@ def login():
 @login_manager.unauthorized_handler
 def unauthorized():
     return 'Login at /admin/login'
-
-if __name__ == '__main__':
-    app.run()

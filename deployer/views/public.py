@@ -13,8 +13,9 @@ from deployer.clients import stripe
 
 @flask_app.route('/', methods=['GET'])
 def index():
-    apps = App.query.filter_by(active=True).all()
-    return render_template('index.html', tournaments=apps)
+    with flask_app.app_context():
+        apps = App.query.filter_by(active=True).all()
+        return render_template('index.html', tournaments=apps)
 
 
 @flask_app.route('/tournaments/new', methods=['GET', 'POST'])
@@ -137,7 +138,3 @@ def tournament_status(name):
         return ('', 404)
 
     return jsonify(status=app.status)
-
-
-if __name__ == '__main__':
-    flask_app.run()

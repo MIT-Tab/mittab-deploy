@@ -3,7 +3,8 @@ import shutil
 from time import time
 from datetime import datetime, date
 
-from deployer import db, app
+from deployer import app as flask_app
+from deployer import db
 from deployer.clients.digital_ocean import *
 from deployer.clients import remote_server
 
@@ -143,7 +144,7 @@ class Droplet(db.Model):
 
         src_csv = "/usr/src/mit-tab/exports/"
         src_db = "/usr/src/mit-tab/mittab/final-backup.json"
-        base_path = os.path.join(app.root_path, 'backups', self.ip_address)
+        base_path = os.path.join(flask_app.root_path, 'backups', self.ip_address)
         dst_db = os.path.join(base_path, 'final-backup.json')
         dst_csv = os.path.join(base_path)
         os.makedirs(dst_csv, exist_ok=True)
