@@ -29,6 +29,7 @@ flask-login = "*"
 oauthlib = "*"
 requests = "*"
 email-validator = "*"
+alembic = "*"
 
 [requires]
 python_version = "3.7"
