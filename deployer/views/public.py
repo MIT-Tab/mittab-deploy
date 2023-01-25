@@ -13,9 +13,8 @@ from deployer.clients import stripe
 
 @flask_app.route('/', methods=['GET'])
 def index():
-    with flask_app.app_context():
-        apps = App.query.filter_by(active=True).all()
-        return render_template('index.html', tournaments=apps)
+    apps = App.query.filter_by(active=True).all()
+    return render_template('index.html', tournaments=apps)
 
 
 @flask_app.route('/tournaments/new', methods=['GET', 'POST'])
