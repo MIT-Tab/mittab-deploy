@@ -175,7 +175,11 @@ def get_app(app_name):
 
 
 def delete_app(app_name):
-    app = get_app(app_name)
+    try:
+        app = get_app(app_name)
+    except ValueError:
+        print("App doesnt exist, no need to delete")
+        return
     __delete(f"apps/{app['id']}")
     delete_database(app["spec"]["databases"][0]["cluster_name"])
 
