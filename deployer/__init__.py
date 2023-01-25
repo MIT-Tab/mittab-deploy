@@ -12,18 +12,20 @@ from config.base import BaseConfig
 
 app = Flask('deployer')
 app.config.from_object(BaseConfig)
+print(app.config['DB_PATH'])
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 Bootstrap(app)
 db = SQLAlchemy(app)
+db.init_app(app)
 
 if not app.config.get('DEBUG'):
     sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
 from deployer.models import *
-from deployer import helpers
+from deployer.helpers import *
 
 migrate = Migrate(app, db)
 mail = Mail(app)
