@@ -29,7 +29,6 @@ flask-login = "*"
 oauthlib = "*"
 requests = "*"
 email-validator = "*"
-markupsafe = ">=2.0.1"
 
 [requires]
 python_version = "3.7"
