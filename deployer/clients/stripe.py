@@ -7,8 +7,8 @@ __secret_key = os.environ['STRIPE_SECRET_KEY']
 
 stripe.api_key = __secret_key
 
-DAILY_COST_TEST_TOURNAMENT = 100
-DAILY_COST                 = 100
+DAILY_COST_TEST_TOURNAMENT = 300
+DAILY_COST                 = 400
 
 def get_publishable_key():
     return __publishable_key
