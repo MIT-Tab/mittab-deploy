@@ -1,0 +1,109 @@
+alerts:
+- rule: DEPLOYMENT_FAILED
+- rule: DOMAIN_FAILED
+databases:
+- cluster_name: deployer-db
+  db_name: defaultdb
+  db_user: doadmin
+  engine: MYSQL
+  name: deployer-db
+  production: true
+  size: professional-xs
+  version: "8"
+- cluster_name: deployer-redis
+  engine: REDIS
+  name: deployer-redis
+  production: true
+  size: professional-xs
+  version: "7"
+ingress:
+  rules:
+  - component:
+      name: mittab-deploy
+    match:
+      path:
+        prefix: /
+name: deployer
+region: nyc
+services:
+- dockerfile_path: Dockerfile.web
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${deployer-db.DATABASE_URL}
+  - key: DEBUG
+    scope: RUN_AND_BUILD_TIME
+    value: "False"
+  - key: PRODUCTION
+    scope: RUN_AND_BUILD_TIME
+    value: "True"
+  - key: MAIL_USERNAME
+    scope: RUN_AND_BUILD_TIME
+    value: benmuschol@gmail.com
+  - key: STRIPE_PUBLISHABLE_KEY
+    scope: RUN_AND_BUILD_TIME
+    value: pk_live_xXucZDNkr09MapjHTHuRnPRh
+  - key: DIGITALOCEAN_ACCESS_KEY_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:O+JmrDpOmceNvl8EVR6N7eUhtg94gGh7:YcEmitNc5IchBqZNFuQZcl3hsQvLOfUtot9vdnbEJKzTDOxCrwIEMCgK/bOvqgCerMQfSCNfWRizKZQ=]
+  - key: DIGITALOCEAN_ACCESS_KEY_ID
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:xtPJyJUHG0BURtjCFlRd6DLTs3Zk9gIL:JEImMREgIXSn53hNbFWmEr83HpHBU7h5t5x7rTfo8tas3QJ6]
+  - key: DIGITALOCEAN_TOKEN
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:VFxnaff8OsfFFlpSTiRuEqfTj65eIRzI:kWg0IXew9E4nESsQlXY3v9iak8g7P4pKTprgCon2qa2uiXSpFFXAf4Qkp8L8hmdcfdssQyKEtwhvlLh1nPVQEh9byUauQ0k50aLPaWpDySc=]
+  - key: MAIL_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:CZ9Hdz1evhW7yY3AcmEJg3dm5vkVRdut:wRzN3KAusAhLDitwTg10M0+LYyo2CDF53swQkpwqAgQ=]
+  - key: SENTRY_DSN
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:xd1lQeypedUwslnUFhH6fig9pyZpU9gh:yhXPnsz+pbEN5ck5ZqCdZvs4jYsPtp2OG493oc8waBnUvitmf7SapISBxRbo7Xh/ztU/r65f6pRd1yLJ+O6IVGokzD8bicg9qgkP7k1YGGutLEyrf296XT5CHQVwm5XI940R00GSbyyR1Q==]
+  - key: MITTAB_SENTRY_DSN
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:vIjsl/hl/4A8WZOz6qC4ainWME4Cxj4f:zOn8pUGhX8DVNcjvlB4Z7OG0zmhsHx7nMU7PtcQRSXi/79UrOGZ3pC2IKg/2S0pHPs77y/A/RfyYlgYFyzM2BBPOC642YfhCUgQ23XGlKb6a3t76Dww5fnZ48HTWx/NF+HBgdsw8CyXbgA==]
+  - key: STRIPE_SECRET_KEY
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:bUAu8BHIV6/hNzk0I7V50xNrUIlGjDJ4:MccCe5dtHyMpC0ILqJ9NKBXJALELImM1HK3FxzHjBrmrT0g6sqUDI55m2kbumHlT]
+  - key: MITTAB_MYSQL_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:wuK1kwy6DNiCKL26lVOlqdsRU9kT412k:IJXo9zdPVVvKn/DYXvvgB0kiDVCUyg==]
+  - key: DISCORD_BOT_TOKEN
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:31cq4zZifZ6zA66WJWtx+woxyBO7L47d:XQvsJ4N2zJ7P0AKXGjXBs2y9AYEnY94ehzzEFpAcmUcsbnxIKiH/+PU7FLY7dPes3PGikcCj3V2c1N6iBwm174AhINyPYGmOi5lo]
+  - key: GOOGLE_CLIENT_ID
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:F7y+QRpzFfGI0K/XfPmOC1HUJOziL7Kc:AdHOQ5aYSEYwUVby4dKm8NwD3FCJF/cgi4vSa3WTSaR63jdcmr5qNsvHGv3Qpd/wRk89apKiSEgkySQi8KaRAcba8OGFelZ14Anf/bsiXnatILSgdGIY]
+  - key: GOOGLE_CLIENT_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+    value: EV[1:KxsM6f6GENJZ4omNGy6oBqIQxSnoHH6X:i1TKIBMgsdJ3CCiJVFq59CQXLOn8r6/5VRDd4Gd0+e9k+VBHbdnS7g==]
+  - key: OAUTHLIB_INSECURE_TRANSPORT
+    scope: RUN_AND_BUILD_TIME
+    value: "1"
+  - key: PYTHONPATH
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app
+  - key: FLASK_APP
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app/deployer/__init__.py
+  github:
+    branch: app-platform-deployer
+    deploy_on_push: true
+    repo: MIT-Tab/mittab-deploy
+  http_port: 8000
+  instance_count: 1
+  instance_size_slug: professional-xs
+  name: mittab-deploy
+  run_command: gunicorn --worker-tmp-dir /dev/shm
+  source_dir: /
+
