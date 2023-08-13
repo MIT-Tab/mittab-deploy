@@ -1,2 +1,0 @@
-- service: web
-  command: ./bin/ci
