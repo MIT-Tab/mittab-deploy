@@ -6,4 +6,4 @@ set +x
 cd /usr/src/app
 
 flask db upgrade
-/usr/local/bin/gunicorn deployer:app -w 2 -b 0.0.0.0:8000 -t 600
+/usr/local/bin/gunicorn -w 2 -b 0.0.0.0:8000 -t 600 deployer:app
