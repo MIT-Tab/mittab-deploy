@@ -6,5 +6,6 @@ set +x
 cd /usr/src/app
 
 flask db upgrade
+ls
 printenv | grep deployer
 /usr/local/bin/gunicorn -w 2 -b 0.0.0.0:8000 -t 600 deployer:app
