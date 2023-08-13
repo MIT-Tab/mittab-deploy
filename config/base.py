@@ -7,19 +7,12 @@ class BaseConfig(object):
     DEBUG = os.environ['DEBUG'] == 'True'
     PRODUCTION = os.environ['PRODUCTION'] == 'True'
 
-    DB_FILE = 'db.sqlite'
-    DB_PATH = os.path.join(os.path.abspath(os.path.dirname(DB_FILE)), DB_FILE)
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///{}'.format(DB_PATH)
+    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
-    # configure celery to work with cloud amqp
-    # AWS creds auto-loaded from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env
-    # vars
     CELERY_RESULT_BACKEND = None
-    CELERY_BROKER_URL = os.environ['CLOUD_AMQP_URL']
-    AMQP_QUEUE_NAME = os.environ['AMQP_QUEUE']
-    CELERY_DEFAULT_QUEUE = AMQP_QUEUE_NAME
+    CELERY_BROKER_URL = os.environ['REDIS_URL']
 
     # for Flask-Mail
     MAIL_SERVER = 'smtp.gmail.com'
@@ -31,11 +24,6 @@ class BaseConfig(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['benmuschol@gmail.com']
 
-    # DigitalOcean server config
-    # https://developers.digitalocean.com/documentation/changelog/api-v2/new-size-slugs-for-droplet-plan-changes/
-    DEFAULT_SIZE_SLUG = 's-1vcpu-3gb'
-    TEST_SIZE_SLUG = 's-1vcpu-2gb'
-
     # Oauth login for admin app
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -43,7 +31,6 @@ class BaseConfig(object):
         "https://accounts.google.com/.well-known/openid-configuration"
     )
     GOOGLE_AUTH_ALLOWED_EMAILS = [
-        "ben.muschol@airbnb.com",
         "benmuschol@gmail.com",
         "johnrod.john@gmail.com",
     ]
