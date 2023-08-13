@@ -5,10 +5,5 @@ WORKDIR /usr/src/app
 RUN pip install pipenv
 RUN pipenv install --deploy --system
 
-RUN apt update --allow-releaseinfo-change
-RUN apt-get dist-upgrade -y
-RUN apt-get install openssh-server apt-transport-https ca-certificates -y
-RUN pip install s3cmd
-
 EXPOSE 8000
 CMD ["./bin/start_web"]
