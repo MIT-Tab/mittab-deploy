@@ -7,7 +7,11 @@ class BaseConfig(object):
     DEBUG = os.environ['DEBUG'] == 'True'
     PRODUCTION = os.environ['PRODUCTION'] == 'True'
 
-    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+    MYSQL_DATABASE = os.environ['DATABASE_NAME']
+    MYSQL_PASSWORD = os.environ['DATABASE_PASSWORD']
+    MYSQL_USER = os.environ['DATABASE_USER']
+    MYSQL_HOST = os.environ['DATABASE_HOST']
+    SQLALCHEMY_DATABASE_URI = f"mysql:{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DATABASE}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
