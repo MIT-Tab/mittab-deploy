@@ -45,12 +45,13 @@ def confirm_tournament(app_id):
     elif app.confirmed: return ("Tournament already paid for and finalized", 422)
 
     days_active = (app.deletion_date - datetime.now().date()).days + 1
+    fixed_cost = stripe.FIXED_COST
     base_cost = stripe.DAILY_COST * days_active
     test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
     form = ConfirmTournamentForm()
 
     if request.method == "POST" and form.validate_on_submit():
-        cost = base_cost + test_cost if form.add_test.data else base_cost
+        cost = fixed_cost + base_cost + test_cost if form.add_test.data else base_cost
         if stripe.charge(app.email, form.stripe_token.data, cost):
             app.set_status('Initializing')
             app.active = True
@@ -85,6 +86,7 @@ def confirm_tournament(app_id):
                             tournament=app,
                             form=form,
                             stripe_key=stripe.get_publishable_key(),
+                            fixed_cost=stripe.FIXED_COST,
                             base_cost=base_cost,
                             test_cost=test_cost)
 
