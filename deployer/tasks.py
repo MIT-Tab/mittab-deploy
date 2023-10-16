@@ -74,6 +74,8 @@ def deploy_app(app, password):
         app.set_status('Creating database')
         db = digital_ocean.create_database(app.name)
 
+        time.sleep(120)
+        
         app.set_status('Creating server')
         digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
 
