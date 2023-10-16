@@ -1,0 +1,35 @@
+databases:
+- cluster_name: mysql
+  db_name: defaultdb
+  db_user: doadmin
+  engine: MYSQL
+  name: mysql
+  production: true
+  version: "8"
+envs:
+- key: FOO
+  scope: RUN_AND_BUILD_TIME
+  value: BAR
+name: mit-tab
+region: nyc
+services:
+- dockerfile_path: Dockerfile.web
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${test.DATABASE_URL}
+  - key: PYTHONPATH
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app
+  - key: FLASK_APP
+    scope: RUN_AND_BUILD_TIME
+    value: /usr/src/app/deployer/__init__.py
+  github:
+    branch: deployer-app-platform
+    repo: MIT-Tab/mittab-deployer
+  http_port: 8000
+  instance_count: 1
+  instance_size_slug: basic-xs
+  name: mit-tab
+  routes:
+  - path: /

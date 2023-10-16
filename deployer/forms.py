@@ -7,7 +7,7 @@ from wtforms import StringField, PasswordField, SelectField, BooleanField, \
         HiddenField, DateField, IntegerField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
-from deployer.models import Droplet
+from deployer.models import App
 from deployer.clients import stripe
 from config.repo_options import options
 
@@ -27,7 +27,7 @@ def validate_password(form, field):
         raise ValidationError('Password can only contain alphanumeric characters. Keep it simple and don\'t use important passwords!')
 
 def validate_unique_name(form, field):
-    if Droplet.query.filter_by(name=field.data.lower(), active=True).count() > 0:
+    if App.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
 
 def validate_date(form, field):

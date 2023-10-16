@@ -9,7 +9,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from deployer import app as flask_app
 from deployer import db
 from deployer.clients import email, digital_ocean
-from deployer.models import Tournament, App
+from deployer.models import App
 
 
 class ServerNotReadyError(Exception):

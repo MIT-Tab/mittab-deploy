@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <pre>
 Name: {{ tournament.name }}
 Deletion date: {{ tournament.deletion_date }}
-Base cost: {{ cents_as_string(base_cost) }}
+Base cost: {{cents_as_string(fixed_cost + base_cost)}}
 (Optional) Test tournament cost: {{ cents_as_string(test_cost) }}
 </pre>
 <br/>
