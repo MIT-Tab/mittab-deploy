@@ -176,12 +176,15 @@ def get_app(app_name):
 
 def delete_app(app_name):
     try:
-        app = get_app(app_name)
+        app = get_app(app_name)    
+        __delete(f"apps/{app['id']}")
+        delete_database(app["spec"]["databases"][0]["cluster_name"])
     except ValueError:
         print("App doesnt exist, no need to delete")
-        return
-    __delete(f"apps/{app['id']}")
-    delete_database(app["spec"]["databases"][0]["cluster_name"])
+        try:
+            delete_databse(f"mittab-db-{app_name}")
+        except ValueError:
+            print("DB doesnt exist, no need to delete")
 
 
 ############################
@@ -204,8 +207,8 @@ def create_database(name, timeout=600):
     while seconds_elapsed < timeout:
         if is_database_ready(data["id"]):
             break
-        seconds_elapsed += 5
-        sleep(5)
+        seconds_elapsed += 30
+        sleep(30)
 
     if not is_database_ready(data["id"]):
         raise ValueError('Timeout exceeded')
@@ -213,6 +216,17 @@ def create_database(name, timeout=600):
     # necessary for python's mysql client
     path = f"databases/{data['id']}/users/{data['connection']['user']}/reset_auth"
     __post(path, {"mysql_settings": {"auth_plugin": "mysql_native_password"}})
+    print("sleeping after setting auth plugin")
+
+    seconds_elapsed = 0
+    while seconds_elapsed < timeout:
+        if is_database_ready(data["id"]):
+            break
+        seconds_elapsed += 30
+        sleep(30)
+
+    if not is_database_ready(data["id"]):
+        raise ValueError('Timeout exceeded')
 
     return data
 
@@ -227,7 +241,11 @@ def delete_database(name):
 
 
 def is_database_ready(db_id):
-    return __get(f"databases/{db_id}")["database"]["status"] == "online"
+    status = __get(f"databases/{db_id}")["database"]["status"]
+    if status != "online":
+        print(f"Got non-online status: {status}")
+        return False
+    return True
 
 
 ############################
