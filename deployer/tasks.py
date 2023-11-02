@@ -71,6 +71,7 @@ def deploy_tournament(app_id, password):
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(300))
 def deploy_app(app, password):
     try:
+        app.active = True
         app.set_status('Creating database')
         db = digital_ocean.create_database(app.name)
 
