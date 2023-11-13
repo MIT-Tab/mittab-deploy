@@ -182,7 +182,7 @@ def delete_app(app_name):
     except ValueError:
         print("App doesnt exist, no need to delete")
         try:
-            delete_databse(f"mittab-db-{app_name}")
+            delete_database(f"mittab-db-{app_name}")
         except ValueError:
             print("DB doesnt exist, no need to delete")
 
