@@ -42,10 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
   checkbox.addEventListener('change', function() {
     document.tournament.stripe_token = null;
     if (this.checked) {
-      submit.value = 'Confirm & Pay {{ cents_as_string(base_cost + test_cost) }}'
+      submit.value = 'Confirm & Pay {{ cents_as_string(fixed_cost + base_cost + test_cost) }}'
       stripeCost = {{ base_cost + test_cost }}
     } else {
-      submit.value = 'Confirm & Pay {{ cents_as_string(base_cost) }}'
+      submit.value = 'Confirm & Pay {{ cents_as_string(fixed_cost + base_cost) }}'
       stripeCost = {{ base_cost }}
     }
   });
@@ -103,7 +103,7 @@ Base cost: {{cents_as_string(fixed_cost + base_cost)}}
 
   <input type="submit"
          id="submit_button"
-         value="Confirm & Pay {{ cents_as_string(base_cost) }}"
+         value="Confirm & Pay {{ cents_as_string(fixed_cost + base_cost) }}"
          class="btn btn-primary" />
 </form>
 {% endblock %}
