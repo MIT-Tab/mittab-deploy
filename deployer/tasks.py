@@ -1,5 +1,4 @@
 import time
-import subprocess
 from datetime import datetime
 
 from celery import Celery
@@ -55,8 +54,8 @@ celery = make_celery(flask_app)
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
-        contab(hour=10, minute=30),
-        delete_droplets.s()
+        crontab(hour=10, minute=30),
+        delete_apps().s()
     )
 
 @celery.task()
@@ -87,42 +86,6 @@ def deploy_app(app, password):
         app.deactivate()
         raise e
 
-
-@retry(stop=stop_after_attempt(5), wait=wait_fixed(30))
-def deploy_droplet(droplet, password, size):
-    try:
-        droplet.set_status('Creating server')
-        droplet.create_droplet(size)
-
-        seconds_elapsed = 0
-        while seconds_elapsed < 120:
-            if droplet.is_ready():
-                break
-            seconds_elapsed += 5
-            time.sleep(5)
-
-        time.sleep(60)
-
-        if not droplet.is_ready():
-            raise ServerNotReadyError()
-
-        droplet.set_status('Installing mit-tab on server')
-        subprocess.check_call(['sh',
-                './bin/setup_droplet',
-                droplet.ip_address,
-                droplet.clone_url,
-                droplet.branch,
-                password,
-                droplet.droplet_name])
-
-        droplet.set_status('Creating domain name')
-        droplet.create_domain()
-        droplet.set_status('Deployed')
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        droplet.set_status('An error occurred. Retrying up to 5 times')
-        droplet.deactivate()
-        raise e
 
 @flask_app.cli.command("delete-apps")
 def delete_apps():

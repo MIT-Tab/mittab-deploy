@@ -1,5 +1,4 @@
 import os
-
 from flask import Flask
 from flask_bootstrap import Bootstrap
 import flask_login
@@ -8,28 +7,33 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from raven.contrib.flask import Sentry
 
-from config.base import BaseConfig
-
-import os
-
-
-app = Flask('deployer')
-app.config.from_object(BaseConfig)
-
+db = SQLAlchemy()
+migrate = Migrate()
 login_manager = flask_login.LoginManager()
-login_manager.init_app(app)
+mail = Mail()
+bootstrap = Bootstrap()
 
-Bootstrap(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-db.init_app(app)
+def create_app(config_object=None):
+    app = Flask('deployer')
 
-if not app.config.get('DEBUG'):
-    sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
+    # Load config
+    if config_object is None:
+        from config.base import BaseConfig
+        config_object = BaseConfig
+    app.config.from_object(config_object)
 
-from deployer.models import *
-from deployer.helpers import *
+    # Initialize Flask extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    bootstrap.init_app(app)
+    mail.init_app(app)
 
-mail = Mail(app)
+    if not app.config.get('DEBUG'):
+        sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
-import deployer.views
+    with app.app_context():
+        # Import parts of our application
+        from deployer import models, views
+
+        return app

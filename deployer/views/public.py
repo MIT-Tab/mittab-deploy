@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import os
 
 from flask import render_template, redirect, jsonify, request, flash
 

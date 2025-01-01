@@ -3,7 +3,6 @@ import shutil
 from time import time
 from datetime import datetime, date
 
-from deployer import app as flask_app
 from deployer import db
 from deployer.clients.digital_ocean import *
 from deployer.clients import remote_server
