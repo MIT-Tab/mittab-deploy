@@ -6,7 +6,7 @@ from deployer.config import REPO_OPTIONS
 from deployer.extensions import db
 from deployer.models import *
 from deployer.tasks import *
-from deployer.forms import TournamentForm, ConfirmTournamentForm, ExtendTournamentForm
+from deployer.forms import TournamentForm, ExtendTournamentForm
 from deployer.clients import stripe
 
 bp = Blueprint('public', __name__)
@@ -21,6 +21,8 @@ def index():
 @bp.route('/tournaments/new', methods=['GET', 'POST'])
 def new_tournament():
     form = TournamentForm()
+
+
     if form.validate_on_submit():
         repo_data = REPO_OPTIONS[form.repo_options.data]
         app = App(form.name.data,
@@ -28,35 +30,17 @@ def new_tournament():
                   repo_data['branch'],
                   form.deletion_date.data,
                   form.email.data)
+        app.active = True
+        app.confirmed = True
 
-        db.session.add(app)
-        db.session.commit()
 
-        app.set_status('Confirming payment')
-        return redirect('/tournaments/%s/confirm' % app.id)
-
-    return render_template('new.html',
-                           title='Create a Tournament',
-                           form=form)
-
-@bp.route('/tournaments/<app_id>/confirm', methods=['POST', 'GET'])
-def confirm_tournament(app_id):
-    app = App.query.get(app_id)
-    if app is None: return 404
-    elif app.confirmed: return ("Tournament already paid for and finalized", 422)
-
-    days_active = (app.deletion_date - datetime.now().date()).days + 1
-    fixed_cost = stripe.FIXED_COST
-    base_cost = stripe.DAILY_COST * days_active
-    test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
-    form = ConfirmTournamentForm()
-
-    if request.method == "POST" and form.validate_on_submit():
+        days_active = (app.deletion_date - datetime.now().date()).days + 1
         cost = fixed_cost + base_cost + test_cost if form.add_test.data else base_cost + fixed_cost
+        fixed_cost = stripe.FIXED_COST
+        base_cost = stripe.DAILY_COST * days_active
+        test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
+
         if stripe.charge(app.email, form.stripe_token.data, cost):
-            app.set_status('Initializing')
-            app.active = True
-            app.confirmed = True
             db.session.add(app)
             db.session.commit()
             deploy_tournament.delay(app.id, form.password.data)
@@ -71,25 +55,27 @@ def confirm_tournament(app_id):
                 )
                 db.session.add(test_app)
                 db.session.commit()
-                deploy_tournament.delay(test_app.id, 'password')
-            return redirect('/tournaments/%s' % app.name)
-        else:
-            flash(
-                """An error occurred while processing payment info.
-                   Contact Ben via the link in the footer if the problem
-                   persists.""",
-                "danger"
-            )
+                deploy_tournament.delay(test_app.id, form.password.data)
 
-    form.stripe_token.data = None
-    return render_template('confirm.html',
-                            title='Confirm Details',
-                            tournament=app,
-                            form=form,
-                            stripe_key=stripe.get_publishable_key(),
-                            fixed_cost=stripe.FIXED_COST,
-                            base_cost=base_cost,
-                            test_cost=test_cost)
+                return redirect('/tournaments/%s' % app.name)
+            else:
+                flash(
+                    """An error occurred while processing payment info.
+                       Contact Ben via the link in the footer if the problem
+                       persists.""",
+                    "danger"
+                )
+
+        app.set_status('Confirming payment')
+        return redirect('/tournaments/%s/confirm' % app.id)
+
+    return render_template('new.html',
+                           title='Create a Tournament',
+                           form=form,
+                           stripe_key=stripe.get_publishable_key(),
+                           daily_cost=stripe.DAILY_COST,
+                           fixed_cost=stripe.FIXED_COST,
+                           test_cost=stripe.DAILY_COST_TEST_TOURNAMENT)
 
 @bp.route('/tournaments/<tournament_id>/extend', methods=['POST', 'GET'])
 def extend_tournament(tournament_id):

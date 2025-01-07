@@ -57,8 +57,6 @@ class TournamentForm(FlaskForm):
             [DataRequired(), validate_date],
             format='%m/%d/%Y')
     email = StringField('Email Address', [Email()])
-
-class ConfirmTournamentForm(FlaskForm):
     add_test = BooleanField('Include Test Tournament?')
     stripe_token = HiddenField('Stripe Token')
     password = PasswordField(

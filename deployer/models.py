@@ -26,6 +26,7 @@ class App(db.Model):
         self.branch = branch
         self.deletion_date = deletion_date
         self.email = email
+        self.status = 'Initializing'
 
     @property
     def url(self):
