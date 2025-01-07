@@ -1,25 +1,44 @@
-name: Docker Image CI
+name: Docker Build CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches: ["master"]
 
 jobs:
-
-  build:
-
+  build-web:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Build and publish the Docker image
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: benmusch/mit-tab
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        dockerfile: Dockerfile.web
-        tags: latest
-        snapshot: true
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Web Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+          load: true
+
+  build-celery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Celery Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.celery
+          push: false
+          cache-from: type=gha,scope=celery
+          cache-to: type=gha,mode=max,scope=celery
+          load: true
