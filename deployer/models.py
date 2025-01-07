@@ -1,11 +1,7 @@
-import os
-import shutil
-from time import time
-from datetime import datetime, date
+from datetime import datetime
 
-from deployer import db
+from deployer.extensions import db
 from deployer.clients.digital_ocean import *
-from deployer.clients import remote_server
 
 
 class App(db.Model):

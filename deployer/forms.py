@@ -8,8 +8,7 @@ from wtforms import StringField, PasswordField, SelectField, BooleanField, \
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from deployer.models import App
-from deployer.clients import stripe
-from config.repo_options import options
+from deployer.config import REPO_OPTIONS
 
 ####################
 # Custom validations
@@ -50,7 +49,7 @@ class TournamentForm(FlaskForm):
             )
     repo_options = SelectField(
             'MIT-Tab Version',
-            choices=[(key, options[key]['name']) for key in options.keys()],
+            choices=[(key, REPO_OPTIONS[key]['name']) for key in REPO_OPTIONS.keys()],
             default='default'
             )
     deletion_date = DateField(

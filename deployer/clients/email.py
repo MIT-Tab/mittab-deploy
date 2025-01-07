@@ -1,7 +1,7 @@
 from flask import render_template
 from flask_mail import Message
 
-from deployer import mail
+from deployer.extensions import mail
 
 __email = 'benmuschol@gmail.com'
 

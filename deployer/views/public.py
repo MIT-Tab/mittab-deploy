@@ -1,26 +1,28 @@
 from datetime import datetime, timedelta
 
-from flask import render_template, redirect, jsonify, request, flash
+from flask import Blueprint, render_template, redirect, jsonify, request, flash
 
-from config.repo_options import options
-from deployer import app as flask_app
+from deployer.config import REPO_OPTIONS
+from deployer.extensions import db
 from deployer.models import *
 from deployer.tasks import *
 from deployer.forms import TournamentForm, ConfirmTournamentForm, ExtendTournamentForm
 from deployer.clients import stripe
 
+bp = Blueprint('public', __name__)
 
-@flask_app.route('/', methods=['GET'])
+
+@bp.route('/', methods=['GET'])
 def index():
     apps = App.query.filter_by(active=True).all()
     return render_template('index.html', tournaments=apps)
 
 
-@flask_app.route('/tournaments/new', methods=['GET', 'POST'])
+@bp.route('/tournaments/new', methods=['GET', 'POST'])
 def new_tournament():
     form = TournamentForm()
     if form.validate_on_submit():
-        repo_data = options[form.repo_options.data]
+        repo_data = REPO_OPTIONS[form.repo_options.data]
         app = App(form.name.data,
                   repo_data['repo_slug'],
                   repo_data['branch'],
@@ -37,7 +39,7 @@ def new_tournament():
                            title='Create a Tournament',
                            form=form)
 
-@flask_app.route('/tournaments/<app_id>/confirm', methods=['POST', 'GET'])
+@bp.route('/tournaments/<app_id>/confirm', methods=['POST', 'GET'])
 def confirm_tournament(app_id):
     app = App.query.get(app_id)
     if app is None: return 404
@@ -89,7 +91,7 @@ def confirm_tournament(app_id):
                             base_cost=base_cost,
                             test_cost=test_cost)
 
-@flask_app.route('/tournaments/<tournament_id>/extend', methods=['POST', 'GET'])
+@bp.route('/tournaments/<tournament_id>/extend', methods=['POST', 'GET'])
 def extend_tournament(tournament_id):
     app = App.query.get(tournament_id)
     if app is None: return 404
@@ -122,7 +124,7 @@ def extend_tournament(tournament_id):
                             stripe_key=stripe.get_publishable_key(),
                             daily_cost=stripe.DAILY_COST)
 
-@flask_app.route('/tournaments/<name>', methods=['GET'])
+@bp.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):
     app = App.query.filter_by(name=name).order_by(App.id.desc()).first()
     if not app:
@@ -131,7 +133,7 @@ def show_tournament(name):
     return render_template('show.html', tournament=app)
 
 
-@flask_app.route('/tournaments/<name>/status', methods=['GET'])
+@bp.route('/tournaments/<name>/status', methods=['GET'])
 def tournament_status(name):
     app = App.query.filter_by(name=name).order_by(App.id.desc()).first()
     if not app:

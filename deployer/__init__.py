@@ -1,39 +1,51 @@
 import os
-from flask import Flask
-from flask_bootstrap import Bootstrap
-import flask_login
-from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail
-from flask_migrate import Migrate
+
+import celery
+from flask import Flask, json
+from flask.json.provider import JSONProvider
 from raven.contrib.flask import Sentry
 
-db = SQLAlchemy()
-migrate = Migrate()
-login_manager = flask_login.LoginManager()
-mail = Mail()
-bootstrap = Bootstrap()
+from deployer.config import BaseConfig
+from deployer.extensions import db, migrate, mail, bootstrap, celery
+from deployer.views.public import bp
+
+class CustomJSONProvider(JSONProvider):
+    def dumps(self, obj, **kwargs):
+        return json.dumps(obj, **kwargs)
+
+    def loads(self, s, **kwargs):
+        return json.loads(s, **kwargs)
+
+
 
 def create_app(config_object=None):
     app = Flask('deployer')
+    app.json_encoder = CustomJSONProvider
+    app.json = json
 
     # Load config
     if config_object is None:
-        from config.base import BaseConfig
         config_object = BaseConfig
     app.config.from_object(config_object)
 
     # Initialize Flask extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    login_manager.init_app(app)
-    bootstrap.init_app(app)
     mail.init_app(app)
+
+
+    # Initialize Celery
+    celery.config_from_object(app.config)
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+    
+    celery.Task = ContextTask
+
+    app.register_blueprint(bp)
 
     if not app.config.get('DEBUG'):
         sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))
 
-    with app.app_context():
-        # Import parts of our application
-        from deployer import models, views
-
-        return app
+    return app

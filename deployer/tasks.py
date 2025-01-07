@@ -1,12 +1,10 @@
 import time
 from datetime import datetime
 
-from celery import Celery
 from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from deployer import app as flask_app
-from deployer import db
+from deployer.extensions import db, celery
 from deployer.clients import email, digital_ocean
 from deployer.models import App
 
@@ -23,40 +21,15 @@ class BackupFailedError(Exception):
     pass
 
 
-def make_celery(flask_app):
-    celery = Celery(flask_app.import_name,
-                    backend=flask_app.config['CELERY_RESULT_BACKEND'],
-                    broker=flask_app.config['CELERY_BROKER_URL'],
-                    broker_pool_limit=1,
-                    broker_heartbeat=None,
-                    broker_connection_timeout=30,
-                    result_backend=None,
-                    event_queue_expires=60,
-                    worker_prefetch_multiplier=1,
-                    worker_concurrency=50)
 
-    celery.conf.update(flask_app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with flask_app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-
-celery = make_celery(flask_app)
-
+"""
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
         crontab(hour=10, minute=30),
         delete_apps().s()
     )
+    """
 
 @celery.task()
 def deploy_tournament(app_id, password):
@@ -87,7 +60,8 @@ def deploy_app(app, password):
         raise e
 
 
-@flask_app.cli.command("delete-apps")
+"""
+@app.cli.command("delete-apps")
 def delete_apps():
     apps = App.query.filter_by(active=True)
     current_date = datetime.now().date()
@@ -109,4 +83,5 @@ def delete_apps():
             db.session.add(app)
             db.session.commit()
 
-flask_app.cli.add_command(delete_apps)
+app.cli.add_command(delete_apps)
+"""
