@@ -63,10 +63,8 @@ class TournamentForm(FlaskForm):
             'Password',
             [
                 DataRequired(),
-                EqualTo('confirm', message='Passwords must match'),
                 validate_password
             ])
-    confirm = PasswordField('Confirm Password')
 
 class ExtendTournamentForm(FlaskForm):
     stripe_token = HiddenField('Stripe Token')
