@@ -55,7 +55,7 @@ class TournamentForm(FlaskForm):
     deletion_date = DateField(
             'Deletion Date',
             [DataRequired(), validate_date],
-            format='%m/%d/%Y')
+            format='%Y-%m-%d')
     email = StringField('Email Address', [Email()])
     add_test = BooleanField('Include Test Tournament?')
     stripe_token = HiddenField('Stripe Token')

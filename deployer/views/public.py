@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, redirect, jsonify, request, flash
+from flask import Blueprint, render_template, redirect, request, flash
 
 from deployer.config import REPO_OPTIONS
 from deployer.extensions import db
@@ -22,7 +22,6 @@ def index():
 def new_tournament():
     form = TournamentForm()
 
-
     if form.validate_on_submit():
         repo_data = REPO_OPTIONS[form.repo_options.data]
         app = App(form.name.data,
@@ -35,10 +34,10 @@ def new_tournament():
 
 
         days_active = (app.deletion_date - datetime.now().date()).days + 1
-        cost = fixed_cost + base_cost + test_cost if form.add_test.data else base_cost + fixed_cost
         fixed_cost = stripe.FIXED_COST
         base_cost = stripe.DAILY_COST * days_active
         test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
+        cost = fixed_cost + base_cost + test_cost if form.add_test.data else base_cost + fixed_cost
 
         if stripe.charge(app.email, form.stripe_token.data, cost):
             db.session.add(app)
@@ -56,6 +55,7 @@ def new_tournament():
                 db.session.add(test_app)
                 db.session.commit()
                 deploy_tournament.delay(test_app.id, form.password.data)
+                app.set_status('Confirming payment')
 
                 return redirect('/tournaments/%s' % app.name)
             else:
@@ -65,9 +65,6 @@ def new_tournament():
                        persists.""",
                     "danger"
                 )
-
-        app.set_status('Confirming payment')
-        return redirect('/tournaments/%s/confirm' % app.id)
 
     return render_template('new.html',
                            title='Create a Tournament',
@@ -125,4 +122,4 @@ def tournament_status(name):
     if not app:
         return ('', 404)
 
-    return jsonify(status=app.status)
+    return {'status': app.status}

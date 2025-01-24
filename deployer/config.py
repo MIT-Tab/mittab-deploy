@@ -28,7 +28,7 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
-    CELERY_RESULT_BACKEND = None
+    CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
     CELERY_BROKER_URL = os.environ['REDIS_URL']
 
     # for Flask-Mail

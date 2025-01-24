@@ -22,14 +22,12 @@ class BackupFailedError(Exception):
 
 
 
-"""
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
         crontab(hour=10, minute=30),
         delete_apps().s()
     )
-    """
 
 @celery.task()
 def deploy_tournament(app_id, password):
@@ -48,7 +46,7 @@ def deploy_app(app, password):
         db = digital_ocean.create_database(app.name)
 
         time.sleep(5 * 60)
-        
+
         app.set_status('Creating server')
         digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
 
@@ -60,8 +58,6 @@ def deploy_app(app, password):
         raise e
 
 
-"""
-@app.cli.command("delete-apps")
 def delete_apps():
     apps = App.query.filter_by(active=True)
     current_date = datetime.now().date()
@@ -82,6 +78,3 @@ def delete_apps():
             app.warning_email_sent = True
             db.session.add(app)
             db.session.commit()
-
-app.cli.add_command(delete_apps)
-"""

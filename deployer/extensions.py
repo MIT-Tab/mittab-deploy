@@ -1,3 +1,5 @@
+import os
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
@@ -9,4 +11,8 @@ db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
 bootstrap = Bootstrap()
-celery = Celery()
+celery = Celery(
+    'deployer',
+    broker=os.environ['REDIS_URL'],
+    backend=os.environ['REDIS_URL']
+)
