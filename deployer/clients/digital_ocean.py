@@ -44,6 +44,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             "key": key,
             "value": value,
             "type": "SECRET" if is_secret else "GENERAL",
+            "scope": "RUN_AND_BUILD_TIME",
         }
 
     github_config = {
@@ -84,9 +85,9 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             env_var("AWS_ACCESS_KEY_ID", __access_key, True),
             env_var("AWS_SECRET_ACCESS_KEY", __secret_key, True),
             env_var("AWS_DEFAULT_REGION", "nyc3"),
-            env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN"), True),
+            env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN", ""), True),
             env_var("TOURNAMENT_NAME", name),
-            env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", True)),
+            env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", ""), True),
         ],
         "databases": [{
             "name": database["name"],
@@ -121,7 +122,7 @@ def get_app(app_name):
 
 def delete_app(app_name):
     try:
-        app = get_app(app_name)    
+        app = get_app(app_name)
         __delete(f"apps/{app['id']}")
         delete_database(app["spec"]["databases"][0]["cluster_name"])
     except ValueError:

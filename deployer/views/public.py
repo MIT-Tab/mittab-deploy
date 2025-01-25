@@ -57,14 +57,14 @@ def new_tournament():
                 deploy_tournament.delay(test_app.id, form.password.data)
                 app.set_status('Confirming payment')
 
-                return redirect('/tournaments/%s' % app.name)
-            else:
-                flash(
-                    """An error occurred while processing payment info.
-                       Contact Ben via the link in the footer if the problem
-                       persists.""",
-                    "danger"
-                )
+            return redirect('/tournaments/%s' % app.name)
+        else:
+            flash(
+                """An error occurred while processing payment info.
+                    Contact Ben via the link in the footer if the problem
+                    persists.""",
+                "danger"
+            )
 
     return render_template('new.html',
                            title='Create a Tournament',
