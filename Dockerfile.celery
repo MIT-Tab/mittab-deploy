@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 
 RUN apt-get update && \
   apt-get upgrade -y && \
@@ -6,8 +6,8 @@ RUN apt-get update && \
 
 COPY . /usr/src/app
 WORKDIR /usr/src/app
-RUN pip install pipenv
-RUN pipenv install --deploy --system
+RUN pip install uv
+RUN uv pip install --system .
 
 EXPOSE 8000
 CMD ["./bin/start_celery"]

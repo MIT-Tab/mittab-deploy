@@ -1,0 +1,70 @@
+Metadata-Version: 2.1
+Name: mittab-deploy
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.8.20
+Description-Content-Type: text/markdown
+Requires-Dist: alembic>=1.14.0
+Requires-Dist: celery[redis]>=5.3.6
+Requires-Dist: email-validator>=2.2.0
+Requires-Dist: Flask<2.3.0,>=2.2.5
+Requires-Dist: flask-bootstrap4>=4.0.2
+Requires-Dist: Flask-Mail>=0.9.1
+Requires-Dist: Flask-Migrate>=4.0.5
+Requires-Dist: Flask-SQLAlchemy>=3.1.1
+Requires-Dist: Flask-WTF>=1.2.1
+Requires-Dist: gunicorn>=21.2.0
+Requires-Dist: importlib-metadata>=7.0.1
+Requires-Dist: itsdangerous>=2.1.2
+Requires-Dist: Jinja2>=3.1.3
+Requires-Dist: MarkupSafe>=2.1.5
+Requires-Dist: mysql-connector-python>=9.0.0
+Requires-Dist: mysqlclient>=2.2.6
+Requires-Dist: oauthlib>=3.2.2
+Requires-Dist: raven>=6.10.0
+Requires-Dist: requests>=2.32.3
+Requires-Dist: SQLAlchemy>=2.0.25
+Requires-Dist: stripe>=7.12.0
+Requires-Dist: tenacity>=8.2.3
+Requires-Dist: Werkzeug>=3.0.1
+Requires-Dist: WTForms>=3.1.2
+
+This is an application to handle automatic deployments of the
+[mit-tab](https://github.com/jolynch/mit-tab/) application
+
+# What this application does
+
+- Deploys an instance of mit-tab to a Digital Oceal droplet (using Digital
+  Ocean's remote Docker hosts)
+- Creates a DNS record at {tournament}.nu-tab.com that maps to that droplet's IP
+  address using the Digital Ocean DNS services
+- Useful scripts to backup tournaments
+- Admin interface to delete tournaments
+
+# TODO:
+
+- Automate staging deploys with PRs to mit-tab
+- Add more functionality (stripe refunds, task logs, etc.) to the admin interface
+
+# Installation and Running
+
+You will need the AWS, DigitalOcean and Stripe credentials to test this. Please set up
+your own account if you plan on developing on this. Feel free to contact me directly
+with any questions.
+
+The easiest way to run is with `uv`
+
+```
+pip install uv
+uv install
+uv run flask run
+```
+
+## Environment Variables
+
+These are in `.env`, which is `.gitignore`'d. Run `cp .env.example .env` to get started.
+
+# Deployment
+
+On each master commit, the dockerhub image `benmusch/mit-tab:latest` is built and
+pushed. To deploy, pull this image, pull the code, and run `dc up -d`.

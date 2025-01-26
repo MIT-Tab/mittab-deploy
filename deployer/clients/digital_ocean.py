@@ -1,21 +1,11 @@
 import os
 from time import time, sleep
 
-import boto3
-import digitalocean
 import requests
 
 __access_key = os.environ['DIGITALOCEAN_ACCESS_KEY_ID']
 __secret_key = os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
 __token = os.environ['DIGITALOCEAN_TOKEN']
-__manager = digitalocean.Manager(token=__token)
-__boto_client = boto3.client(
-        's3',
-        aws_access_key_id=__access_key,
-        aws_secret_access_key=__secret_key,
-        region_name='nyc3',
-        endpoint_url='https://nyc3.digitaloceanspaces.com'
-)
 
 
 class NoDropletError(Exception):
@@ -28,51 +18,6 @@ class NoRecordError(Exception):
     def __init__(self, name, *args):
         message = "No domain record found with name '{}'".format(name)
         super(NoRecordError, self).__init__(message, args)
-
-######################
-# Droplet interactions
-######################
-
-
-def create_droplet(droplet_name, size):
-    user_ssh_key = open(os.path.join(os.environ['HOME'], '.ssh/id_rsa.pub')).read()
-    keys = __manager.get_all_sshkeys()
-
-    if user_ssh_key.strip() not in [key.public_key for key in keys]:
-        key = digitalocean.SSHKey(
-                token=__token,
-                name='deployer-{}'.format(int(time())),
-                public_key=user_ssh_key
-                )
-
-        key.create()
-        keys = __manager.get_all_sshkeys()
-
-    droplet = digitalocean.Droplet(token=__token,
-                                   name=droplet_name,
-                                   region='nyc3',
-                                   image=__get_image_slug(),
-                                   size_slug=size,
-                                   ssh_keys=keys)
-    droplet.create()
-    return droplet
-
-
-def get_droplet(droplet_name):
-    droplets = __manager.get_all_droplets()
-    for droplet in droplets:
-        if droplet.name == droplet_name:
-            return droplet
-    raise NoDropletError(droplet_name)
-
-def __get_image_slug():
-    """
-    TODO: Un-comment after fixing API pagination error
-    images = __manager.get_images()
-    return sorted(filter(lambda i: i.slug and ('docker' in i.slug), images), key=lambda i: i.created_at)[0].slug
-    """
-    return 'docker-20-04'
-
 
 ############################
 # Apps
@@ -99,6 +44,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             "key": key,
             "value": value,
             "type": "SECRET" if is_secret else "GENERAL",
+            "scope": "RUN_AND_BUILD_TIME",
         }
 
     github_config = {
@@ -107,7 +53,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
         "deploy_on_push": False,
     }
 
-    return {
+    base_config = {
         "name": f"mittab-{name}",
         "services": [{
             "name": "web",
@@ -139,9 +85,9 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             env_var("AWS_ACCESS_KEY_ID", __access_key, True),
             env_var("AWS_SECRET_ACCESS_KEY", __secret_key, True),
             env_var("AWS_DEFAULT_REGION", "nyc3"),
-            env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN"), True),
+            env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN", ""), True),
             env_var("TOURNAMENT_NAME", name),
-            env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", True)),
+            env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", ""), True),
         ],
         "databases": [{
             "name": database["name"],
@@ -151,13 +97,19 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             "db_user": database["connection"]["user"],
             "cluster_name": database["name"],
         }],
-        "domains": [{
-            "domain": f"{name}.nu-tab.com",
-            "type": "PRIMARY",
-            "zone": "nu-tab.com",
-            "wildcard": False,
-        }]
+        "domains": []
     }
+
+    if os.environ.get("NU_TAB_DOMAIN"):
+        base_config["domains"].append(
+            {
+                "domain": f"{name}.{os.environ['NU_TAB_DOMAIN']}",
+                "type": "PRIMARY",
+                "zone": os.environ["NU_TAB_DOMAIN"],
+                "wildcard": False,
+            }
+        )
+    return base_config
 
 
 def get_app(app_name):
@@ -176,7 +128,7 @@ def get_app(app_name):
 
 def delete_app(app_name):
     try:
-        app = get_app(app_name)    
+        app = get_app(app_name)
         __delete(f"apps/{app['id']}")
         delete_database(app["spec"]["databases"][0]["cluster_name"])
     except ValueError:
@@ -246,38 +198,6 @@ def is_database_ready(db_id):
         print(f"Got non-online status: {status}")
         return False
     return True
-
-
-############################
-# Domain record interactions
-############################
-
-
-def create_domain_record(name, ip, domain='nu-tab.com'):
-    domain = digitalocean.Domain(token=__token, name=domain)
-
-    return domain.create_new_domain_record(type='A',
-                                           name=name,
-                                           data=ip,
-                                           ttl=3600)
-
-
-def get_domain_record(name, domain='nu-tab.com'):
-    domain = digitalocean.Domain.get_object(__token, domain)
-    records = domain.get_records(params={'name': name})
-    for record in records:
-        if record.name == name:
-            return record
-    raise NoRecordError(name)
-
-
-########
-# Spaces
-########
-
-
-def upload_file(src_path, dst_path):
-    __boto_client.upload_file(src_path, 'mittab-backups', dst_path)
 
 
 def __post(path, data):

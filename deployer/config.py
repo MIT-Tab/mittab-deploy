@@ -1,5 +1,17 @@
 import os
 
+REPO_OPTIONS = {
+    "default": {
+        "repo_slug": "MIT-Tab/mit-tab",
+        "branch": "master",
+        "name": "Default"
+    },
+    "discord": {
+        "repo_slug": "MIT-Tab/mit-tab",
+        "branch": "discord",
+        "name": "Discord - BETA, only use with explicit approval"
+    },
+}
 
 class BaseConfig(object):
     WEB_CSRF_ENABLED = True
@@ -16,7 +28,7 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 120
 
-    CELERY_RESULT_BACKEND = None
+    CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
     CELERY_BROKER_URL = os.environ['REDIS_URL']
 
     # for Flask-Mail
@@ -27,15 +39,3 @@ class BaseConfig(object):
     MAIL_DEBUG = DEBUG
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['benmuschol@gmail.com']
-
-    # Oauth login for admin app
-    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
-    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-    GOOGLE_DISCOVERY_URL = (
-        "https://accounts.google.com/.well-known/openid-configuration"
-    )
-    GOOGLE_AUTH_ALLOWED_EMAILS = [
-        "benmuschol@gmail.com",
-        "johnrod.john@gmail.com",
-    ]

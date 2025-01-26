@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $1:/usr/src/mit-tab/mittab/pairing_db.sqlite3 $2

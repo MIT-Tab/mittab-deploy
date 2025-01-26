@@ -1,67 +1,180 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<script src="https://checkout.stripe.com/checkout.js"></script>
+<script>
+    const dailyCost = {{daily_cost}}
+    const testDailyCost = {{test_cost}}
+    const fixedCost = {{fixed_cost}}
 
-{% block content %}
-  <center>
+    let checkbox;
+    let deletion_date;
+    let submit;
+
+    let stripeCost;
+
+    var handler = StripeCheckout.configure({
+      key: "{{stripe_key}}",
+      locale: 'auto',
+      token: function (token) {
+        document.tournament.stripe_token.value = token.id
+        document.tournament.submit()
+      }
+    });
+
+    function centsAsString(cents) {
+      return (cents / 100).toFixed(2)
+    }
+
+    function handleSubmit() {
+      const emailField = document.getElementById("email")
+
+      if (!document.tournament.stripe_token.value) {
+        handler.open({
+          name: 'MIT-Tab',
+          description: 'MIT-Tab server',
+          email: emailField.value,
+          amount: stripeCost
+        });
+
+        if (submit) {
+          submit.disabled = true
+          submit.value = 'Processing payment...'
+        }
+      }
+
+      return !!document.tournament.stripe_token.value;
+    }
+
+    // Close Checkout on page navigation:
+    window.addEventListener('popstate', function () {
+      handler.close();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      checkbox = document.getElementById("add_test")
+      deletion_date = document.getElementById("deletion_date")
+      submit = document.getElementById("submit_button")
+
+      function calculateCostAndUpdateButtonText() {
+        const daysActive = document.tournament.deletion_date.value
+          ? Math.max(0, Math.ceil((new Date(document.tournament.deletion_date.value) - new Date()) / (1000 * 60 * 60 * 24)))
+          : 0
+
+        console.log('days active', daysActive)
+
+        if (daysActive <= 0) {
+          submit.disabled = true
+          submit.value = 'Confirm'
+          return;
+        }
+
+        submit.disabled = false;
+        stripeCost = fixedCost + dailyCost * daysActive;
+
+        if (checkbox.checked) {
+          stripeCost += testDailyCost * daysActive;
+        }
+        submit.value = 'Confirm & Pay $' + centsAsString(stripeCost)
+      }
+
+      checkbox.addEventListener('change', calculateCostAndUpdateButtonText);
+      deletion_date.addEventListener('change', calculateCostAndUpdateButtonText);
+
+      calculateCostAndUpdateButtonText();
+    })
+</script>
+
+<center>
     <h1>Create a Tournament</h1>
-  </center>
-  <br>
+</center>
 
-  <form action="/tournaments/new"
+<br />
+
+<form
+    action="/tournaments/new"
     method="post"
     id="form"
-    name="tournament">
+    name="tournament"
+    onsubmit="return handleSubmit()"
+>
     {{ form.hidden_tag() }}
 
     <div class="form-group">
-      {{ form.name.label }}
-      <span class="help-block">
-        This will be the subdomain for the tournament (e.g.
-        example.nu-tab.com). Cannot include spaces or special characters.
-      </span>
-      {% for error in form.name.errors %}
+        {{ form.name.label }}
+        <span class="help-block">
+            This will be the subdomain for the tournament (e.g.
+            example.nu-tab.com). Cannot include spaces or special characters.
+        </span>
+        {% for error in form.name.errors %}
         <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.name(class='form-control') }}
+        {% endfor %}<br />
+        {{ form.name(class='form-control') }}
     </div>
 
     <div class="form-group">
-      {{ form.email.label }}
-      <span class="help-block">
-        You will receive an email with info about running the tournament.
-      </span>
-      {% for error in form.email.errors %}
+        {{ form.password.label }}
+        <span class="help-block">
+            You should choose a password you're comfortable sharing with tab
+            staff members. Avoid something you use for other web sites.
+        </span>
+        {% for error in form.password.errors %}
         <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.email(class='form-control', id='email') }}
+        {% endfor %}<br />
+        {{ form.password(class='form-control') }}
     </div>
 
     <div class="form-group">
-      {{ form.deletion_date.label }}
-      <span class="help-block">
-        The tournament will be deleted on this date. The cost of a tournament is
-        a $15 fixed fee + $1 per day active.
-
-        It's recommended to select a few days after your tournament ends to give
-        yourself time to upload results.
-      </span>
-      {% for error in form.deletion_date.errors %}
+        {{ form.email.label }}
+        <span class="help-block">
+            You will receive an email with info about running the tournament.
+        </span>
+        {% for error in form.email.errors %}
         <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.deletion_date(placeholder="mm/dd/yyyy", class="form-control") }}
+        {% endfor %}<br />
+        {{ form.email(class='form-control', id='email') }}
     </div>
 
     <div class="form-group">
-      {{ form.repo_options.label }}
-      {% for error in form.repo_options.errors %}
+        {{ form.deletion_date.label }}
+        <span class="help-block">
+            The tournament will be deleted on this date. The cost of a
+            tournament is a $15 fixed fee + $1 per day active. It's recommended
+            to select a few days after your tournament ends to give yourself
+            time to upload results.
+        </span>
+        {% for error in form.deletion_date.errors %}
         <span class="text-danger">[{{error}}]</span>
-      {% endfor %}<br>
-      {{ form.repo_options(class='form-control') }}
+        {% endfor %}<br />
+        {{ form.deletion_date(placeholder="mm/dd/yyyy", class="form-control") }}
     </div>
 
-    <input type="submit"
-           id="submit_button"
-           value="Continue"
-           class="btn btn-primary" />
+    <div class="form-group">
+        {{ form.repo_options.label }} {% for error in form.repo_options.errors
+        %}
+        <span class="text-danger">[{{error}}]</span>
+        {% endfor %}<br />
+        {{ form.repo_options(class='form-control') }}
+    </div>
 
-  </form>
+    <div class="form-group">
+        {{ form.add_test.label }}: {{ form.add_test }}
+        <span class="help-block">
+            This will spin up a smaller tournament at
+            [tournament_name]-test.nu-tab.com pre-loaded with test data. If
+            you've never run a tournament with mit-tab, this is a good way to
+            learn the software.
+            <br />
+            <b>This will cost an extra $1/day</b>
+        </span>
+        {% for error in form.add_test.errors %}
+        <span class="text-danger">[{{error}}]</span>
+        {% endfor %}<br />
+    </div>
+
+    <input
+        type="submit"
+        id="submit_button"
+        value="Confirm"
+        class="btn btn-primary"
+    />
+</form>
 {% endblock %}

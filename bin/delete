@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-./bin/backup $1
-./bin/delete_without_backup $1

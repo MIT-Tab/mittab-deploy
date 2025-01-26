@@ -1,12 +1,7 @@
-import os
-import shutil
-from time import time
-from datetime import datetime, date
+from datetime import datetime
 
-from deployer import app as flask_app
-from deployer import db
+from deployer.extensions import db
 from deployer.clients.digital_ocean import *
-from deployer.clients import remote_server
 
 
 class App(db.Model):
@@ -31,6 +26,7 @@ class App(db.Model):
         self.branch = branch
         self.deletion_date = deletion_date
         self.email = email
+        self.status = 'Initializing'
 
     @property
     def url(self):

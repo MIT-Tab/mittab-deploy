@@ -6,10 +6,7 @@ URL: http://{{tournament_name}}.nu-tab.com
 Username: tab
 Password: {{ password }}
 
-Respond to this email if you would like me to change the password.
-
-If you selected the option to add a test tournament, it will be available at the
-url http://{{tournament_name}}-test.nu-tab.com, with the password "password".
+The password can be changed in the admin panel if needed.
 
 Questions? Try reading the MIT-Tab Documentation: https://mit-tab.readthedocs.io
 

@@ -1,40 +1,62 @@
 This is an application to handle automatic deployments of the
-[mit-tab](https://github.com/jolynch/mit-tab/) application
+[mit-tab](https://github.com/mit-tab/mit-tab/) application
 
-# What this application does
+This app is a very light wrapper ontop of the [DigitalOcean App Platform API](https://www.digitalocean.com/products/app-platform),
+as the deployments themselves are no longer very complex. In particular,
+the deployer:
+ - Creates a database instance for the app
+ - Creates an App Platform instance connected to that database and the [nu-tab.com](https://nu-tab.com) domain
+ - Charges users for the deployment using Stripe
+ - Deletes tournaments automatically
 
-- Deploys an instance of mit-tab to a Digital Oceal droplet (using Digital
-  Ocean's remote Docker hosts)
-- Creates a DNS record at {tournament}.nu-tab.com that maps to that droplet's IP
-  address using the Digital Ocean DNS services
-- Useful scripts to backup tournaments
-- Admin interface to delete tournaments
+# Development
 
+## Pre-requisites: External accounts
 
-# TODO:
-- Automate staging deploys with PRs to mit-tab
-- Add more functionality (stripe refunds, task logs, etc.) to the admin interface
+### Digital Ocean
 
+The deployer manages deployments to Digital Ocean. (The entire deployer app is
+essentially just an API call to Digital Ocean's App Platform API). You will need
+to create a DigitalOcean account with an API key. If you wish to test the subdomain
+set-up, you must also have the DNS of that domain managed by DigitalOcean ([instructions](https://docs.digitalocean.com/products/networking/dns/how-to/add-domains/)).
 
-# Installation and Running
+### Stripe
 
-You will need the AWS, DigitalOcean and Stripe credentials to test this. Please set up
-your own account if you plan on developing on this. Feel free to contact me directly
-with any questions.
+Test mode stripe credentials are necessary to test the deployment flow.
 
-The easiest way to run is with `pipenv`
+## Installation
+
+To run this app, you will need:
+ - MySQL (8.0+)
+ - Redis
+
+Install these according to your local environment (e.g. `brew install mysql redis`).
+
+Then, install the python dependencies:
 
 ```
-pip install pipenv
-pipenv install
-PYTHONPATH=$(pwd) FLASK_APP=deployer pipenv run flask run
+pip install uv
+uv insall
 ```
 
 ## Environment Variables
 
-These are in `.env`, which is `.gitignore`'d. Run `cp .env.example .env` to get started.
+Copy `.env.example` to `.env` and fill in the necessary values.
 
-# Deployment
+## Running
 
-On each master commit, the dockerhub image `benmusch/mit-tab:latest` is built and
-pushed. To deploy, pull this image, pull the code, and run `dc up -d`.
+With MySQL and Redis running:
+
+```bash
+# Run migrations if necessary
+uv run --env-file .env flask db upgrade
+
+# Start the web server
+uv run --env-file .env flask run
+```
+
+In another tab, start the celery worker to process deployments:
+
+```bash
+uv run --env-file .env ./bin/start_celery
+```
