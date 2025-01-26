@@ -53,7 +53,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
         "deploy_on_push": False,
     }
 
-    return {
+    base_config = {
         "name": f"mittab-{name}",
         "services": [{
             "name": "web",
@@ -97,13 +97,19 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             "db_user": database["connection"]["user"],
             "cluster_name": database["name"],
         }],
-        "domains": [{
-            "domain": f"{name}.nu-tab.com",
-            "type": "PRIMARY",
-            "zone": "nu-tab.com",
-            "wildcard": False,
-        }]
+        "domains": []
     }
+
+    if os.environ.get("NU_TAB_DOMAIN"):
+        base_config["domains"].append(
+            {
+                "domain": f"{name}.{os.environ['NU_TAB_DOMAIN']}",
+                "type": "PRIMARY",
+                "zone": os.environ["NU_TAB_DOMAIN"],
+                "wildcard": False,
+            }
+        )
+    return base_config
 
 
 def get_app(app_name):
