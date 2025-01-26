@@ -27,7 +27,7 @@ def send_confirmation(tournament, password):
 def send_warning(tournament):
     txt = render_template('mail/warning.txt', tournament=tournament)
     html = render_template('mail/warning.html', tournament=tournament)
-    subject = '[IMPORTANT] Your mit-tab tournament will be deleted soon!'
+    subject = 'Your mit-tab tournament will be deleted soon!'
     return __send_email(subject, tournament.email, txt, html)
 
 
