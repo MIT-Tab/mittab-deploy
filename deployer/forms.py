@@ -5,7 +5,7 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, BooleanField, \
         HiddenField, DateField, IntegerField
-from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
+from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length
 
 from deployer.models import App
 from deployer.config import REPO_OPTIONS
@@ -45,7 +45,7 @@ def validate_days(form, field):
 class TournamentForm(FlaskForm):
     name = StringField(
             'Tournament Name',
-            [DataRequired(), validate_name, validate_unique_name]
+            [DataRequired(), validate_name, validate_unique_name, Length(max=19)]
             )
     repo_options = SelectField(
             'MIT-Tab Version',
