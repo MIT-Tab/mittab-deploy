@@ -26,10 +26,11 @@ class BackupFailedError(Exception):
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(
-        crontab(hour=10, minute=30),
-        delete_apps().s()
-    )
+    if app.config.get('DEPLOYER_PROCESS') == 'celery':
+        sender.add_periodic_task(
+            crontab(hour=10, minute=30),
+            delete_apps().s()
+        )
 
 @celery.task()
 def deploy_tournament(app_id, password):
@@ -61,7 +62,7 @@ def deploy_app(app, password):
 
 
 def delete_apps():
-    apps = App.query.filter_by(active=True)
+    apps = App.query.filter_by(active=True).all()
     current_date = datetime.now().date()
     logger.info("Checking {} apps for deletion".format(len(apps)))
 
