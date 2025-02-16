@@ -1,5 +1,6 @@
 import time
 import logging
+import os
 from datetime import datetime
 
 from celery.schedules import crontab
@@ -26,7 +27,7 @@ class BackupFailedError(Exception):
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    if app.config.get('DEPLOYER_PROCESS') == 'celery':
+    if os.environ.get('DEPLOYER_PROCESS') == 'celery':
         sender.add_periodic_task(
             crontab(hour=10, minute=30),
             delete_apps().s()
