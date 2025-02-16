@@ -1,4 +1,5 @@
 import os
+import logging
 
 import stripe
 
@@ -10,6 +11,8 @@ stripe.api_key = __secret_key
 FIXED_COST                 = 1500
 DAILY_COST_TEST_TOURNAMENT = 100
 DAILY_COST                 = 100
+
+logger = logging.getLogger(__name__)
 
 def get_publishable_key():
     return __publishable_key
@@ -30,6 +33,5 @@ def charge(email, stripe_token, amount):
         )
         return True
     except stripe.error.StripeError as e:
-        print("Got error %s" % e)
-        import traceback; traceback.print_exc()
+        logger.error(f"Error charging {email}: {e}", exc_info=True)
         return False

@@ -1,4 +1,5 @@
 import os
+import logging
 from time import time, sleep
 
 import requests
@@ -6,6 +7,8 @@ import requests
 __access_key = os.environ['DIGITALOCEAN_ACCESS_KEY_ID']
 __secret_key = os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
 __token = os.environ['DIGITALOCEAN_TOKEN']
+
+logger = logging.getLogger(__name__)
 
 
 class NoDropletError(Exception):
@@ -132,11 +135,11 @@ def delete_app(app_name):
         __delete(f"apps/{app['id']}")
         delete_database(app["spec"]["databases"][0]["cluster_name"])
     except ValueError:
-        print("App doesnt exist, no need to delete")
+        logger.info(f"App {app_name} doesnt exist, no need to delete")
         try:
             delete_database(f"mittab-db-{app_name}")
         except ValueError:
-            print("DB doesnt exist, no need to delete")
+            logger.info(f"DB {f'mittab-db-{app_name}'} doesnt exist, no need to delete")
 
 
 ############################
@@ -168,7 +171,7 @@ def create_database(name, timeout=600):
     # necessary for python's mysql client
     path = f"databases/{data['id']}/users/{data['connection']['user']}/reset_auth"
     __post(path, {"mysql_settings": {"auth_plugin": "mysql_native_password"}})
-    print("sleeping after setting auth plugin")
+    logger.info(f"sleeping after setting auth plugin for {data['id']}")
 
     seconds_elapsed = 0
     while seconds_elapsed < timeout:
@@ -195,7 +198,7 @@ def delete_database(name):
 def is_database_ready(db_id):
     status = __get(f"databases/{db_id}")["database"]["status"]
     if status != "online":
-        print(f"Got non-online status: {status}")
+        logger.info(f"Got non-online status: {status} for {db_id}")
         return False
     return True
 
@@ -211,7 +214,8 @@ def __post(path, data):
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
-        print(resp.json())
+        logger.error(f"Error posting {path}: {e}", exc_info=True)
+        logger.debug(resp.json())
         raise e
 
 
@@ -225,7 +229,8 @@ def __delete(path):
         resp.raise_for_status()
         return
     except Exception as e:
-        print(resp.json())
+        logger.error(f"Error deleting {path}: {e}", exc_info=True)
+        logger.debug(resp.json())
         raise e
 
 
@@ -239,5 +244,6 @@ def __get(path):
         resp.raise_for_status()
         return resp.json()
     except Exception as e:
-        print(resp.json())
+        logger.error(f"Error getting {path}: {e}", exc_info=True)
+        logger.debug(resp.json())
         raise e
