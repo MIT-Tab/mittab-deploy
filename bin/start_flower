@@ -1,0 +1,3 @@
+#!/bin/bash
+
+DEPLOYER_PROCESS=celery celery -A deployer.celery flower --port=5555

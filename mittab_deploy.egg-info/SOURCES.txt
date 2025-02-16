@@ -5,6 +5,7 @@ deployer/config.py
 deployer/extensions.py
 deployer/forms.py
 deployer/helpers.py
+deployer/logging.py
 deployer/models.py
 deployer/tasks.py
 migrations/env.py

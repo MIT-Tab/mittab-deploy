@@ -13,6 +13,7 @@ Requires-Dist: Flask-Mail>=0.9.1
 Requires-Dist: Flask-Migrate>=4.0.5
 Requires-Dist: Flask-SQLAlchemy>=3.1.1
 Requires-Dist: Flask-WTF>=1.2.1
+Requires-Dist: flower>=2.0.1
 Requires-Dist: gunicorn>=21.2.0
 Requires-Dist: importlib-metadata>=7.0.1
 Requires-Dist: itsdangerous>=2.1.2
