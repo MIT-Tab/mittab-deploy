@@ -61,7 +61,7 @@ def deploy_app(app, password):
         app.deactivate()
         raise e
 
-
+@celery.task()
 def delete_apps():
     apps = App.query.filter_by(active=True).all()
     current_date = datetime.now().date()
