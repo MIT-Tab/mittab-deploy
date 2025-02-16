@@ -30,7 +30,7 @@ def setup_periodic_tasks(sender, **kwargs):
     if os.environ.get('DEPLOYER_PROCESS') == 'celery':
         sender.add_periodic_task(
             crontab(hour=10, minute=30),
-            delete_apps().s()
+            delete_apps.s()
         )
 
 @celery.task()
