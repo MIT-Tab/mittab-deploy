@@ -1,3 +1,8 @@
 #!/bin/bash
 
-DEPLOYER_PROCESS=celery celery -A deployer.celery flower --port=5555
+celery -A deployer.celery flower \
+  --port=5555 \
+  --broker=$REDIS_URL \
+  --basic_auth=$FLOWER_USER:$FLOWER_PASSWORD \
+  --url_prefix=flower
+  
