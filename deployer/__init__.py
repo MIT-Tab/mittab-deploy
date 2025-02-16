@@ -7,8 +7,11 @@ from raven.contrib.flask import Sentry
 from deployer.config import BaseConfig
 from deployer.extensions import db, migrate, mail, bootstrap, celery
 from deployer.views.public import bp
+from deployer.logging import setup_logging
+
 
 def create_app(config_object=None):
+    setup_logging()
     app = Flask('deployer')
 
     # Load config
