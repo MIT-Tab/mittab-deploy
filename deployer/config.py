@@ -30,11 +30,6 @@ class BaseConfig(object):
 
     CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
     CELERY_BROKER_URL = os.environ['REDIS_URL']
-    
-    CELERYD_MAX_TASKS_PER_CHILD = 1
-    CELERYD_CONCURRENCY = 2
-    CELERY_WORKER_MAX_MEMORY_PER_CHILD = 50000
-    CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
     # for Flask-Mail
     MAIL_SERVER = 'smtp.gmail.com'
