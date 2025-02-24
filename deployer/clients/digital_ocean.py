@@ -58,6 +58,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
 
     base_config = {
         "name": f"mittab-{name}",
+        "region": "nyc",
         "services": [{
             "name": "web",
             "instance_count": 1,
