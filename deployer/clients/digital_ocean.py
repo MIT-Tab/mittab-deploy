@@ -92,6 +92,7 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             env_var("SENTRY_DSN", os.environ.get("MITTAB_SENTRY_DSN", ""), True),
             env_var("TOURNAMENT_NAME", name),
             env_var("DISCORD_BOT_TOKEN", os.environ.get("DISCORD_BOT_TOKEN", ""), True),
+            env_var("MITTAB_ENV", "test-deployment" if name.endswith("-test") else "production"),
         ],
         "databases": [{
             "name": database["name"],
