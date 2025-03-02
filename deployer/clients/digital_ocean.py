@@ -69,12 +69,20 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
             "routes": [{ "path": "/" }],
         }],
         "static_sites": [{
-            "name": "static",
-            "output_dir": "/var/www/tab/assets",
+            "name": "django-static",
+            "output_dir": "/var/www/tab/staticfiles",
             "dockerfile_path": "Dockerfile.static",
             "github": github_config,
             "routes": [{ "path": "/static" }]
-        }],
+        },
+        {
+            "name": "webpack-static",
+            "output_dir": "/var/www/tab/assets/webpack_bundles",
+            "dockerfile_path": "Dockerfile.static",
+            "github": github_config,
+            "routes": [{ "path": "/static/webpack_bundles" }]
+        }
+        ],
         "envs": [
             env_var("TAB_PASSWORD", tab_password, True),
             env_var("MYSQL_DATABASE", "${%s.DATABASE}" % database["name"]),
