@@ -9,6 +9,11 @@ __secret_key = os.environ['DIGITALOCEAN_ACCESS_KEY_SECRET']
 __token = os.environ['DIGITALOCEAN_TOKEN']
 
 logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 class NoDropletError(Exception):
