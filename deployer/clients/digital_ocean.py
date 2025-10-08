@@ -231,7 +231,7 @@ def __post(path, data):
         return resp.json()
     except Exception as e:
         logger.error(f"Error posting {path}: {e}", exc_info=True)
-        logger.debug(resp.json())
+        logger.info(resp.json())
         raise e
 
 
