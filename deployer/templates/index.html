@@ -11,8 +11,82 @@
   <ul>
     {% for tournament in tournaments %}
       {% if not tournament.name.endswith("-test") %}
-      <li><a href="{{ tournament.url }}">{{ tournament.name }}.nu-tab.com</a></li>
+      <li><a href="{{ tournament.url }}" style="font-size:xx-large">{{ tournament.name }}</a></li>
       {% endif %}
     {% endfor %}
   </ul>
+
+  <style>
+    body.index-dark {
+      background-color: #121212;
+      color: #f1f1f1;
+    }
+
+    body.index-dark a {
+      color: #8fd1ff;
+    }
+
+    body.index-dark a:visited {
+      color: #c7a6ff;
+    }
+  </style>
+  <script>
+    (function () {
+      var body = document.body;
+
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var isDark = !!prefersDark;
+      if (isDark) {
+        body.classList.add('index-dark');
+      } else {
+        body.classList.remove('index-dark');
+      }
+
+      function attachToggle() {
+        var footerCenter = document.querySelector('.container .row:last-of-type center');
+        if (!footerCenter) {
+          return;
+        }
+        var footerSpan = footerCenter.querySelector('span');
+        if (!footerSpan) {
+          return;
+        }
+        var existing = document.getElementById('dark-mode-toggle');
+        if (existing) {
+          return;
+        }
+        var toggle = document.createElement('button');
+        toggle.id = 'dark-mode-toggle';
+        toggle.type = 'button';
+        toggle.textContent = isDark ? '☀' : '☾';
+        toggle.setAttribute('aria-label', 'Toggle dark mode');
+        toggle.style.border = 'none';
+        toggle.style.background = 'none';
+        toggle.style.cursor = 'pointer';
+        toggle.style.fontSize = '3rem';
+        toggle.style.marginLeft = '0.5rem';
+        toggle.style.verticalAlign = 'middle';
+        toggle.title = isDark ? 'Disable dark mode' : 'Enable dark mode';
+        footerSpan.appendChild(toggle);
+
+        function syncToggle() {
+          toggle.textContent = isDark ? '☀' : '☾';
+          toggle.title = isDark ? 'Disable dark mode' : 'Enable dark mode';
+        }
+
+        toggle.addEventListener('click', function () {
+          isDark = body.classList.toggle('index-dark');
+          syncToggle();
+        });
+
+        syncToggle();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachToggle);
+      } else {
+        attachToggle();
+      }
+    }());
+  </script>
 {% endblock %}
