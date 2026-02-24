@@ -42,6 +42,8 @@ uv insall
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in the necessary values.
+If you want deployed tournaments to receive `BOARD_PASSWORD` at startup, set
+`BOARD_PASSWORD` in the deployer environment.
 
 ## Running
 
