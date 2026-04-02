@@ -119,6 +119,12 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
         "domains": []
     }
 
+    board_password = os.environ.get("BOARD_PASSWORD")
+    if board_password:
+        base_config["envs"].append(env_var("BOARD_PASSWORD", board_password, True))
+    else:
+        logger.warning("BOARD_PASSWORD is not set; tournament deployment will not include BOARD_PASSWORD")
+
     if os.environ.get("NU_TAB_DOMAIN"):
         base_config["domains"].append(
             {
