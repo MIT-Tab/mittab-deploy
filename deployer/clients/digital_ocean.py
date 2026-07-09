@@ -173,7 +173,7 @@ def create_database(name, timeout=600):
             {
                 "name": f"mittab-db-{name}",
                 "engine": "mysql",
-                "version": "8",
+                "version": "8.4",
                 "size": "db-s-1vcpu-1gb",
                 "region": "nyc3",
                 "num_nodes": 1,
