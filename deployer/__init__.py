@@ -5,6 +5,7 @@ from flask import Flask
 from raven.contrib.flask import Sentry
 
 from deployer.config import BaseConfig
+from deployer.commands import register_commands
 from deployer.extensions import db, migrate, mail, bootstrap, celery
 from deployer.views.public import bp
 from deployer.logging import setup_logging
@@ -34,6 +35,7 @@ def create_app(config_object=None):
     celery.Task = ContextTask
 
     app.register_blueprint(bp)
+    register_commands(app)
 
     if not app.config.get('DEBUG'):
         sentry = Sentry(app, dsn=os.environ.get('SENTRY_DSN'))

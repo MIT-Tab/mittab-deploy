@@ -62,3 +62,29 @@ In another tab, start the celery worker to process deployments:
 ```bash
 uv run --env-file .env ./bin/start_celery
 ```
+
+## Management Commands
+
+List recent tournaments, including failed deployments:
+
+```bash
+uv run --env-file .env flask list-tournaments
+```
+
+Redeploy an existing tournament without charging Stripe again:
+
+```bash
+uv run --env-file .env flask redeploy-tournament <app-id>
+```
+
+Delete a DigitalOcean database by exact name:
+
+```bash
+uv run --env-file .env flask delete-digitalocean-resource <database-name>
+```
+
+Delete a DigitalOcean app by name:
+
+```bash
+uv run --env-file .env flask delete-digitalocean-resource --type app <app-name>
+```
