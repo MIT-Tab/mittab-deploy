@@ -125,6 +125,34 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
     else:
         logger.warning("BOARD_PASSWORD is not set; tournament deployment will not include BOARD_PASSWORD")
 
+    aws_ses_access_key_id = os.environ.get("AWS_SES_ACCESS_KEY_ID")
+    aws_ses_secret_access_key = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
+    if aws_ses_access_key_id and aws_ses_secret_access_key:
+        base_config["envs"].extend([
+            env_var("AWS_SES_ACCESS_KEY_ID", aws_ses_access_key_id, True),
+            env_var("AWS_SES_SECRET_ACCESS_KEY", aws_ses_secret_access_key, True),
+            env_var(
+                "AWS_SES_REGION",
+                os.environ.get("AWS_SES_REGION", "us-east-1"),
+            ),
+        ])
+    else:
+        logger.warning(
+            "AWS SES credentials are not set; tournament deployment will not "
+            "include AWS_SES_ACCESS_KEY_ID or AWS_SES_SECRET_ACCESS_KEY"
+        )
+
+    for key in (
+        "AWS_SES_CONFIGURATION_SET",
+        "AWS_MAILMANAGER_ADDRESS_LIST",
+        "EMAIL_FROM_ADDRESS",
+        "EMAIL_FROM_NAME",
+        "EMAIL_REPLY_TO",
+    ):
+        value = os.environ.get(key)
+        if value:
+            base_config["envs"].append(env_var(key, value))
+
     if os.environ.get("NU_TAB_DOMAIN"):
         base_config["domains"].append(
             {
