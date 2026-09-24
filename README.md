@@ -44,6 +44,10 @@ uv insall
 Copy `.env.example` to `.env` and fill in the necessary values.
 If you want deployed tournaments to receive `BOARD_PASSWORD` at startup, set
 `BOARD_PASSWORD` in the deployer environment.
+Set `AWS_SES_ACCESS_KEY_ID` and `AWS_SES_SECRET_ACCESS_KEY` in the deployer
+environment to inject the credentials used for tournament email. The optional
+SES, Mail Manager, and sender settings documented in `.env.example` are passed
+through as well.
 
 ## Running
 
