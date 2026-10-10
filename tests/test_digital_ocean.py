@@ -99,5 +99,33 @@ class BuildAppSpecTest(unittest.TestCase):
         self.assertNotIn("AWS_SES_REGION", envs)
 
 
+class CreateDatabaseTest(unittest.TestCase):
+    @patch.object(digital_ocean, "is_database_ready", return_value=True)
+    @patch.object(digital_ocean, "__post")
+    def test_uses_mysql_8_4_default_authentication(self, post, _is_database_ready):
+        database = {
+            "id": "database-id",
+            "name": "mittab-db-test-tournament",
+            "connection": {"database": "defaultdb", "user": "doadmin"},
+        }
+        post.return_value = {"database": database}
+
+        self.assertEqual(
+            digital_ocean.create_database("test-tournament"),
+            database,
+        )
+        post.assert_called_once_with(
+            "databases",
+            {
+                "name": "mittab-db-test-tournament",
+                "engine": "mysql",
+                "version": "8.4",
+                "size": "db-s-1vcpu-1gb",
+                "region": "nyc3",
+                "num_nodes": 1,
+            },
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

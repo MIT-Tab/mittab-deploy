@@ -218,21 +218,6 @@ def create_database(name, timeout=600):
     if not is_database_ready(data["id"]):
         raise ValueError('Timeout exceeded')
 
-    # necessary for python's mysql client
-    path = f"databases/{data['id']}/users/{data['connection']['user']}/reset_auth"
-    __post(path, {"mysql_settings": {"auth_plugin": "mysql_native_password"}})
-    logger.info(f"sleeping after setting auth plugin for {data['id']}")
-
-    seconds_elapsed = 0
-    while seconds_elapsed < timeout:
-        if is_database_ready(data["id"]):
-            break
-        seconds_elapsed += 30
-        sleep(30)
-
-    if not is_database_ready(data["id"]):
-        raise ValueError('Timeout exceeded')
-
     return data
 
 
