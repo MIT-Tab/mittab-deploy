@@ -125,6 +125,17 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
     else:
         logger.warning("BOARD_PASSWORD is not set; tournament deployment will not include BOARD_PASSWORD")
 
+    black_rod_api_base_url = os.environ.get("BLACK_ROD_API_BASE_URL")
+    black_rod_private_api_token = os.environ.get("BLACK_ROD_PRIVATE_API_TOKEN")
+    if black_rod_api_base_url:
+        base_config["envs"].append(
+            env_var("BLACK_ROD_API_BASE_URL", black_rod_api_base_url)
+        )
+    if black_rod_private_api_token:
+        base_config["envs"].append(
+            env_var("BLACK_ROD_PRIVATE_API_TOKEN", black_rod_private_api_token, True)
+        )
+
     aws_ses_access_key_id = os.environ.get("AWS_SES_ACCESS_KEY_ID")
     aws_ses_secret_access_key = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
     if aws_ses_access_key_id and aws_ses_secret_access_key:

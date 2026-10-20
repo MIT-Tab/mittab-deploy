@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 from deployer.extensions import db
 from deployer.clients.digital_ocean import *
@@ -30,7 +31,8 @@ class App(db.Model):
 
     @property
     def url(self):
-        return 'http://{0}.nu-tab.com'.format(self.name)
+        domain = os.environ.get("NU_TAB_DOMAIN", "nu-tab.com")
+        return f"https://{self.name}.{domain}"
 
     @property
     def is_test(self):

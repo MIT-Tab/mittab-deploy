@@ -48,6 +48,8 @@ class BuildAppSpecTest(unittest.TestCase):
             "EMAIL_FROM_ADDRESS": "tab@example.com",
             "EMAIL_FROM_NAME": "Tab Team",
             "EMAIL_REPLY_TO": "help@example.com",
+            "BLACK_ROD_API_BASE_URL": "https://results.example.test",
+            "BLACK_ROD_PRIVATE_API_TOKEN": "live-token",
         }
         with patch.dict(os.environ, tournament_env, clear=False):
             envs = self.envs_by_key(self.build_spec())
@@ -74,6 +76,12 @@ class BuildAppSpecTest(unittest.TestCase):
         self.assertEqual(envs["EMAIL_FROM_ADDRESS"]["value"], "tab@example.com")
         self.assertEqual(envs["EMAIL_FROM_NAME"]["value"], "Tab Team")
         self.assertEqual(envs["EMAIL_REPLY_TO"]["value"], "help@example.com")
+        self.assertEqual(
+            envs["BLACK_ROD_API_BASE_URL"]["value"],
+            "https://results.example.test",
+        )
+        self.assertEqual(envs["BLACK_ROD_PRIVATE_API_TOKEN"]["value"], "live-token")
+        self.assertEqual(envs["BLACK_ROD_PRIVATE_API_TOKEN"]["type"], "SECRET")
 
     def test_does_not_inject_partial_aws_ses_credentials(self):
         empty_optional_env = {
