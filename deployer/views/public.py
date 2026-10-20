@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, redirect, request, flash
+from flask import Blueprint, jsonify, render_template, redirect, request, flash
 
 from deployer.config import REPO_OPTIONS
 from deployer.extensions import db
@@ -16,6 +16,19 @@ bp = Blueprint('public', __name__)
 def index():
     apps = App.query.filter_by(active=True).all()
     return render_template('index.html', tournaments=apps)
+
+
+@bp.route('/api/tournaments', methods=['GET'])
+def tournament_directory():
+    """List deployed Mit-Tab instances for Black Rod's live-results cache."""
+    apps = App.query.filter_by(active=True).all()
+    return jsonify({
+        "tournaments": [
+            {"name": app.name, "url": app.url}
+            for app in apps
+            if app.status == "Deployed" and not app.is_test
+        ]
+    })
 
 
 @bp.route('/tournaments/new', methods=['GET', 'POST'])
