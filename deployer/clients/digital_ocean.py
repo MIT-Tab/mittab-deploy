@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 from time import time, sleep
+from urllib.parse import urlsplit
 
 import requests
 
@@ -27,6 +28,36 @@ class NoRecordError(Exception):
     def __init__(self, name, *args):
         message = "No domain record found with name '{}'".format(name)
         super(NoRecordError, self).__init__(message, args)
+
+
+class NoAppError(ValueError):
+    pass
+
+
+def api_get(path):
+    return __get(path)
+
+
+def api_post(path, data):
+    return __post(path, data)
+
+
+def api_delete(path):
+    return __delete(path)
+
+
+def wait_for_app(identifier, timeout=900):
+    deadline = time() + timeout
+    while time() < deadline:
+        app = __get('apps/' + identifier)['app']
+        active = app.get('active_deployment') or {}
+        if active.get('phase') == 'ACTIVE':
+            return
+        deployment = app.get('in_progress_deployment') or active
+        if deployment.get('phase') in ('ERROR', 'CANCELED'):
+            raise RuntimeError('Tournament deployment failed; resources retained for recovery')
+        sleep(10)
+    raise RuntimeError('Tournament deployment is not ready; retry will reconcile its resources')
 
 ############################
 # Apps
@@ -173,6 +204,15 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
                 "wildcard": False,
             }
         )
+    if database.get('shared'):
+        from deployer.clients.shared_mysql import connection_budget
+        base_config['envs'].append(env_var('MYSQL_SHARED_CLUSTER', 'true'))
+        # Leave two tenant connections for backup/restore CLI processes.
+        # Bound admitted HTTP work so overload queues instead of breaking SQL.
+        base_config['envs'].extend([
+            env_var('GUNICORN_WORKERS', '2'),
+            env_var('GUNICORN_CONNECTIONS', str((connection_budget() - 2) // 2)),
+        ])
     return base_config
 
 
@@ -180,25 +220,47 @@ def get_app(app_name):
     if not app_name.startswith("mittab-"):
         app_name = f"mittab-{app_name}"
 
-    apps = __get("apps")["apps"]
-    for app in apps:
-        if app["spec"]["name"] != app_name:
-            continue
-        return app
-
-    raise ValueError(f"App {app_name} not found")
+    path = 'apps'
+    while path:
+        result = __get(path)
+        for app in result['apps']:
+            if app['spec']['name'] == app_name:
+                return app
+        next_page = result.get('links', {}).get('pages', {}).get('next')
+        if next_page:
+            url = urlsplit(next_page)
+            if url.scheme != 'https' or url.netloc != 'api.digitalocean.com':
+                raise ValueError('Unexpected application pagination URL')
+            path = url.path.removeprefix('/v2/') if hasattr(url.path, 'removeprefix') else url.path[4:]
+            if url.query:
+                path += '?' + url.query
+        else:
+            path = None
+    raise NoAppError(f"App {app_name} not found")
 
 
 
 def delete_app(app_name):
+    bare_name = app_name[len('mittab-'):] if app_name.startswith('mittab-') else app_name
+    owned_cluster_name = 'mittab-db-' + bare_name
     try:
         app = get_app(app_name)
+        bindings = app.get('spec', {}).get('databases', [])
+        if len(bindings) != 1 or bindings[0].get('cluster_name') != owned_cluster_name:
+            raise ValueError('Legacy cleanup cannot delete a shared or unowned database')
+        if bindings[0].get('db_name', 'defaultdb') != 'defaultdb':
+            raise ValueError('Legacy cleanup cannot delete a tenant database')
+        # Check a configured protected ID before deleting even the app.
+        for database in __get('databases')['databases']:
+            if (database['name'] == owned_cluster_name and
+                    database['id'] == os.environ.get('SHARED_MYSQL_CLUSTER_ID')):
+                raise ValueError('Legacy cleanup cannot remove an app bound to the shared cluster')
         __delete(f"apps/{app['id']}")
-        delete_database(app["spec"]["databases"][0]["cluster_name"])
-    except ValueError:
+        delete_database(owned_cluster_name)
+    except NoAppError:
         logger.info(f"App {app_name} doesnt exist, no need to delete")
         try:
-            delete_database(f"mittab-db-{app_name}")
+            delete_database(owned_cluster_name)
         except ValueError:
             logger.info(f"DB {f'mittab-db-{app_name}'} doesnt exist, no need to delete")
 
@@ -248,9 +310,13 @@ def create_database(name, timeout=600):
 
 
 def delete_database(name):
+    if not name.startswith('mittab-db-'):
+        raise ValueError('Only an owned per-tournament cluster can be destroyed')
     for db in __get("databases")["databases"]:
         if db["name"] != name:
             continue
+        if db['id'] == os.environ.get('SHARED_MYSQL_CLUSTER_ID'):
+            raise ValueError('Refusing to destroy the shared MySQL cluster')
         __delete(f"databases/{db['id']}")
         return
     raise ValueError(f"DB {name} not found")
@@ -270,6 +336,7 @@ def __post(path, data):
 
     resp = requests.post(f"https://api.digitalocean.com/v2{path}",
             json=data,
+            timeout=30,
             headers={"Authorization": f"Bearer {__token}"})
     try:
         resp.raise_for_status()
@@ -285,6 +352,7 @@ def __delete(path):
         path = f"/{path}"
 
     resp = requests.delete(f"https://api.digitalocean.com/v2{path}",
+            timeout=30,
             headers={"Authorization": f"Bearer {__token}"})
     try:
         resp.raise_for_status()
@@ -300,6 +368,7 @@ def __get(path):
         path = f"/{path}"
 
     resp = requests.get(f"https://api.digitalocean.com/v2{path}",
+            timeout=30,
             headers={"Authorization": f"Bearer {__token}"})
     try:
         resp.raise_for_status()

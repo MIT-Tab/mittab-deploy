@@ -23,21 +23,27 @@ logger.setLevel(logging.INFO)
 def get_publishable_key():
     return __publishable_key
 
-def charge(email, stripe_token, amount):
+def charge(email, stripe_token, amount, idempotency_key=None):
     try:
+        customer_options = ({'idempotency_key': idempotency_key + ':customer'}
+                            if idempotency_key else {})
         customer = stripe.Customer.create(
             email=email,
-            source=stripe_token
+            source=stripe_token,
+            **customer_options
         )
 
-        stripe.Charge.create(
+        charge_options = ({'idempotency_key': idempotency_key + ':charge'}
+                          if idempotency_key else {})
+        payment = stripe.Charge.create(
             customer=customer.id,
             amount=amount,
             currency='usd',
             description='MIT-Tab Server',
-            receipt_email=email
+            receipt_email=email,
+            **charge_options
         )
-        return True
+        return payment.id
     except stripe.error.StripeError as e:
         logger.error(f"Error charging {email}: {e}", exc_info=True)
         return False

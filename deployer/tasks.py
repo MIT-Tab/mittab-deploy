@@ -2,7 +2,7 @@ import time
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
@@ -42,14 +42,20 @@ def setup_periodic_tasks(sender, **kwargs):
 @celery.task()
 def deploy_tournament(app_id, password):
     app = App.query.get(app_id)
+    if app.database_mode == 'shared' and (not app.active or app.status == 'Deployed'):
+        return
 
-    deploy_app(app, password)
+    completed = deploy_app(app, password)
+    if app.database_mode == 'shared' and completed is False:
+        return
     email.send_confirmation(app, password)
     email.send_notification(app.name)
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(300))
 def deploy_app(app, password):
+    if app.database_mode == 'shared':
+        return deploy_shared_app(app, password)
     try:
         app.active = True
         app.set_status('Creating database')
@@ -66,6 +72,44 @@ def deploy_app(app, password):
         app.set_status('An error occurred. Retrying up to 5 times')
         app.deactivate()
         raise e
+
+
+def deploy_shared_app(app, password):
+    from deployer.clients import shared_mysql
+    now = datetime.utcnow()
+    # A persisted lease prevents duplicate Celery deliveries from revoking a
+    # tenant user's grants while another worker is starting the same app.
+    acquired = App.query.filter(
+        App.id == app.id, App.active.is_(True), App.status != 'Deployed',
+        db.or_(App.provisioning_until.is_(None), App.provisioning_until < now),
+    ).update({'provisioning_until': now + timedelta(minutes=20)}, synchronize_session=False)
+    db.session.commit()
+    if not acquired:
+        return False
+    try:
+        resource = shared_mysql.find_app(app)
+        if resource is None:
+            app.set_status('Creating shared database')
+            database = shared_mysql.ensure_database(app)
+            app.set_status('Creating server')
+            resource = digital_ocean.create_app(
+                app.name, password, database, app.repo_slug, app.branch,
+            )['app']
+        app.cloud_app_id = resource['id']
+        db.session.add(app)
+        db.session.commit()
+        digital_ocean.wait_for_app(app.cloud_app_id)
+        app.set_status('Deployed')
+        return True
+    except Exception:
+        # An uncertain provider response is not permission to delete an app or
+        # its data. Retries reconcile ownership and retain partial resources.
+        app.set_status('An error occurred. Retrying up to 5 times')
+        raise
+    finally:
+        app.provisioning_until = None
+        db.session.add(app)
+        db.session.commit()
 
 @celery.task()
 def delete_apps():

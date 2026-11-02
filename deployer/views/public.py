@@ -31,61 +31,17 @@ def tournament_directory():
     })
 
 
+@bp.route('/tournaments/quote', methods=['GET'])
+def tournament_quote():
+    from deployer.checkout import quote_route
+    return quote_route()
+
+
 @bp.route('/tournaments/new', methods=['GET', 'POST'])
 def new_tournament():
-    form = TournamentForm()
+    from deployer.checkout import new_tournament as create_tournament
+    return create_tournament()
 
-    if form.validate_on_submit():
-        repo_data = REPO_OPTIONS[form.repo_options.data]
-        app = App(form.name.data,
-                  repo_data['repo_slug'],
-                  repo_data['branch'],
-                  form.deletion_date.data,
-                  form.email.data)
-        app.active = True
-        app.confirmed = True
-
-
-        days_active = (app.deletion_date - datetime.now().date()).days + 1
-        fixed_cost = stripe.FIXED_COST
-        base_cost = stripe.DAILY_COST * days_active
-        test_cost = stripe.DAILY_COST_TEST_TOURNAMENT * days_active
-        cost = fixed_cost + base_cost + test_cost if form.add_test.data else base_cost + fixed_cost
-
-        if stripe.charge(app.email, form.stripe_token.data, cost):
-            db.session.add(app)
-            db.session.commit()
-            deploy_tournament.delay(app.id, form.password.data)
-
-            if form.add_test.data:
-                test_app = App(
-                    f"{app.name}-test",
-                    app.repo_slug,
-                    app.branch,
-                    app.deletion_date,
-                    app.email,
-                )
-                db.session.add(test_app)
-                db.session.commit()
-                deploy_tournament.delay(test_app.id, form.password.data)
-                app.set_status('Confirming payment')
-
-            return redirect('/tournaments/%s' % app.name)
-        else:
-            flash(
-                """An error occurred while processing payment info.
-                    Contact Ben via the link in the footer if the problem
-                    persists.""",
-                "danger"
-            )
-
-    return render_template('new.html',
-                           title='Create a Tournament',
-                           form=form,
-                           stripe_key=stripe.get_publishable_key(),
-                           daily_cost=stripe.DAILY_COST,
-                           fixed_cost=stripe.FIXED_COST,
-                           test_cost=stripe.DAILY_COST_TEST_TOURNAMENT)
 
 @bp.route('/tournaments/<tournament_id>/extend', methods=['POST', 'GET'])
 def extend_tournament(tournament_id):
@@ -95,13 +51,20 @@ def extend_tournament(tournament_id):
     elif app.is_test: return ("Cannot extend a test tournament!", 422)
 
     form = ExtendTournamentForm()
+    paired_tests = (App.query.filter_by(parent_id=app.id, active=True).all()
+                    if app.database_mode == 'shared' else [])
+    extension_daily_cost = stripe.DAILY_COST * (1 + len(paired_tests))
 
     if request.method == "POST" and form.validate_on_submit():
-        cost = form.days.data * stripe.DAILY_COST
+        cost = form.days.data * extension_daily_cost
         if stripe.charge(app.email, form.stripe_token.data, cost):
             app.deletion_date += timedelta(days=form.days.data)
             app.warning_email_sent = False
             db.session.add(app)
+            for test_app in paired_tests:
+                test_app.deletion_date = app.deletion_date
+                test_app.warning_email_sent = False
+                db.session.add(test_app)
             db.session.commit()
             flash("Tournament extended successfully!", "success")
         else:
@@ -118,7 +81,7 @@ def extend_tournament(tournament_id):
                             tournament=app,
                             form=form,
                             stripe_key=stripe.get_publishable_key(),
-                            daily_cost=stripe.DAILY_COST)
+                            daily_cost=extension_daily_cost)
 
 @bp.route('/tournaments/<name>', methods=['GET'])
 def show_tournament(name):

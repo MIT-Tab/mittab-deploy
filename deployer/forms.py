@@ -5,7 +5,7 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, BooleanField, \
         HiddenField, DateField, IntegerField
-from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length
+from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length, Optional
 
 from deployer.models import App
 from deployer.config import REPO_OPTIONS
@@ -28,6 +28,8 @@ def validate_password(form, field):
 def validate_unique_name(form, field):
     if App.query.filter_by(name=field.data.lower(), active=True).count() > 0:
         raise ValidationError('An active tournament with that name already exists')
+    if form.add_test.data and App.query.filter_by(name=field.data.lower() + '-test', active=True).count() > 0:
+        raise ValidationError('An active test tournament with that name already exists')
 
 def validate_date(form, field):
     if field.data <= datetime.now().date():
@@ -43,6 +45,10 @@ def validate_days(form, field):
 
 
 class TournamentForm(FlaskForm):
+    price_quote = HiddenField('Price quote')
+    tournament_start_date = DateField(
+        'Tournament start date (optional)', [Optional()], format='%Y-%m-%d',
+    )
     name = StringField(
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name, Length(max=19)]
