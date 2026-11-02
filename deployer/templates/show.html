@@ -3,23 +3,25 @@
 {% block content %}
 <div id="tournament">
   <center>
-    <h2>[[ tournament.name ]]</h3>
+    <h2>[[ tournament.name ]]</h2>
     <div v-if="deployed">
-      <span class="lead">Deployed!</span>
+      <span class="lead">Your site has deployed!</span>
       <br/>
 
-      <small>
-        Visit your tournament <a href="{{tournament.url}}">here</a> and check your email for more information
-      </small>
-      <small>
-        Note: It might take a few hours for the domain name to work.
-        Check your email for more info on how to confirm that it is setup properly.
-      </small>
+      <p>
+        Your permanent URL, <a href="{{ tournament.url }}">{{ tournament.url }}</a>,
+        will be available soon. It may take a few hours to start working.
+      </p>
+      <p v-if="tournament.temporary_url">
+        For now, visit your tournament at this temporary URL:<br/>
+        <a :href="tournament.temporary_url">[[ tournament.temporary_url ]]</a>
+      </p>
+      <p>Check your email for your username and password.</p>
     </div>
     <div v-else>
       <span class="lead">[[ tournament.status || 'Waiting for response' ]][[ '.'.repeat(dots) ]]</span>
       <br/>
-      <small v-if="tournament.status.startsWith('An error occurred')">
+      <small v-if="(tournament.status || '').startsWith('An error occurred')">
         Looks like an error occurred. Don't worry, you won't have to pay again.
         This process will restart in 30 seconds. If it fails 5 times in a row,
         it will stop. Contact Ben via the email in the footer to get everything
@@ -37,8 +39,9 @@ var app = new Vue({
   el: '#tournament',
   data: {
     tournament: {
-      name: '{{ tournament.name }}',
-      status: '{{ tournament.status }}'
+      name: {{ tournament.name | tojson }},
+      status: {{ tournament.status | tojson }},
+      temporary_url: {{ tournament.temporary_url | tojson }}
     },
     dots: 3
   },
@@ -51,11 +54,11 @@ var app = new Vue({
   },
   methods: {
     updateTournament: function() {
-      axios.get(window.location + '/status')
+      axios.get(window.location.pathname.replace(/\/$/, '') + '/status')
         .then(function(response) {
-          data = response.data
+          var data = response.data
           this.tournament.status = data.status
-          this.deployed = data.deployed
+          this.tournament.temporary_url = data.temporary_url
 
           if (this.deployed) {
             clearInterval(this.intervals.tournament)
@@ -70,9 +73,11 @@ var app = new Vue({
   },
 
   mounted: function() {
-    this.interval = {
-      tournament: setInterval(this.updateTournament, 10000),
-      dots: setInterval(this.updateDots, 1000)
+    if (!this.deployed) {
+      this.intervals = {
+        tournament: setInterval(this.updateTournament, 10000),
+        dots: setInterval(this.updateDots, 1000)
+      }
     }
   }
 })

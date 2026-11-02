@@ -107,5 +107,49 @@ class BuildAppSpecTest(unittest.TestCase):
         self.assertNotIn("AWS_SES_REGION", envs)
 
 
+class WaitForAppTest(unittest.TestCase):
+    def test_waits_for_active_app_and_returns_default_ingress_while_dns_is_pending(self):
+        temporary_url = "https://fall-open-example.ondigitalocean.app"
+        responses = [
+            {"app": {"in_progress_deployment": {"phase": "BUILDING"}}},
+            {"app": {"active_deployment": {"phase": "ACTIVE"}}},
+            {"app": {
+                "active_deployment": {"phase": "ACTIVE"},
+                "default_ingress": temporary_url,
+                "live_url": "https://fall-open.nu-tab.com",
+                "domains": [{"phase": "PENDING"}],
+            }},
+        ]
+        with patch.object(digital_ocean, "__get", side_effect=responses) as get_app, \
+                patch.object(digital_ocean, "sleep") as sleep:
+            result = digital_ocean.wait_for_app("app-id", timeout=90)
+
+        self.assertEqual(result, temporary_url)
+        self.assertEqual(get_app.call_count, 3)
+        get_app.assert_called_with("apps/app-id")
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_does_not_report_building_app_as_deployed_even_if_it_has_a_url(self):
+        response = {"app": {
+            "active_deployment": None,
+            "in_progress_deployment": {"phase": "BUILDING"},
+            "default_ingress": "https://fall-open-example.ondigitalocean.app",
+        }}
+        with patch.object(digital_ocean, "__get", return_value=response), \
+                patch.object(digital_ocean, "sleep"):
+            with self.assertRaisesRegex(ValueError, "Timed out"):
+                digital_ocean.wait_for_app("app-id", timeout=30)
+
+    def test_failed_or_canceled_deployment_stops_waiting(self):
+        for phase in ("ERROR", "CANCELED"):
+            with self.subTest(phase=phase), \
+                    patch.object(digital_ocean, "__get", return_value={"app": {
+                        "in_progress_deployment": {"phase": phase},
+                    }}), patch.object(digital_ocean, "sleep") as sleep:
+                with self.assertRaisesRegex(ValueError, "failed"):
+                    digital_ocean.wait_for_app("app-id")
+                sleep.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

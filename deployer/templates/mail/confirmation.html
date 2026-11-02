@@ -1,13 +1,18 @@
 <p>Hello,</p>
 
-<p>This email is a confirmation that your tournament has been created.</p>
+<p>Your tournament site has deployed!</p>
 
 <p>
-    <strong>URL:</strong>
-    <a href='{{ "http://{0}.nu-tab.com".format(tournament_name) }}'
-        >{{ tournament_name }}.nu-tab.com</a
-    >
+    <strong>Permanent URL:</strong>
+    <a href="{{ tournament.url }}">{{ tournament.url }}</a>
 </p>
+<p>The permanent URL will be available soon. It may take a few hours to start working.</p>
+{% if tournament.temporary_url %}
+<p>
+    For now, use this <strong>temporary URL:</strong>
+    <a href="{{ tournament.temporary_url }}">{{ tournament.temporary_url }}</a>
+</p>
+{% endif %}
 <p><strong>Username:</strong> tab</p>
 <p><strong>Password:</strong> {{ password }}</p>
 

@@ -40,6 +40,22 @@ def create_app(name, tab_password, database, repo_slug, branch):
             {"spec": __build_app_spec(name, tab_password, database, repo_slug, branch)})
 
 
+def wait_for_app(app_id, timeout=1800):
+    """Return the default ingress once deployed, without waiting for custom DNS."""
+    for _ in range(0, timeout, 30):
+        app = __get(f"apps/{app_id}")["app"]
+        active = app.get("active_deployment") or {}
+        if active.get("phase") == "ACTIVE" and app.get("default_ingress"):
+            return app["default_ingress"]
+
+        deployment = app.get("in_progress_deployment") or active
+        if deployment.get("phase") in ("ERROR", "CANCELED"):
+            raise ValueError(f"Deployment for app {app_id} failed")
+        sleep(30)
+
+    raise ValueError(f"Timed out waiting for app {app_id} to deploy")
+
+
 def __build_app_spec(name, tab_password, database, repo_slug, branch):
     """
     Build the appspec object for digitalocean. Ideally we could use a yaml file on the
