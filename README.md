@@ -9,6 +9,11 @@ the deployer:
  - Charges users for the deployment using Stripe
  - Deletes tournaments automatically
 
+Once DigitalOcean reports an active deployment, the deployer shows its temporary
+`.ondigitalocean.app` URL on the tournament page and includes it with the login
+credentials in the confirmation email. Users can open that URL while their
+permanent domain becomes available.
+
 # Development
 
 ## Pre-requisites: External accounts

@@ -1,8 +1,12 @@
 Hello,
 
-This email is a confirmation that your tournament has been created.
+Your tournament site has deployed!
 
-URL: http://{{tournament_name}}.nu-tab.com
+Permanent URL: {{ tournament.url }}
+The permanent URL will be available soon. It may take a few hours to start working.
+{% if tournament.temporary_url %}
+For now, use this temporary URL: {{ tournament.temporary_url }}
+{% endif %}
 Username: tab
 Password: {{ password }}
 
