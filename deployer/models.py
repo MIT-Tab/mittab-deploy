@@ -11,6 +11,7 @@ class App(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     status = db.Column(db.String, nullable=True)
+    temporary_url = db.Column(db.String(512), nullable=True)
     active = db.Column(db.Boolean, default=False)
     confirmed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False)

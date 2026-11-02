@@ -98,4 +98,4 @@ def tournament_status(name):
     if not app:
         return ('', 404)
 
-    return {'status': app.status}
+    return {'status': app.status, 'temporary_url': app.temporary_url}

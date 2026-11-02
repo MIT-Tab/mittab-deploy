@@ -40,13 +40,17 @@ class SharedDeploymentTest(TestCase):
         "deployer.clients.digital_ocean.create_app",
         return_value={"app": {"id": "created-app"}},
     )
-    @patch("deployer.clients.digital_ocean.wait_for_app")
+    @patch(
+        "deployer.clients.digital_ocean.wait_for_app",
+        return_value="https://synthetic.ondigitalocean.app",
+    )
     def test_commits_ownership_and_waits_for_readiness(
         self, wait, create, ensure, _find
     ):
         ensure.return_value = {"shared": True}
         self.assertTrue(deploy_shared_app(self.app, "Synthetic12"))
-        wait.assert_called_once_with("created-app")
+        wait.assert_called_once_with("created-app", timeout=900)
+        self.assertEqual(self.app.temporary_url, "https://synthetic.ondigitalocean.app")
         self.assertEqual(self.app.cloud_app_id, "created-app")
         self.assertEqual(self.app.status, "Deployed")
         self.assertIsNone(self.app.provisioning_until)

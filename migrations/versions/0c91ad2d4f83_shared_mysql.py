@@ -1,14 +1,14 @@
 """Persist tenant ownership and new-booking pricing; leave old rows dedicated.
 
 Revision ID: 0c91ad2d4f83
-Revises: 2bf32bd5be0c
+Revises: 9d9b7d75c34a
 """
 
 from alembic import op
 import sqlalchemy as sa
 
 revision = "0c91ad2d4f83"
-down_revision = "2bf32bd5be0c"
+down_revision = "9d9b7d75c34a"
 branch_labels = None
 depends_on = None
 

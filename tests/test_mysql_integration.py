@@ -16,6 +16,7 @@ import mysql.connector
 import requests
 import sqlalchemy as sa
 from flask_migrate import upgrade, downgrade
+from alembic.script import ScriptDirectory
 
 from test_public import AppConfig
 from deployer import create_app
@@ -24,6 +25,15 @@ from deployer.extensions import db
 
 CLUSTER = "b7f112b1-26f1-46d8-a0dd-cc151c6d208f"
 MIGRATIONS = str(Path(__file__).resolve().parents[1] / "migrations")
+
+
+class MigrationGraphTest(unittest.TestCase):
+    def test_shared_migration_follows_latest_master_with_one_head(self):
+        script = ScriptDirectory(MIGRATIONS)
+        self.assertEqual(script.get_current_head(), "0c91ad2d4f83")
+        self.assertEqual(
+            script.get_revision("0c91ad2d4f83").down_revision, "9d9b7d75c34a"
+        )
 
 
 @unittest.skipUnless(
@@ -356,6 +366,41 @@ class MysqlIntegrationTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "capacity"):
             with shared_mysql.booking_capacity(2):
                 self.fail("Insufficient slots must be rejected before payment")
+
+    def test_upgrade_and_downgrade_preserve_existing_temporary_url(self):
+        downgrade(directory=MIGRATIONS, revision="9d9b7d75c34a")
+        temporary_url = "https://old-live.ondigitalocean.app"
+        with db.engine.begin() as conn:
+            conn.execute(
+                sa.text(
+                    "INSERT INTO apps(name,status,active,confirmed,created_at,"
+                    "repo_slug,branch,deletion_date,email,warning_email_sent,temporary_url) "
+                    "VALUES('old-live','Deployed',1,1,:created,'MIT-Tab/mit-tab',"
+                    "'master',:end,'old@example.com',0,:url)"
+                ),
+                {
+                    "created": datetime.utcnow(),
+                    "end": datetime.utcnow().date() + timedelta(days=5),
+                    "url": temporary_url,
+                },
+            )
+        upgrade(directory=MIGRATIONS)
+        row = db.session.execute(
+            sa.text(
+                "SELECT temporary_url,database_mode,shared_tenant FROM apps WHERE name='old-live'"
+            )
+        ).one()
+        self.assertEqual(tuple(row), (temporary_url, None, None))
+        # Release the SELECT's metadata lock before Alembic uses another
+        # connection to alter the same table.
+        db.session.commit()
+        downgrade(directory=MIGRATIONS, revision="9d9b7d75c34a")
+        self.assertEqual(
+            db.session.execute(
+                sa.text("SELECT temporary_url FROM apps WHERE name='old-live'")
+            ).scalar(),
+            temporary_url,
+        )
 
     def test_mysql_enforces_per_tenant_connection_cap(self):
         tenant = self.tenant()

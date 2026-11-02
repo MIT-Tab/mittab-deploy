@@ -58,13 +58,17 @@ def deploy_app(app, password):
         return deploy_shared_app(app, password)
     try:
         app.active = True
+        app.temporary_url = None
         app.set_status('Creating database')
         db = digital_ocean.create_database(app.name)
 
         time.sleep(5 * 60)
 
         app.set_status('Creating server')
-        digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
+        result = digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
+
+        app.set_status('Waiting for server to deploy')
+        app.temporary_url = digital_ocean.wait_for_app(result['app']['id'])
 
         app.set_status('Deployed')
     except Exception as e:
@@ -98,7 +102,7 @@ def deploy_shared_app(app, password):
         app.cloud_app_id = resource['id']
         db.session.add(app)
         db.session.commit()
-        digital_ocean.wait_for_app(app.cloud_app_id)
+        app.temporary_url = digital_ocean.wait_for_app(app.cloud_app_id, timeout=900)
         app.set_status('Deployed')
         return True
     except Exception:
