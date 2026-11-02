@@ -4,11 +4,10 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 LEGACY = "legacy-v1"
-SHARED = "shared-full-web-v1"
+SHARED = "shared-full-web-v2"
 FIXED_CENTS = 1500
-REGISTRATION_BASE_CENTS = 1950
 DAILY_CENTS = 100
-REGISTRATION_DAILY_CENTS = 50
+REGISTRATION_DAILY_CENTS = 75
 MAX_REGISTRATION_DAYS = 21
 
 
@@ -60,10 +59,9 @@ def quote(
     if registration_days > MAX_REGISTRATION_DAYS:
         raise ValueError("Registration can start at most 21 days before the tournament")
     normal_days = (deletion_date - (start_date or on_date)).days + 1
-    fixed = REGISTRATION_BASE_CENTS if registration_days else FIXED_CENTS
     return Quote(
         SHARED if shared else LEGACY,
-        fixed,
+        FIXED_CENTS,
         registration_days,
         normal_days,
         normal_days if add_test else 0,

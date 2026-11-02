@@ -28,7 +28,7 @@
     <div class="form-group">
         {{ form.tournament_start_date.label }}
         <p class="help-block">To open registration early, enter your tournament's start date, up to 21 days away.
-            Advance registration costs a $19.50 base fee + $0.50 per registration day + $1 per day from the
+            Advance registration costs a $15 base fee + $0.75 per registration day + $1 per day from the
             tournament start through deletion. Leave blank for the usual $15 base + $1 per day.</p>
         {{ form.tournament_start_date(class='form-control') }}
         {% for error in form.tournament_start_date.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}

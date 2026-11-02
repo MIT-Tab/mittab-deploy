@@ -23,15 +23,15 @@ Calendar days use UTC; the deletion date is the last included hosting day.
 | Booking | Base | Before tournament start | Start through deletion, inclusive |
 | --- | ---: | ---: | ---: |
 | Classic / start today | $15.00 | — | $1.00/day |
-| Advance registration (1–21 days early) | $19.50 | $0.50/day | $1.00/day |
+| Advance registration (1–21 days early) | $15.00 | $0.75/day | $1.00/day |
 
 The optional test site adds $1 per normal day, with its advance hosting included
 in the main registration charge. Shared main/test extensions extend both sites
 and cost $2/day while the test site is active; classic legacy extensions keep
 their old behavior. Saved charges include the price version and Stripe charge ID.
 
-For six normal days, classic is $21, two weeks early is $32.50, and three weeks
-early is $36 (add $6 for a test site). Deploying early under the old tariff would
+For six normal days, classic is $21, two weeks early is $31.50, and three weeks
+early is $36.75 (add $6 for a test site). Deploying early under the old tariff would
 have cost $35/$42. **This interim change does not meet the original $21 total
 price target.** Sharing SQL alone cannot fund the extra full-size web time at
 that price under the budget below. The earlier smaller-web plan's $0.25/day
@@ -47,25 +47,38 @@ separate tournament pool $181.80/year; web $12/28 per instance-day; payment fees
 this steady-state scenario. For lead time `L` and adopters `n`:
 
 ```
-gross = (57-n)*21 + n*(19.50 + 0.50*L + 6) + 6*6
+gross = (57-n)*21 + n*(15 + 0.75*L + 6) + 6*6
 operating = 853.80 + 181.80 + (12/28)*(63*6 + (n+3)*L)
 surplus = gross*0.971 - 57*0.30 - operating
 ```
 
 | Adopters | Early days | Gross | Operating before fees | Surplus after fees |
 | ---: | ---: | ---: | ---: | ---: |
-| 28 | 14 | $1,555.00 | $1,383.60 | $109.21 |
-| 29 | 14 | $1,566.50 | $1,389.60 | $114.37 |
-| 28 | 21 | $1,653.00 | $1,476.60 | $111.36 |
-| 29 | 21 | $1,668.00 | $1,485.60 | $116.93 |
+| 28 | 14 | $1,527.00 | $1,383.60 | $82.02 |
+| 29 | 14 | $1,537.50 | $1,389.60 | $86.21 |
+| 28 | 21 | $1,674.00 | $1,476.60 | $131.75 |
+| 29 | 21 | $1,689.75 | $1,485.60 | $138.05 |
 
-The pricing regression test evaluates every integer lead time 1–21 with both
-adoption counts and requires at least $100 modeled surplus. This is not a
-guarantee for different normal durations, adoption, test uptake or a larger pool.
-It excludes transition overlap, tax, labor, refunds, disputes, unusual transfer
-and other unbudgeted costs. Ben's actual annual profit remains unreconciled.
-Zero registration adoption has different economics; it is not covered by the
-50% adoption guarantee.
+The $15 base is the same for all bookings, including every registration window;
+there is no minimum registration charge or higher registration base. At quarter-dollar
+increments, $0.75/day is the closest registration rate to the roughly $100 annual
+surplus target for the intended two-to-three-week scenario while keeping normal
+days at $1. The regression test checks every 14–21-day lead time with both adoption
+counts and requires at least $80 modeled surplus. It does not claim the earlier
+$100 minimum over every 1–21-day window.
+
+Short-window sensitivity matters: if all 28–29 adopters register only one day
+early, the same annual model loses about $10; at two days, it loses about $3;
+at three days, it produces about $4–$5 surplus. The form still permits those
+shorter windows at the advertised rate. Thus the annual break-even result is
+conditional on the requested two-to-three-week usage, not guaranteed for every
+possible booking mix. An all-classic year also has different economics.
+
+These forecasts are not a guarantee for different normal durations, adoption,
+test uptake or a larger pool. They exclude transition overlap, tax, labor,
+refunds, disputes, unusual transfer and other unbudgeted costs. Ben's actual
+annual profit remains unreconciled. Later controller/web savings are needed to
+reduce customer totals further or improve the short-window margin.
 
 Rate references: [App Platform pricing](https://docs.digitalocean.com/products/app-platform/details/pricing/),
 [managed database pricing](https://www.digitalocean.com/pricing/managed-databases),

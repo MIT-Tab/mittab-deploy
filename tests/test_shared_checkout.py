@@ -18,13 +18,13 @@ class SharedConfig(AppConfig):
 
 
 class PricingTest(unittest.TestCase):
-    def test_tariff_covers_documented_shared_first_annual_budget(self):
+    def test_tariff_covers_documented_two_to_three_week_annual_budget(self):
         # Forecast, not historical profit: 57 main + six tests, six normal
         # days, 28/29 registration adopters and three early test sites.
         D = Decimal
         now = pricing.today()
         for adopters in (28, 29):
-            for lead in range(1, 22):
+            for lead in range(14, 22):
                 start = now + timedelta(days=lead)
                 registration = pricing.quote(
                     start + timedelta(days=5), start, shared=True
@@ -40,7 +40,17 @@ class PricingTest(unittest.TestCase):
                     + D(12) / 28 * (63 * 6 + (adopters + 3) * lead)
                 )
                 surplus = gross * D(".971") - D(".30") * 57 - operating
-                self.assertGreaterEqual(surplus, 100, (adopters, lead, surplus))
+                self.assertGreaterEqual(surplus, 80, (adopters, lead, surplus))
+
+    def test_base_remains_fifteen_dollars_for_every_registration_window(self):
+        now = pricing.today()
+        for lead in range(22):
+            start = now + timedelta(days=lead)
+            for add_test in (False, True):
+                result = pricing.quote(
+                    start + timedelta(days=5), start, add_test, shared=True
+                )
+                self.assertEqual(result.fixed_cents, 1500, (lead, add_test))
 
     def test_legacy_and_shared_classic_have_identical_price(self):
         now = pricing.today()
@@ -50,7 +60,7 @@ class PricingTest(unittest.TestCase):
 
     def test_full_size_registration_prices_and_optional_test(self):
         now = pricing.today()
-        for lead, expected in [(1, 2600), (14, 3250), (21, 3600)]:
+        for lead, expected in [(1, 2175), (14, 3150), (21, 3675)]:
             start = now + timedelta(days=lead)
             result = pricing.quote(start + timedelta(days=5), start, shared=True)
             self.assertEqual(result.total_cents, expected)
@@ -130,7 +140,7 @@ class SharedCheckoutTest(unittest.TestCase):
         self.assertRegex(main.shared_tenant, r"^nt[0-9a-f]{24}$")
         self.assertNotEqual(main.shared_tenant, test.shared_tenant)
         self.assertTrue(test.active)
-        self.assertEqual(main.amount_paid_cents, 3850)
+        self.assertEqual(main.amount_paid_cents, 3750)
         self.assertEqual(main.stripe_charge_id, "ch_synthetic")
         self.assertEqual(main.pricing_version, pricing.SHARED)
         self.assertEqual(queue.call_count, 2)

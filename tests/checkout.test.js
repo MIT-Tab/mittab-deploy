@@ -24,20 +24,20 @@ function page() {
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../deployer/static/checkout.js'), 'utf8'), context);
     return {inputs, form, button, requests, opened, elements};
 }
-const quote = (amount, token) => ({fixed_cents: 1950, registration_days: 14, registration_daily_cents: 50,
-    normal_days: 6, normal_daily_cents: 100, test_days: 0, total_cents: amount, price_quote: token});
+const quote = (amount, token, normalDays = 6) => ({fixed_cents: 1500, registration_days: 14, registration_daily_cents: 75,
+    normal_days: normalDays, normal_daily_cents: 100, test_days: 0, total_cents: amount, price_quote: token});
 
 test('checkout uses the exact server quote and signed token', async () => {
     const p = page();
     p.inputs.deletion_date.value = '2026-11-21';
     const complete = p.inputs.deletion_date.events.change();
     assert.equal(p.button.disabled, true);
-    p.requests[0].resolve({ok: true, async json() {return quote(3250, 'signed');}});
+    p.requests[0].resolve({ok: true, async json() {return quote(3150, 'signed');}});
     await complete;
     assert.equal(p.inputs.price_quote.value, 'signed');
-    assert.equal(p.button.textContent, 'Confirm & Pay $32.50');
+    assert.equal(p.button.textContent, 'Confirm & Pay $31.50');
     p.form.events.submit({preventDefault() {}});
-    assert.equal(p.opened[0].amount, 3250);
+    assert.equal(p.opened[0].amount, 3150);
 });
 
 test('an old quote response cannot overwrite the newly selected dates', async () => {
@@ -46,12 +46,12 @@ test('an old quote response cannot overwrite the newly selected dates', async ()
     const first = p.inputs.deletion_date.events.change();
     p.inputs.deletion_date.value = '2026-11-28';
     const second = p.inputs.deletion_date.events.change();
-    p.requests[1].resolve({ok: true, async json() {return quote(3950, 'new');}});
+    p.requests[1].resolve({ok: true, async json() {return quote(3850, 'new', 13);}});
     await second;
-    p.requests[0].resolve({ok: true, async json() {return quote(3250, 'old');}});
+    p.requests[0].resolve({ok: true, async json() {return quote(3150, 'old');}});
     await first;
     assert.equal(p.inputs.price_quote.value, 'new');
-    assert.equal(p.button.textContent, 'Confirm & Pay $39.50');
+    assert.equal(p.button.textContent, 'Confirm & Pay $38.50');
 });
 
 test('a rejected price clears the old token and prevents checkout', async () => {
