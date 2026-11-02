@@ -97,3 +97,9 @@ Delete a DigitalOcean app by name:
 ```bash
 uv run --env-file .env flask delete-digitalocean-resource --type app <app-name>
 ```
+
+## Shared MySQL (opt-in)
+
+See [shared MySQL rollout, pricing and verification](docs/shared-mysql.md) before
+setting `SHARED_MYSQL_ENABLED=true`. Existing tournament deployments retain their
+current database ownership and pricing. The default remains dedicated hosting.

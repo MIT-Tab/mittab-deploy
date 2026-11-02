@@ -14,6 +14,10 @@ REPO_OPTIONS = {
 }
 
 class BaseConfig(object):
+    SHARED_MYSQL_ENABLED = os.environ.get('SHARED_MYSQL_ENABLED', '').lower() == 'true'
+    SHARED_MYSQL_CLUSTER_ID = os.environ.get('SHARED_MYSQL_CLUSTER_ID', '')
+    SHARED_MYSQL_MAX_TENANTS = int(os.environ.get('SHARED_MYSQL_MAX_TENANTS', '8'))
+    SHARED_MYSQL_MAX_CONNECTIONS = int(os.environ.get('SHARED_MYSQL_MAX_CONNECTIONS', '8'))
     WEB_CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
     DEBUG = os.environ['DEBUG'] == 'True'
