@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 from sqlalchemy.exc import IntegrityError
 
 from deployer import pricing
-from deployer.clients import shared_mysql, stripe
+from deployer.clients import forum, shared_mysql, stripe
 from deployer.config import REPO_OPTIONS
 from deployer.extensions import db
 from deployer.forms import TournamentForm
@@ -56,6 +56,7 @@ def render_page(form):
         form=form,
         stripe_key=stripe.get_publishable_key(),
         shared_enabled=shared_mysql.enabled(),
+        forum_enabled=forum.configured(),
     )
 
 
@@ -133,6 +134,11 @@ def complete_booking(form, payload, result):
     app.pricing_version = result.version
     app.tournament_start_date = form.tournament_start_date.data
     app.checkout_key = payload["key"]
+    app.forum_mode = form.forum_mode.data
+    if app.forum_mode == "existing":
+        app.forum_selection = form.forum_topic_url.data.strip()
+    elif app.forum_mode == "new":
+        app.forum_selection = form.forum_topic_title.data.strip()
     app.amount_paid_cents = result.total_cents
     if shared_mysql.enabled():
         app.database_mode = "shared"

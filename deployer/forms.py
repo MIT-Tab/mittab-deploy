@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, SelectField, BooleanField, \
         HiddenField, DateField, IntegerField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError, Length, Optional
 
+from deployer.clients import forum
 from deployer.models import App
 from deployer.config import REPO_OPTIONS
 
@@ -53,6 +54,18 @@ class TournamentForm(FlaskForm):
             'Tournament Name',
             [DataRequired(), validate_name, validate_unique_name, Length(max=19)]
             )
+    forum_mode = SelectField(
+        'APDA Forum',
+        choices=[
+            ('none', 'Not an APDA-sanctioned tournament'),
+            ('existing', 'Use an existing forum topic'),
+            ('new', 'Create a forum topic'),
+        ],
+        default='none',
+    )
+    forum_topic_url = StringField('Existing forum topic URL')
+    forum_topic_title = StringField('New forum topic name')
+
     repo_options = SelectField(
             'MIT-Tab Version',
             choices=[(key, REPO_OPTIONS[key]['name']) for key in REPO_OPTIONS.keys()],
@@ -71,6 +84,27 @@ class TournamentForm(FlaskForm):
                 DataRequired(),
                 validate_password
             ])
+
+    def validate(self, extra_validators=None):
+        valid = super().validate(extra_validators)
+        mode = self.forum_mode.data
+        if mode not in ('existing', 'new'):
+            return valid
+        if not forum.configured():
+            self.forum_mode.errors.append('APDA Forum publishing is currently unavailable.')
+            return False
+        if mode == 'existing':
+            url = (self.forum_topic_url.data or '').strip()
+            if len(url) > 512 or not forum.is_forum_url(url):
+                self.forum_topic_url.errors.append('Enter a valid APDA Forum topic URL.')
+                return False
+        if mode == 'new':
+            title = (self.forum_topic_title.data or '').strip()
+            if not title or len(title) > 200:
+                self.forum_topic_title.errors.append('Enter a topic name of 1 to 200 characters.')
+                return False
+
+        return valid
 
 class ExtendTournamentForm(FlaskForm):
     stripe_token = HiddenField('Stripe Token')

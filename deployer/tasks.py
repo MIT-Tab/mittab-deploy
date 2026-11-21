@@ -8,7 +8,8 @@ from celery.schedules import crontab
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from deployer.extensions import db, celery
-from deployer.clients import email, digital_ocean
+from deployer.clients import email, digital_ocean, forum
+from requests import RequestException
 from deployer.models import App
 
 logger = logging.getLogger(__name__)
@@ -48,8 +49,19 @@ def deploy_tournament(app_id, password):
     completed = deploy_app(app, password)
     if app.database_mode == 'shared' and completed is False:
         return
+    if app.forum_mode == 'new' and not app.is_test:
+        publish_announcement.delay(app.id)
     email.send_confirmation(app, password)
     email.send_notification(app.name)
+
+
+@celery.task(autoretry_for=(RequestException, ValueError), retry_backoff=30, max_retries=8)
+def publish_announcement(app_id):
+    app = db.session.get(App, app_id)
+    if app and app.active and app.status == 'Deployed' and app.forum_mode == 'new' and not app.is_test:
+        if app.forum_announcement_url is None:
+            app.forum_announcement_url = forum.announce(app)
+            db.session.commit()
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(300))
@@ -65,7 +77,9 @@ def deploy_app(app, password):
         time.sleep(5 * 60)
 
         app.set_status('Creating server')
-        result = digital_ocean.create_app(app.name, password, db, app.repo_slug, app.branch)
+        result = digital_ocean.create_app(
+            app.name, password, db, app.repo_slug, app.branch, forum.publication_settings(app),
+        )
 
         app.set_status('Waiting for server to deploy')
         app.temporary_url = digital_ocean.wait_for_app(result['app']['id'])
@@ -97,7 +111,7 @@ def deploy_shared_app(app, password):
             database = shared_mysql.ensure_database(app)
             app.set_status('Creating server')
             resource = digital_ocean.create_app(
-                app.name, password, database, app.repo_slug, app.branch,
+                app.name, password, database, app.repo_slug, app.branch, forum.publication_settings(app),
             )['app']
         app.cloud_app_id = resource['id']
         db.session.add(app)

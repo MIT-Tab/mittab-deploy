@@ -75,3 +75,17 @@
     window.addEventListener('popstate', () => handler?.close());
     refreshPrice();
 })();
+
+if (typeof document !== 'undefined') {
+  const forumMode = document.getElementById('forum_mode');
+  if (forumMode) {
+    const updateForumFields = () => {
+      document.querySelectorAll('[data-forum-mode]').forEach((group) => {
+        group.hidden = group.dataset.forumMode !== forumMode.value;
+        group.querySelector('input').disabled = group.hidden;
+      });
+    };
+    forumMode.addEventListener('change', updateForumFields);
+    updateForumFields();
+  }
+}
