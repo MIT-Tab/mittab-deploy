@@ -1,0 +1,2 @@
+- After opening or updating a pull request, run `bin/ci-watch --detach` once and hand off with the PR link. Use the watcher for CI alerts. Do not manually poll CI.
+- If the watcher reports a failure, tell the user which check failed right away. After fixing and pushing, start one new watcher. See the README for notification setup and the local results fallback.

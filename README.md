@@ -72,6 +72,18 @@ In another tab, start the celery worker to process deployments:
 uv run --env-file .env ./bin/start_celery
 ```
 
+## Pull request CI watcher
+
+Run `bin/ci-watch --detach` once from your PR branch after pushing. It uses
+authenticated GitHub CLI access to check the current PR head every 60 seconds.
+A completed failing check triggers an alert on the next poll, even while other
+checks are running. When all checks pass, the watcher saves the result locally.
+
+In Codex, the watcher sends alerts to the chat identified by `CODEX_THREAD_ID`
+or `--thread` if `codex queue` is available. Detached runs without a thread save
+results at the printed path. Run `bin/ci-watch` to see the result in your terminal.
+You can pass a PR number or URL to either mode.
+
 ## Management Commands
 
 List recent tournaments, including failed deployments:
