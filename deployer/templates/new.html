@@ -41,6 +41,23 @@
         {{ form.deletion_date(class='form-control') }}
         {% for error in form.deletion_date.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}
     </div>
+    {% if forum_enabled %}
+    <fieldset class="form-group">
+        <legend>{{ form.forum_mode.label.text }}</legend>
+        {{ form.forum_mode(class='form-control mb-2', **{'aria-label': form.forum_mode.label.text}) }}
+        {% for error in form.forum_mode.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}
+        <div data-forum-mode="existing">
+            {{ form.forum_topic_url.label }}
+            {{ form.forum_topic_url(class='form-control', type='url', maxlength=512) }}
+            {% for error in form.forum_topic_url.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}
+        </div>
+        <div data-forum-mode="new">
+            {{ form.forum_topic_title.label }}
+            {{ form.forum_topic_title(class='form-control', maxlength=200) }}
+            {% for error in form.forum_topic_title.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}
+        </div>
+    </fieldset>
+    {% endif %}
     <div class="form-group">
         {{ form.repo_options.label }} {{ form.repo_options(class='form-control') }}
         {% for error in form.repo_options.errors %}<p class="text-danger">{{ error }}</p>{% endfor %}

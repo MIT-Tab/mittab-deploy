@@ -103,3 +103,7 @@ uv run --env-file .env flask delete-digitalocean-resource --type app <app-name>
 See [shared MySQL rollout, pricing and verification](docs/shared-mysql.md) before
 setting `SHARED_MYSQL_ENABLED=true`. Existing tournament deployments retain their
 current database ownership and pricing. The default remains dedicated hosting.
+
+## APDA Forum posting
+
+Once the forum integration is configured, the tournament booking form offers an existing topic, a new topic, or a non-APDA tournament. Set `APDA_FORUM_URL` and `APDA_MITTAB_FORUM_SIGNING_KEY` on the deployer before enabling the booking options. See the [forum integration setup](https://github.com/MIT-Tab/apda-forum/blob/master/docs/Tournament-Posting.md).

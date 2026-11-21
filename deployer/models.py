@@ -30,6 +30,9 @@ class App(db.Model):
     amount_paid_cents = db.Column(db.Integer, nullable=True)
     checkout_key = db.Column(db.String(32), nullable=True, unique=True)
     stripe_charge_id = db.Column(db.String(64), nullable=True)
+    forum_mode = db.Column(db.String(10), nullable=True)
+    forum_selection = db.Column(db.String(512), nullable=True)
+    forum_announcement_url = db.Column(db.String(512), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('apps.id'), nullable=True)
     provisioning_until = db.Column(db.DateTime, nullable=True)
 

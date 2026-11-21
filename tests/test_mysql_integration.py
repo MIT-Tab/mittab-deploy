@@ -30,7 +30,8 @@ MIGRATIONS = str(Path(__file__).resolve().parents[1] / "migrations")
 class MigrationGraphTest(unittest.TestCase):
     def test_shared_migration_follows_latest_master_with_one_head(self):
         script = ScriptDirectory(MIGRATIONS)
-        self.assertEqual(script.get_current_head(), "0c91ad2d4f83")
+        self.assertEqual(script.get_current_head(), "8ce210f763bc")
+        self.assertEqual(script.get_revision("8ce210f763bc").down_revision, "0c91ad2d4f83")
         self.assertEqual(
             script.get_revision("0c91ad2d4f83").down_revision, "9d9b7d75c34a"
         )

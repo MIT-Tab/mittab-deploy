@@ -50,12 +50,12 @@ def api_delete(path):
 # Apps
 ############################
 
-def create_app(name, tab_password, database, repo_slug, branch):
+def create_app(name, tab_password, database, repo_slug, branch, forum_settings=None):
     """
     Create the main App. DB must be created first.
     """
     return __post("apps",
-            {"spec": __build_app_spec(name, tab_password, database, repo_slug, branch)})
+            {"spec": __build_app_spec(name, tab_password, database, repo_slug, branch, forum_settings)})
 
 
 def wait_for_app(app_id, timeout=1800):
@@ -74,7 +74,7 @@ def wait_for_app(app_id, timeout=1800):
     raise ValueError(f"Timed out waiting for app {app_id} to deploy")
 
 
-def __build_app_spec(name, tab_password, database, repo_slug, branch):
+def __build_app_spec(name, tab_password, database, repo_slug, branch, forum_settings=None):
     """
     Build the appspec object for digitalocean. Ideally we could use a yaml file on the
     branch of the deployment, but it gets a bit tricky with databases and secrets, which
@@ -152,6 +152,12 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
         }],
         "domains": []
     }
+
+    if forum_settings:
+        base_config["services"][0]["envs"] = [
+            dict(env_var(key, value, key.endswith("_TOKEN")), scope="RUN_TIME")
+            for key, value in forum_settings.items()
+        ]
 
     board_password = os.environ.get("BOARD_PASSWORD")
     if board_password:

@@ -124,6 +124,33 @@ class SharedCheckoutTest(unittest.TestCase):
             data["add_test"] = "y"
         return data
 
+    @patch.dict("os.environ", {
+        "APDA_FORUM_URL": "https://forum.example.test",
+        "APDA_MITTAB_FORUM_SIGNING_KEY": "test-signing-key",
+    })
+    @patch("deployer.clients.forum.requests.post")
+    @patch("deployer.checkout.deploy_tournament.delay")
+    @patch("deployer.checkout.stripe.charge", return_value="ch_synthetic")
+    @patch("deployer.checkout.shared_mysql.booking_capacity")
+    def test_existing_topic_is_saved_at_checkout_without_contacting_forum(
+        self, _capacity, charge, _queue, forum_request
+    ):
+        data = self.booking()
+        data.update(forum_mode="existing", forum_topic_url="https://other.example.test/topic/")
+        response = self.client.post("/tournaments/new", data=data)
+        self.assertIn(b"Enter a valid APDA Forum topic URL.", response.data)
+        charge.assert_not_called()
+
+        data["forum_topic_url"] = "https://forum.example.test/forum/topic/existing/"
+        response = self.client.post("/tournaments/new", data=data)
+        self.assertEqual(response.status_code, 302)
+        main = App.query.filter_by(name="new-open").one()
+        practice = App.query.filter_by(parent_id=main.id).one()
+        self.assertEqual(main.forum_mode, "existing")
+        self.assertEqual(main.forum_selection, data["forum_topic_url"])
+        self.assertIsNone(practice.forum_mode)
+        forum_request.assert_not_called()
+
     @patch("deployer.checkout.deploy_tournament.delay")
     @patch("deployer.checkout.stripe.charge", return_value="ch_synthetic")
     @patch("deployer.checkout.shared_mysql.booking_capacity")
