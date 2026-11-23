@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import os
 
 from test_public import AppConfig
@@ -113,6 +113,26 @@ class OwnershipTest(TestCase):
         ]:
             with self.subTest(grant=grant), self.assertRaises(ValueError):
                 shared_mysql._verify_grants(valid + [(grant,)], TENANT)
+
+    def test_restrict_user_retries_without_revoking_an_exact_schema_grant(self):
+        scoped_grants = [
+            ('GRANT USAGE ON *.* TO "u"@"%"',),
+            (f'GRANT {shared_mysql.PRIVILEGES} ON "{TENANT}".* TO "u"@"%"',),
+        ]
+        for previous_grants in [scoped_grants, [("GRANT SELECT ON *.* TO u@%",)]]:
+            with self.subTest(previous_grants=previous_grants):
+                cursor = Mock()
+                cursor.fetchall.side_effect = [[], previous_grants, scoped_grants]
+                shared_mysql.restrict_user(cursor, TENANT)
+                statements = [call.args[0] for call in cursor.execute.call_args_list]
+                self.assertEqual(
+                    any(sql.startswith("REVOKE ALL ") for sql in statements),
+                    previous_grants != scoped_grants,
+                )
+                self.assertIn(
+                    "ALTER USER %s@%s REQUIRE SSL WITH MAX_USER_CONNECTIONS %s",
+                    statements,
+                )
 
     @patch(
         "deployer.clients.shared_mysql.cloud.api_get",

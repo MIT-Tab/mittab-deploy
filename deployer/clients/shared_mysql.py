@@ -172,7 +172,7 @@ def booking_capacity(slots=1):
 def _verify_grants(grants, name):
     # SHOW GRANTS uses double quotes when ANSI_QUOTES is enabled.
     expected = {f'`{name}`.*', f'"{name}".*'}
-    own_grant = False
+    own_privileges = set()
     for row in grants:
         grant = row[0]
         if " ON " not in grant or "WITH GRANT OPTION" in grant.upper():
@@ -183,9 +183,10 @@ def _verify_grants(grants, name):
             continue
         if scope not in expected:
             raise ValueError("Tenant still has privileges outside its own database")
-        own_grant = True
-    if not own_grant:
+        own_privileges.update(privilege[len("GRANT "):].split(", "))
+    if not own_privileges:
         raise ValueError("Tenant is missing its database privileges")
+    return own_privileges
 
 
 def connection_budget():
@@ -206,15 +207,24 @@ def restrict_user(cursor, name):
     for role, host in cursor.fetchall():
         cursor.execute("REVOKE %s@%s FROM %s@%s", (role, host, name, "%"))
     cursor.execute("SET DEFAULT ROLE NONE TO %s@%s", (name, "%"))
-    cursor.execute("REVOKE ALL PRIVILEGES, GRANT OPTION FROM %s@%s", (name, "%"))
-    cursor.execute("GRANT " + PRIVILEGES + " ON `" + name + "`.* TO %s@%s", (name, "%"))
+    cursor.execute("SHOW GRANTS FOR %s@%s", (name, "%"))
+    required = set(PRIVILEGES.split(", "))
+    try:
+        current = _verify_grants(cursor.fetchall(), name)
+    except ValueError:
+        current = set()
+    # Managed MySQL can reject a blanket revoke once the user has only a schema grant.
+    if current != required:
+        cursor.execute("REVOKE ALL PRIVILEGES, GRANT OPTION FROM %s@%s", (name, "%"))
+        cursor.execute("GRANT " + PRIVILEGES + " ON `" + name + "`.* TO %s@%s", (name, "%"))
     connections = connection_budget()
     cursor.execute(
         "ALTER USER %s@%s REQUIRE SSL WITH MAX_USER_CONNECTIONS %s",
         (name, "%", connections),
     )
     cursor.execute("SHOW GRANTS FOR %s@%s", (name, "%"))
-    _verify_grants(cursor.fetchall(), name)
+    if _verify_grants(cursor.fetchall(), name) != required:
+        raise ValueError("Tenant privileges do not match provisioning requirements")
 
 
 def ensure_database(app):
