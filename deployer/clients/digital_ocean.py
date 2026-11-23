@@ -82,12 +82,12 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
 
     Reference: https://docs.digitalocean.com/products/app-platform/references/app-specification-reference/
     """
-    def env_var(key, value, is_secret=False):
+    def env_var(key, value, is_secret=False, scope="RUN_AND_BUILD_TIME"):
         return {
             "key": key,
             "value": value,
             "type": "SECRET" if is_secret else "GENERAL",
-            "scope": "RUN_AND_BUILD_TIME",
+            "scope": scope,
         }
 
     github_config = {
@@ -152,6 +152,17 @@ def __build_app_spec(name, tab_password, database, repo_slug, branch):
         }],
         "domains": []
     }
+
+    assistant_account = os.environ.get("MITTAB_ASSISTANT_ACCOUNT_ID")
+    assistant_token = os.environ.get("MITTAB_ASSISTANT_API_TOKEN")
+    if repo_slug.lower() == "mit-tab/mit-tab" and assistant_account and assistant_token:
+        assistant_enabled = os.environ.get("MITTAB_ASSISTANT_ENABLED") == "1"
+        base_config["services"][0]["envs"] = [
+            env_var("MITTAB_ASSISTANT_ENABLED", "1" if assistant_enabled else "0", scope="RUN_TIME"),
+            env_var("MITTAB_ASSISTANT_ACCOUNT_ID", assistant_account, scope="RUN_TIME"),
+            env_var("MITTAB_ASSISTANT_API_TOKEN", assistant_token, True, scope="RUN_TIME"),
+            env_var("MITTAB_SOURCE_REVISION", "${_self.COMMIT_HASH}", scope="RUN_TIME"),
+        ]
 
     board_password = os.environ.get("BOARD_PASSWORD")
     if board_password:
@@ -346,7 +357,8 @@ def __post(path, data):
         return resp.json()
     except Exception as e:
         logger.error(f"Error posting {path}: {e}", exc_info=True)
-        logger.info(resp.json())
+        if path != "/apps":
+            logger.info(resp.json())
         raise e
 
 
