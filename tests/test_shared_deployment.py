@@ -36,6 +36,7 @@ class SharedDeploymentTest(TestCase):
 
     @patch("deployer.clients.shared_mysql.find_app", return_value=None)
     @patch("deployer.clients.shared_mysql.ensure_database")
+    @patch("deployer.clients.shared_mysql.trust_app")
     @patch(
         "deployer.clients.digital_ocean.create_app",
         return_value={"app": {"id": "created-app"}},
@@ -45,10 +46,14 @@ class SharedDeploymentTest(TestCase):
         return_value="https://synthetic.ondigitalocean.app",
     )
     def test_commits_ownership_and_waits_for_readiness(
-        self, wait, create, ensure, _find
+        self, wait, create, trust, ensure, _find
     ):
         ensure.return_value = {"shared": True}
+        trust.side_effect = lambda app, _resource: self.assertEqual(
+            App.query.get(app.id).cloud_app_id, "created-app"
+        )
         self.assertTrue(deploy_shared_app(self.app, "Synthetic12"))
+        trust.assert_called_once_with(self.app, {"id": "created-app"})
         wait.assert_called_once_with("created-app", timeout=900)
         self.assertEqual(self.app.temporary_url, "https://synthetic.ondigitalocean.app")
         self.assertEqual(self.app.cloud_app_id, "created-app")
@@ -69,19 +74,21 @@ class SharedDeploymentTest(TestCase):
         "deployer.clients.shared_mysql.find_app", return_value={"id": "retained-app"}
     )
     @patch("deployer.clients.shared_mysql.ensure_database")
+    @patch("deployer.clients.shared_mysql.trust_app")
     @patch(
         "deployer.clients.digital_ocean.wait_for_app",
         side_effect=RuntimeError("timeout"),
     )
     @patch("deployer.clients.shared_mysql.delete_tournament")
     def test_uncertain_readiness_retains_app_and_data_for_retry(
-        self, delete, _wait, ensure, _find
+        self, delete, _wait, trust, ensure, _find
     ):
         with self.assertRaises(RuntimeError):
             deploy_shared_app(self.app, "Synthetic12")
         self.assertEqual(self.app.cloud_app_id, "retained-app")
         self.assertTrue(self.app.active)
         self.assertIsNone(self.app.provisioning_until)
+        trust.assert_called_once_with(self.app, {"id": "retained-app"})
         ensure.assert_not_called()
         delete.assert_not_called()
 

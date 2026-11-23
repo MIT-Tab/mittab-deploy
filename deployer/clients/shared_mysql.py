@@ -170,8 +170,9 @@ def booking_capacity(slots=1):
 
 
 def _verify_grants(grants, name):
-    expected = "`" + name + "`.*"
-    own_grant = False
+    # SHOW GRANTS uses double quotes when ANSI_QUOTES is enabled.
+    expected = {f'`{name}`.*', f'"{name}".*'}
+    own_privileges = set()
     for row in grants:
         grant = row[0]
         if " ON " not in grant or "WITH GRANT OPTION" in grant.upper():
@@ -180,11 +181,12 @@ def _verify_grants(grants, name):
         scope = remainder.split(" TO ", 1)[0]
         if scope == "*.*" and privilege == "GRANT USAGE":
             continue
-        if scope != expected:
+        if scope not in expected:
             raise ValueError("Tenant still has privileges outside its own database")
-        own_grant = True
-    if not own_grant:
+        own_privileges.update(privilege[len("GRANT "):].split(", "))
+    if not own_privileges:
         raise ValueError("Tenant is missing its database privileges")
+    return own_privileges
 
 
 def connection_budget():
@@ -205,15 +207,24 @@ def restrict_user(cursor, name):
     for role, host in cursor.fetchall():
         cursor.execute("REVOKE %s@%s FROM %s@%s", (role, host, name, "%"))
     cursor.execute("SET DEFAULT ROLE NONE TO %s@%s", (name, "%"))
-    cursor.execute("REVOKE ALL PRIVILEGES, GRANT OPTION FROM %s@%s", (name, "%"))
-    cursor.execute("GRANT " + PRIVILEGES + " ON `" + name + "`.* TO %s@%s", (name, "%"))
+    cursor.execute("SHOW GRANTS FOR %s@%s", (name, "%"))
+    required = set(PRIVILEGES.split(", "))
+    try:
+        current = _verify_grants(cursor.fetchall(), name)
+    except ValueError:
+        current = set()
+    # Managed MySQL can reject a blanket revoke once the user has only a schema grant.
+    if current != required:
+        cursor.execute("REVOKE ALL PRIVILEGES, GRANT OPTION FROM %s@%s", (name, "%"))
+        cursor.execute("GRANT " + PRIVILEGES + " ON `" + name + "`.* TO %s@%s", (name, "%"))
     connections = connection_budget()
     cursor.execute(
         "ALTER USER %s@%s REQUIRE SSL WITH MAX_USER_CONNECTIONS %s",
         (name, "%", connections),
     )
     cursor.execute("SHOW GRANTS FOR %s@%s", (name, "%"))
-    _verify_grants(cursor.fetchall(), name)
+    if _verify_grants(cursor.fetchall(), name) != required:
+        raise ValueError("Tenant privileges do not match provisioning requirements")
 
 
 def ensure_database(app):
@@ -249,17 +260,46 @@ def ensure_database(app):
     }
 
 
-def matches_app(resource, app):
+def matches_app(resource, app, cluster=None):
     databases = resource.get("spec", {}).get("databases", [])
     if len(databases) != 1:
         return False
     binding = databases[0]
-    cluster = get_cluster(app.shared_cluster_id)
+    if cluster is None:
+        cluster = get_cluster(app.shared_cluster_id)
     return (
         binding.get("cluster_name") == cluster["name"]
         and binding.get("db_name") == app.shared_tenant
         and binding.get("db_user") == app.shared_tenant
     )
+
+
+def trust_app(app, resource):
+    """Allow the owned App Platform instance to use the tournament pool."""
+    cluster = get_cluster(app.shared_cluster_id)
+    if resource["id"] != app.cloud_app_id or not matches_app(resource, app, cluster):
+        raise ValueError("Refusing to trust an app owned by another deployment")
+    path = "databases/" + cluster["id"] + "/firewall"
+    source = {"type": "app", "value": str(uuid.UUID(app.cloud_app_id))}
+    with admin_connection(cluster) as client:
+        with client.cursor() as cursor:
+            # DigitalOcean replaces the entire list on PUT. Serialize concurrent
+            # worker updates so adding one app cannot remove a newer source.
+            cursor.execute("SELECT GET_LOCK('nutab_shared_firewall', 10)")
+            if cursor.fetchone()[0] != 1:
+                raise RuntimeError("Shared database firewall is busy; retry later")
+            try:
+                rules = [
+                    {"type": rule["type"], "value": rule["value"]}
+                    for rule in cloud.api_get(path)["rules"] or []
+                ]
+                if not rules:
+                    raise ValueError("Configure the deployer as a database trusted source first")
+                if source not in rules:
+                    cloud.api_put(path, {"rules": rules + [source]})
+            finally:
+                cursor.execute("SELECT RELEASE_LOCK('nutab_shared_firewall')")
+                cursor.fetchone()
 
 
 def find_app(app):

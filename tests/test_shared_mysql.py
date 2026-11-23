@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import os
 
 from test_public import AppConfig
@@ -85,6 +85,37 @@ class OwnershipTest(TestCase):
                 shared_mysql.delete_tournament(self.app)
         delete.assert_not_called()
 
+    @patch("deployer.clients.shared_mysql.cloud.api_put")
+    @patch("deployer.clients.shared_mysql.cloud.api_get")
+    @patch("deployer.clients.shared_mysql.admin_connection")
+    @patch("deployer.clients.shared_mysql.get_cluster")
+    def test_adds_only_owned_app_and_preserves_existing_trusted_sources(
+        self, get_cluster, connect, get, put
+    ):
+        resource = self.resource()
+        resource["id"] = self.app.cloud_app_id = "afe5419c-48be-4d09-b5dd-2f62b627cdb2"
+        get_cluster.return_value = self.cluster
+        cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = (1,)
+        existing = {"type": "app", "value": "another-app"}
+        source = {"type": "app", "value": resource["id"]}
+        path = "databases/" + CLUSTER + "/firewall"
+
+        get.return_value = {"rules": [existing]}
+        shared_mysql.trust_app(self.app, resource)
+        put.assert_called_once_with(path, {"rules": [existing, source]})
+        put.reset_mock()
+        get.return_value = {"rules": [existing, source]}
+        shared_mysql.trust_app(self.app, resource)
+        put.assert_not_called()
+
+        get.return_value = {"rules": []}
+        with self.assertRaises(ValueError):
+            shared_mysql.trust_app(self.app, resource)
+        with self.assertRaises(ValueError):
+            shared_mysql.trust_app(self.app, self.resource())
+        put.assert_not_called()
+
     def test_grant_audit_rejects_global_privileges_roles_and_other_schemas(self):
         valid = [
             ("GRANT USAGE ON *.* TO `u`@`%`",),
@@ -99,6 +130,40 @@ class OwnershipTest(TestCase):
         ]:
             with self.assertRaises(ValueError):
                 shared_mysql._verify_grants(valid + [(grant,)], TENANT)
+
+    def test_grant_audit_accepts_only_the_own_schema_with_ansi_quotes(self):
+        valid = [
+            ('GRANT USAGE ON *.* TO "u"@"%"',),
+            (f'GRANT SELECT, INSERT ON "{TENANT}".* TO "u"@"%"',),
+        ]
+        shared_mysql._verify_grants(valid, TENANT)
+        for grant in [
+            'GRANT SELECT ON "defaultdb".* TO "u"@"%"',
+            f'GRANT SELECT ON "{TENANT}%".* TO "u"@"%"',
+            f'GRANT SELECT ON "{TENANT}".* TO "u"@"%" WITH GRANT OPTION',
+        ]:
+            with self.subTest(grant=grant), self.assertRaises(ValueError):
+                shared_mysql._verify_grants(valid + [(grant,)], TENANT)
+
+    def test_restrict_user_retries_without_revoking_an_exact_schema_grant(self):
+        scoped_grants = [
+            ('GRANT USAGE ON *.* TO "u"@"%"',),
+            (f'GRANT {shared_mysql.PRIVILEGES} ON "{TENANT}".* TO "u"@"%"',),
+        ]
+        for previous_grants in [scoped_grants, [("GRANT SELECT ON *.* TO u@%",)]]:
+            with self.subTest(previous_grants=previous_grants):
+                cursor = Mock()
+                cursor.fetchall.side_effect = [[], previous_grants, scoped_grants]
+                shared_mysql.restrict_user(cursor, TENANT)
+                statements = [call.args[0] for call in cursor.execute.call_args_list]
+                self.assertEqual(
+                    any(sql.startswith("REVOKE ALL ") for sql in statements),
+                    previous_grants != scoped_grants,
+                )
+                self.assertIn(
+                    "ALTER USER %s@%s REQUIRE SSL WITH MAX_USER_CONNECTIONS %s",
+                    statements,
+                )
 
     @patch(
         "deployer.clients.shared_mysql.cloud.api_get",
