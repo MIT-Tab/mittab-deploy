@@ -118,9 +118,10 @@ schema-scoped InnoDB snapshots via the companion MIT-Tab change.
 2. Back up the controller DB and run `uv run --env-file .env flask db upgrade`.
    Deploy this release to both web and Celery processes with the flag **off**.
 3. Create a separate MySQL 8 tournament pool, separate from the controller and
-   live dedicated clusters. Configure its trusted sources for the deployer and
-   tournament apps. The deployer needs API database/user/app operations and SQL
-   `doadmin` access; tenant apps must use restricted bindings. Back up this pool.
+   live dedicated clusters. Add the deployer app as a trusted source. The worker
+   adds each owned tournament app to the pool's trusted sources before checking
+   startup. The deployer needs API database, firewall, user, and app permissions,
+   plus SQL `doadmin` access. Back up this pool.
 4. Set `SHARED_MYSQL_CLUSTER_ID` to its UUID; leave `SHARED_MYSQL_ENABLED=false`
    until the canary below passes. Defaults: `SHARED_MYSQL_MAX_TENANTS=8`,
    `SHARED_MYSQL_MAX_CONNECTIONS=8`.

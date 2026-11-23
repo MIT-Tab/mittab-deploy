@@ -85,6 +85,37 @@ class OwnershipTest(TestCase):
                 shared_mysql.delete_tournament(self.app)
         delete.assert_not_called()
 
+    @patch("deployer.clients.shared_mysql.cloud.api_put")
+    @patch("deployer.clients.shared_mysql.cloud.api_get")
+    @patch("deployer.clients.shared_mysql.admin_connection")
+    @patch("deployer.clients.shared_mysql.get_cluster")
+    def test_adds_only_owned_app_and_preserves_existing_trusted_sources(
+        self, get_cluster, connect, get, put
+    ):
+        resource = self.resource()
+        resource["id"] = self.app.cloud_app_id = "afe5419c-48be-4d09-b5dd-2f62b627cdb2"
+        get_cluster.return_value = self.cluster
+        cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+        cursor.fetchone.return_value = (1,)
+        existing = {"type": "app", "value": "another-app"}
+        source = {"type": "app", "value": resource["id"]}
+        path = "databases/" + CLUSTER + "/firewall"
+
+        get.return_value = {"rules": [existing]}
+        shared_mysql.trust_app(self.app, resource)
+        put.assert_called_once_with(path, {"rules": [existing, source]})
+        put.reset_mock()
+        get.return_value = {"rules": [existing, source]}
+        shared_mysql.trust_app(self.app, resource)
+        put.assert_not_called()
+
+        get.return_value = {"rules": []}
+        with self.assertRaises(ValueError):
+            shared_mysql.trust_app(self.app, resource)
+        with self.assertRaises(ValueError):
+            shared_mysql.trust_app(self.app, self.resource())
+        put.assert_not_called()
+
     def test_grant_audit_rejects_global_privileges_roles_and_other_schemas(self):
         valid = [
             ("GRANT USAGE ON *.* TO `u`@`%`",),

@@ -260,17 +260,46 @@ def ensure_database(app):
     }
 
 
-def matches_app(resource, app):
+def matches_app(resource, app, cluster=None):
     databases = resource.get("spec", {}).get("databases", [])
     if len(databases) != 1:
         return False
     binding = databases[0]
-    cluster = get_cluster(app.shared_cluster_id)
+    if cluster is None:
+        cluster = get_cluster(app.shared_cluster_id)
     return (
         binding.get("cluster_name") == cluster["name"]
         and binding.get("db_name") == app.shared_tenant
         and binding.get("db_user") == app.shared_tenant
     )
+
+
+def trust_app(app, resource):
+    """Allow the owned App Platform instance to use the tournament pool."""
+    cluster = get_cluster(app.shared_cluster_id)
+    if resource["id"] != app.cloud_app_id or not matches_app(resource, app, cluster):
+        raise ValueError("Refusing to trust an app owned by another deployment")
+    path = "databases/" + cluster["id"] + "/firewall"
+    source = {"type": "app", "value": str(uuid.UUID(app.cloud_app_id))}
+    with admin_connection(cluster) as client:
+        with client.cursor() as cursor:
+            # DigitalOcean replaces the entire list on PUT. Serialize concurrent
+            # worker updates so adding one app cannot remove a newer source.
+            cursor.execute("SELECT GET_LOCK('nutab_shared_firewall', 10)")
+            if cursor.fetchone()[0] != 1:
+                raise RuntimeError("Shared database firewall is busy; retry later")
+            try:
+                rules = [
+                    {"type": rule["type"], "value": rule["value"]}
+                    for rule in cloud.api_get(path)["rules"] or []
+                ]
+                if not rules:
+                    raise ValueError("Configure the deployer as a database trusted source first")
+                if source not in rules:
+                    cloud.api_put(path, {"rules": rules + [source]})
+            finally:
+                cursor.execute("SELECT RELEASE_LOCK('nutab_shared_firewall')")
+                cursor.fetchone()
 
 
 def find_app(app):

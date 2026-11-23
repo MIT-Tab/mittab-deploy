@@ -102,6 +102,7 @@ def deploy_shared_app(app, password):
         app.cloud_app_id = resource['id']
         db.session.add(app)
         db.session.commit()
+        shared_mysql.trust_app(app, resource)
         app.temporary_url = digital_ocean.wait_for_app(app.cloud_app_id, timeout=900)
         app.set_status('Deployed')
         return True

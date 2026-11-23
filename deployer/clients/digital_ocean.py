@@ -42,6 +42,16 @@ def api_post(path, data):
     return __post(path, data)
 
 
+def api_put(path, data):
+    response = requests.put(
+        "https://api.digitalocean.com/v2/" + path.lstrip("/"),
+        json=data,
+        timeout=30,
+        headers={"Authorization": f"Bearer {__token}"},
+    )
+    response.raise_for_status()
+
+
 def api_delete(path):
     return __delete(path)
 
