@@ -170,7 +170,8 @@ def booking_capacity(slots=1):
 
 
 def _verify_grants(grants, name):
-    expected = "`" + name + "`.*"
+    # SHOW GRANTS uses double quotes when ANSI_QUOTES is enabled.
+    expected = {f'`{name}`.*', f'"{name}".*'}
     own_grant = False
     for row in grants:
         grant = row[0]
@@ -180,7 +181,7 @@ def _verify_grants(grants, name):
         scope = remainder.split(" TO ", 1)[0]
         if scope == "*.*" and privilege == "GRANT USAGE":
             continue
-        if scope != expected:
+        if scope not in expected:
             raise ValueError("Tenant still has privileges outside its own database")
         own_grant = True
     if not own_grant:

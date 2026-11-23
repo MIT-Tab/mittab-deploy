@@ -100,6 +100,20 @@ class OwnershipTest(TestCase):
             with self.assertRaises(ValueError):
                 shared_mysql._verify_grants(valid + [(grant,)], TENANT)
 
+    def test_grant_audit_accepts_only_the_own_schema_with_ansi_quotes(self):
+        valid = [
+            ('GRANT USAGE ON *.* TO "u"@"%"',),
+            (f'GRANT SELECT, INSERT ON "{TENANT}".* TO "u"@"%"',),
+        ]
+        shared_mysql._verify_grants(valid, TENANT)
+        for grant in [
+            'GRANT SELECT ON "defaultdb".* TO "u"@"%"',
+            f'GRANT SELECT ON "{TENANT}%".* TO "u"@"%"',
+            f'GRANT SELECT ON "{TENANT}".* TO "u"@"%" WITH GRANT OPTION',
+        ]:
+            with self.subTest(grant=grant), self.assertRaises(ValueError):
+                shared_mysql._verify_grants(valid + [(grant,)], TENANT)
+
     @patch(
         "deployer.clients.shared_mysql.cloud.api_get",
         return_value={
