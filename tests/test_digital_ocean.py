@@ -2,7 +2,9 @@ import importlib.util
 import os
 from pathlib import Path
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+from requests import HTTPError
 
 
 REQUIRED_ENV = {
@@ -22,7 +24,7 @@ with patch.dict(os.environ, REQUIRED_ENV):
 
 
 class BuildAppSpecTest(unittest.TestCase):
-    def build_spec(self):
+    def build_spec(self, repo_slug="MIT-Tab/mit-tab"):
         return getattr(digital_ocean, "__build_app_spec")(
             "test-tournament",
             "tab-password",
@@ -30,7 +32,7 @@ class BuildAppSpecTest(unittest.TestCase):
                 "name": "test-database",
                 "connection": {"database": "defaultdb", "user": "doadmin"},
             },
-            "MIT-Tab/mit-tab",
+            repo_slug,
             "master",
         )
 
@@ -82,6 +84,68 @@ class BuildAppSpecTest(unittest.TestCase):
         )
         self.assertEqual(envs["BLACK_ROD_PRIVATE_API_TOKEN"]["value"], "live-token")
         self.assertEqual(envs["BLACK_ROD_PRIVATE_API_TOKEN"]["type"], "SECRET")
+
+    def test_provisions_tabgpt_in_tournament_web_runtime(self):
+        with patch.dict(os.environ, {
+            "MITTAB_ASSISTANT_ENABLED": "1",
+            "MITTAB_ASSISTANT_ACCOUNT_ID": "a" * 32,
+            "MITTAB_ASSISTANT_API_TOKEN": "workers-ai-token",
+        }):
+            spec = self.build_spec()
+
+        envs = {env["key"]: env for env in spec["services"][0]["envs"]}
+        self.assertEqual(envs["MITTAB_ASSISTANT_API_TOKEN"], {
+            "key": "MITTAB_ASSISTANT_API_TOKEN",
+            "value": "workers-ai-token",
+            "scope": "RUN_TIME",
+            "type": "SECRET",
+        })
+        self.assertEqual(envs["MITTAB_ASSISTANT_ENABLED"]["value"], "1")
+        self.assertEqual(envs["MITTAB_ASSISTANT_ACCOUNT_ID"]["value"], "a" * 32)
+        self.assertEqual(envs["MITTAB_SOURCE_REVISION"]["value"], "${_self.COMMIT_HASH}")
+        self.assertTrue(all(env["scope"] == "RUN_TIME" for env in envs.values()))
+        self.assertTrue(envs.keys().isdisjoint(self.envs_by_key(spec)))
+        self.assertTrue(all("envs" not in site for site in spec["static_sites"]))
+
+    def test_tabgpt_defaults_off_and_requires_both_credentials_for_forwarding(self):
+        for account_id, token in (("", ""), ("a" * 32, ""), ("", "workers-ai-token")):
+            with self.subTest(account_id=account_id, has_token=bool(token)), patch.dict(
+                os.environ, {
+                    "MITTAB_ASSISTANT_ENABLED": "1",
+                    "MITTAB_ASSISTANT_ACCOUNT_ID": account_id,
+                    "MITTAB_ASSISTANT_API_TOKEN": token,
+                },
+            ):
+                self.assertNotIn("envs", self.build_spec()["services"][0])
+
+        with patch.dict(os.environ, {
+            "MITTAB_ASSISTANT_ENABLED": "",
+            "MITTAB_ASSISTANT_ACCOUNT_ID": "a" * 32,
+            "MITTAB_ASSISTANT_API_TOKEN": "workers-ai-token",
+        }):
+            spec = self.build_spec()
+            fork = self.build_spec(repo_slug="example/mit-tab")
+
+        web_envs = {env["key"]: env["value"] for env in spec["services"][0]["envs"]}
+        self.assertEqual(web_envs["MITTAB_ASSISTANT_ENABLED"], "0")
+        self.assertNotIn("envs", fork["services"][0])
+
+    def test_app_creation_error_does_not_log_response_payload(self):
+        response = Mock()
+        response.raise_for_status.side_effect = HTTPError("invalid app spec")
+        response.json.return_value = {"message": "reflected test credential"}
+
+        with patch.object(digital_ocean.requests, "post", return_value=response), \
+                self.assertLogs(digital_ocean.logger, level="INFO") as logs, \
+                self.assertRaises(HTTPError):
+            digital_ocean.create_app(
+                "test-tournament", "tab-password", {"name": "db", "connection": {
+                    "database": "defaultdb", "user": "doadmin",
+                }}, "MIT-Tab/mit-tab", "master",
+            )
+
+        response.json.assert_not_called()
+        self.assertNotIn("reflected test credential", "\n".join(logs.output))
 
     def test_does_not_inject_partial_aws_ses_credentials(self):
         empty_optional_env = {
