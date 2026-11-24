@@ -9,4 +9,5 @@ def cents_as_string(cents_amount):
         amount_str = str(cents_amount)
         return "${}.{}".format(amount_str[:-2], amount_str[-2:])
 
+# Make the currency formatter available to all Jinja templates.
 app.jinja_env.globals.update(cents_as_string=cents_as_string)
